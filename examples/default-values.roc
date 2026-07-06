@@ -1,50 +1,78 @@
 app [main!] {
-    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.17.0/lZFLstMUCUvd5bjnnpYromZJXkQUrdhbva4xdBInicE.tar.br",
-    weaver: "../package/main.roc",
+	pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/1.0.0/AnZoxzoGPtSGQ15EQh6pBeeaHJ7aizP9MQhK81dES3Uq.tar.zst",
+	weaver: "../package/main.roc",
 }
 
-import pf.Arg
 import pf.Stdout
-import weaver.Opt
+import weaver.Arg
 import weaver.Cli
+import weaver.Opt
 import weaver.Param
 
-main! = |args|
-    data =
-        Cli.parse_or_display_message(cli_parser, args, Arg.to_os_raw)
-        |> Result.on_err!(|message|
-            Stdout.line!(message)?
-            Err(Exit(1, ""))
-        )
+main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+main! = |args| {
+	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
+		Err(message) => {
+			Stdout.line!(message)?
+			Err(Exit(1))
+		}
 
-    Stdout.line!("Successfully parsed! Here's what I got:")?
-    Stdout.line!("")?
-    Stdout.line!(Inspect.to_str(data))?
+		Ok(data) => {
+			Stdout.line!("Successfully parsed! Here's what I got:")?
+			Stdout.line!("")?
+			Stdout.line!(Str.inspect(data))?
 
-    Ok({})
+			Ok({})
+		}
+	}
+}
 
-cli_parser =
-    { Cli.weave <-
-        alpha: Opt.u64({
-            short: "a",
-            long: "alpha",
-            help: "Set the alpha level. [default: 123]",
-            default: Value(123),
-        }),
-        beta: Opt.dec({
-            short: "b",
-            long: "beta",
-            help: "Set the beta level. [default: PI]",
-            default: Generate(\{} -> Num.pi),
-        }),
-        file: Param.maybe_str({
-            name: "file",
-            help: "The file to process. [default: NONE]",
-        })
-        |> Cli.map(\f -> Result.with_default(f, "NONE")),
-    }
-    |> Cli.finish({
-        name: "default-values",
-        version: "v0.0.1",
-    })
-    |> Cli.assert_valid
+cli_parser = 
+	Cli.assert_valid(
+		Cli.finish(
+			{
+				alpha: Opt.u64(
+					{
+						short: "a",
+						long: "alpha",
+						help: "Set the alpha level. [default: 123]",
+						default: Value(123),
+					},
+				),
+				beta: Opt.dec(
+					{
+						short: "b",
+						long: "beta",
+						help: "Set the beta level. [default: 3.14]",
+						default: Generate(|{}| 3.14),
+					},
+				),
+				file: Cli.map(
+					Param.maybe_str(
+						{
+							name: "file",
+							help: "The file to process. [default: NONE]",
+						},
+					),
+					maybe_file_default,
+				),
+			}.Cli,
+			{
+				name: "default-values",
+				version: "v0.0.1",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+maybe_file_default : Try(Str, [NoValue]) -> Str
+maybe_file_default = |file|
+	match file {
+		Ok(path) => path
+		Err(NoValue) => "NONE"
+	}
+
+str_to_raw_arg : Str -> [Unix(List(U8)), Windows(List(U16))]
+str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))

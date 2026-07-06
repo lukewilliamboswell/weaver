@@ -1,368 +1,369 @@
-module [help_text, usage_help]
-
 import Base exposing [
-    TextStyle,
-    CliConfig,
-    OptionConfig,
-    ParameterConfig,
-    SubcommandConfig,
-    SubcommandsConfig,
+	CliConfig,
+	OptionConfig,
+	ParameterConfig,
+	SubcommandConfig,
+	SubcommandsConfig,
+	TextStyle,
 ]
 import Utils exposing [to_upper_case]
 
-# TODO: use roc-ansi once module params fix importing packages
+# TODO: use roc-ansi once package dependencies are settled.
 bold_ansi_code = "\u(001b)[1m"
+
 bold_and_underline_ansi_code = "\u(001b)[1m\u(001b)[4m"
+
 reset_ansi_code = "\u(001b)[0m"
 
-## Walks the subcommand tree from the root CLI config and either
-## returns the subcommand's config as if it were the root command if a
-## subcommand is found, or just the root command's config otherwise.
-find_subcommand_or_default : CliConfig, List Str -> { config : CliConfig, subcommand_path : List Str }
-find_subcommand_or_default = |config, subcommand_path|
-    base_command = {
-        description: config.description,
-        options: config.options,
-        parameters: config.parameters,
-        subcommands: config.subcommands,
-    }
+Help := [].{
 
-    when find_subcommand(base_command, List.drop_first(subcommand_path, 1)) is
-        Err(KeyNotFound) -> { config, subcommand_path }
-        Ok(c) ->
-            {
-                config: {
-                    name: config.name,
-                    version: config.version,
-                    authors: config.authors,
-                    description: c.description,
-                    options: c.options,
-                    parameters: c.parameters,
-                    subcommands: c.subcommands,
-                },
-                subcommand_path,
-            }
+	## Walks the subcommand tree from the root CLI config and returns the target
+	## command config, falling back to the root command if the path is invalid.
+	find_subcommand_or_default : CliConfig, List(Str) -> { config : CliConfig, subcommand_path : List(Str) }
+	find_subcommand_or_default = |config, subcommand_path| {
+		base_command = {
+			description: config.description,
+			options: config.options,
+			parameters: config.parameters,
+			subcommands: config.subcommands,
+		}
 
-## Searches a command's config for subcommands recursively.
-find_subcommand : SubcommandConfig, List Str -> Result SubcommandConfig [KeyNotFound]
-find_subcommand = |command, path|
-    when path is
-        [] -> Ok(command)
-        [first, .. as rest] ->
-            when command.subcommands is
-                NoSubcommands -> Err(KeyNotFound)
-                HasSubcommands(scs) ->
-                    sc = Dict.get(scs, first)?
-                    find_subcommand(sc, rest)
+		match Help.find_subcommand(base_command, subcommand_path.drop_first(1)) {
+			Err(KeyNotFound) => { config, subcommand_path }
+			Ok(command) => {
+				config: {
+					name: config.name,
+					version: config.version,
+					authors: config.authors,
+					description: command.description,
+					options: command.options,
+					parameters: command.parameters,
+					subcommands: command.subcommands,
+				},
+				subcommand_path,
+			}
+		}
+	}
 
-## Render the help text for a command at or under the root config.
-##
-## The second argument should be a list of subcommand names, e.g.
-## `["example", "subcommand-1", "subcommand-2"]`. If the subcommand
-## isn't found, the root command's help page is rendered by default.
-##
-## ```roc
-## example_cli =
-##     Opt.count({ short: "v", help: "How verbose our logs should be." })
-##     |> Cli.finish({
-##         name: "example",
-##         version: "v0.1.0",
-##         description: "An example CLI.",
-##     })
-##     |> Cli.assert_valid
-##
-## expect
-##     help_text(example_cli.config, ["example"])
-##     ==
-##         """
-##         example v0.1.0
-##
-##         An example CLI.
-##
-##         Usage:
-##           example -v [OPTIONS]
-##
-##         Options:
-##           -v             How verbose our logs should be.
-##           -h, --help     Show this help page.
-##           -V, --version  Show the version.
-##         """
-## ```
-help_text : CliConfig, List Str, TextStyle -> Str
-help_text = |base_config, path, text_style|
-    { config, subcommand_path } = find_subcommand_or_default(base_config, path)
-    { version, authors, description, options, parameters, subcommands } = config
+	## Searches a command's config for subcommands recursively.
+	find_subcommand : SubcommandConfig, List(Str) -> Try(SubcommandConfig, [KeyNotFound])
+	find_subcommand = |command, path|
+		match path {
+			[] => Ok(command)
+			[first, .. as rest] =>
+				match command.subcommands {
+					NoSubcommands => Err(KeyNotFound)
+					HasSubcommands(subcommands) => {
+						subcommand = subcommands.get(first)?
+						Help.find_subcommand(subcommand, rest)
+					}
+				}
+			}
 
-    name = subcommand_path |> Str.join_with(" ")
+	## Render the help text for a command at or under the root config.
+	help_text : CliConfig, List(Str), TextStyle -> Str
+	help_text = |base_config, path, text_style| {
+		{ config, subcommand_path } = Help.find_subcommand_or_default(base_config, path)
+		{ version, authors, description, options, parameters, subcommands, .. } = config
 
-    top_line =
-        [name, version]
-        |> List.drop_if(Str.is_empty)
-        |> Str.join_with(" ")
+		name = Str.join_with(subcommand_path, " ")
 
-    authors_text =
-        if List.is_empty(authors) then
-            ""
-        else
-            Str.concat("\n", Str.join_with(authors, " "))
+		top_line = 
+			join_lines_with(filter_non_empty([name, version]), " ")
 
-    description_text =
-        if Str.is_empty(description) then
-            ""
-        else
-            Str.concat("\n\n", description)
+		authors_text = 
+			if authors.is_empty() {
+				""
+			} else {
+				"\n${Str.join_with(authors, " ")}"
+			}
 
-    subcommands_text =
-        when subcommands is
-            HasSubcommands(scs) if !(Dict.is_empty(scs)) ->
-                commands_help(subcommands, text_style)
+		description_text = 
+			if description.is_empty() {
+				""
+			} else {
+				"\n\n${description}"
+			}
 
-            _noSubcommands -> ""
+		subcommands_text = 
+			match subcommands {
+				HasSubcommands(subcommand_dict) if !subcommand_dict.is_empty() =>
+					commands_help(subcommands, text_style)
 
-    parameters_text =
-        if List.is_empty(parameters) then
-            ""
-        else
-            parameters_help(parameters, text_style)
+				_no_subcommands => ""
+			}
 
-    options_text =
-        if List.is_empty(options) then
-            ""
-        else
-            options_help(options, text_style)
+		parameters_text = 
+			if parameters.is_empty() {
+				""
+			} else {
+				parameters_help(parameters, text_style)
+			}
 
-    bottom_sections =
-        [subcommands_text, parameters_text, options_text]
-        |> List.drop_if(Str.is_empty)
-        |> Str.join_with("\n\n")
+		options_text = 
+			if options.is_empty() {
+				""
+			} else {
+				options_help(options, text_style)
+			}
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_and_underline_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
+		bottom_sections = 
+			join_lines_with(filter_non_empty([subcommands_text, parameters_text, options_text]), "\n\n")
 
-    """
-    $(style)$(top_line)$(reset)$(authors_text)$(description_text)
+		(style, reset) = 
+			match text_style {
+				Color => (bold_and_underline_ansi_code, reset_ansi_code)
+				Plain => ("", "")
+			}
 
-    $(usage_help(config, subcommand_path, text_style))
+		"${style}${top_line}${reset}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
+	}
 
-    $(bottom_sections)
-    """
+	## Render just the usage text for a command at or under the root config.
+	usage_help : CliConfig, List(Str), TextStyle -> Str
+	usage_help = |config, path, text_style| {
+		{ config: command_config, subcommand_path } = Help.find_subcommand_or_default(config, path)
+		{ options, parameters, subcommands, .. } = command_config
 
-## Render just the usage text for a command at or under the root config.
-##
-## The second argument should be a list of subcommand names, e.g.
-## `["example", "subcommand-1", "subcommand-2"]`. If the subcommand
-## isn't found, the root command's usage text is rendered by default.
-##
-## ```roc
-## example_cli =
-##     Opt.count({ short: "v", help: "How verbose our logs should be." })
-##     |> Cli.finish({
-##         name: "example",
-##         version: "v0.1.0",
-##         description: "An example CLI.",
-##     })
-##     |> Cli.assert_valid
-##
-## expect
-##     help_text(example_cli.config, ["example"])
-##     ==
-##         """
-##         Usage:
-##           example -v [OPTIONS]
-##         """
-## ```
-usage_help : CliConfig, List Str, TextStyle -> Str
-usage_help = |config, path, text_style|
-    { config: { options, parameters, subcommands }, subcommand_path } = find_subcommand_or_default(config, path)
+		name = Str.join_with(subcommand_path, " ")
 
-    name = Str.join_with(subcommand_path, " ")
+		required_options = 
+			filter_required_options(options).map(option_simple_name_formatter)
 
-    required_options =
-        options
-        |> List.drop_if(|opt| opt.expected_value == NothingExpected)
-        |> List.map(option_simple_name_formatter)
+		other_options = 
+			if required_options.len() == options.len() {
+				[]
+			} else {
+				["[OPTIONS]"]
+			}
 
-    other_options =
-        if List.len(required_options) == List.len(options) then
-            []
-        else
-            ["[options]"]
+		params_strings = 
+			parameters.map(
+				|param| {
+					ellipsis = 
+						match param.plurality {
+							Optional | One => ""
+							Many => "..."
+						}
 
-    params_strings =
-        parameters
-        |> List.map(|{ name: param_name, plurality }|
-            ellipsis =
-                when plurality is
-                    Optional | One -> ""
-                    Many -> "..."
+					"<${param.name}${ellipsis}>"
+				},
+			)
 
-            "<$(param_name)$(ellipsis)>")
+		first_line = 
+			join_lines_with(required_options.concat(other_options).concat(params_strings), " ")
 
-    first_line =
-        required_options
-        |> List.concat(other_options)
-        |> List.concat(params_strings)
-        |> Str.join_with(" ")
+		subcommand_usage = 
+			match subcommands {
+				HasSubcommands(subcommand_dict) if !subcommand_dict.is_empty() => "\n  ${name} <COMMAND>"
+				_other => ""
+			}
 
-    subcommand_usage =
-        when subcommands is
-            HasSubcommands(sc) if !(Dict.is_empty(sc)) -> "\n  $(name) <COMMAND>"
-            _other -> ""
+		(style, reset) = 
+			match text_style {
+				Color => (bold_and_underline_ansi_code, reset_ansi_code)
+				Plain => ("", "")
+			}
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_and_underline_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
-
-    """
-    $(style)Usage:$(reset)
-      $(name) $(first_line)$(subcommand_usage)
-    """
+		"${style}Usage:${reset}\n  ${name} ${first_line}${subcommand_usage}"
+	}
+}
 
 commands_help : SubcommandsConfig, TextStyle -> Str
-commands_help = |subcommands, text_style|
-    commands =
-        when subcommands is
-            NoSubcommands -> []
-            HasSubcommands(sc) -> Dict.to_list(sc)
+commands_help = |subcommands, text_style| {
+	commands = 
+		match subcommands {
+			NoSubcommands => []
+			HasSubcommands(subcommand_dict) => subcommand_dict.to_list()
+		}
 
-    aligned_commands =
-        commands
-        |> List.map(|(name, sub_config)|
-            (name, sub_config.description))
-        |> align_two_columns(text_style)
+	aligned_commands = 
+		align_two_columns(commands.map(|(name, sub_config)| (name, sub_config.description)), text_style)
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_and_underline_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
+	(style, reset) = 
+		match text_style {
+			Color => (bold_and_underline_ansi_code, reset_ansi_code)
+			Plain => ("", "")
+		}
 
-    """
-    $(style)Commands:$(reset)
-    $(Str.join_with(aligned_commands, "\n"))
-    """
+	"${style}Commands:${reset}\n${Str.join_with(aligned_commands, "\n")}"
+}
 
-parameters_help : List ParameterConfig, TextStyle -> Str
-parameters_help = |params, text_style|
-    formatted_params =
-        params
-        |> List.map(|param|
-            ellipsis =
-                when param.plurality is
-                    Optional | One -> ""
-                    Many -> "..."
+parameters_help : List(ParameterConfig), TextStyle -> Str
+parameters_help = |params, text_style| {
+	formatted_params = 
+		align_two_columns(
+			params.map(
+				|param| {
+					ellipsis = 
+						match param.plurality {
+							Optional | One => ""
+							Many => "..."
+						}
 
-            ("<$(param.name)$(ellipsis)>", param.help))
-        |> align_two_columns(text_style)
+					("<${param.name}${ellipsis}>", param.help)
+				},
+			),
+			text_style,
+		)
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_and_underline_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
+	(style, reset) = 
+		match text_style {
+			Color => (bold_and_underline_ansi_code, reset_ansi_code)
+			Plain => ("", "")
+		}
 
-    """
-    $(style)Arguments:$(reset)
-    $(Str.join_with(formatted_params, "\n"))
-    """
+	"${style}Arguments:${reset}\n${Str.join_with(formatted_params, "\n")}"
+}
 
 option_name_formatter : OptionConfig -> Str
-option_name_formatter = |{ short, long, expected_value }|
-    short_name =
-        if short != "" then
-            "-$(short)"
-        else
-            ""
+option_name_formatter = |{ short, long, expected_value, .. }| {
+	short_name = 
+		if short != "" {
+			"-${short}"
+		} else {
+			""
+		}
 
-    long_name =
-        if long != "" then
-            "--$(long)"
-        else
-            ""
+	long_name = 
+		if long != "" {
+			"--${long}"
+		} else {
+			""
+		}
 
-    type_name =
-        when expected_value is
-            NothingExpected -> ""
-            ExpectsValue(name) -> " $(to_upper_case(name))"
+	type_name = 
+		match expected_value {
+			NothingExpected => ""
+			ExpectsValue(name) => " ${to_upper_case(name)}"
+		}
 
-    [short_name, long_name]
-    |> List.drop_if(Str.is_empty)
-    |> List.map(|name| Str.concat(name, type_name))
-    |> Str.join_with(", ")
+	join_lines_with(filter_non_empty([short_name, long_name]).map(|name| "${name}${type_name}"), ", ")
+}
 
 option_simple_name_formatter : OptionConfig -> Str
-option_simple_name_formatter = |{ short, long, expected_value }|
-    short_name =
-        if short != "" then
-            "-$(short)"
-        else
-            ""
+option_simple_name_formatter = |{ short, long, expected_value, .. }| {
+	short_name = 
+		if short != "" {
+			"-${short}"
+		} else {
+			""
+		}
 
-    long_name =
-        if long != "" then
-            "--$(long)"
-        else
-            ""
+	long_name = 
+		if long != "" {
+			"--${long}"
+		} else {
+			""
+		}
 
-    type_name =
-        when expected_value is
-            NothingExpected -> ""
-            ExpectsValue(name) -> " $(to_upper_case(name))"
+	type_name = 
+		match expected_value {
+			NothingExpected => ""
+			ExpectsValue(name) => " ${to_upper_case(name)}"
+		}
 
-    [short_name, long_name]
-    |> List.drop_if(Str.is_empty)
-    |> Str.join_with("/")
-    |> Str.concat(type_name)
+	"${join_lines_with(filter_non_empty([short_name, long_name]), "/")}${type_name}"
+}
 
-options_help : List OptionConfig, TextStyle -> Str
-options_help = |options, text_style|
-    formatted_options =
-        options
-        |> List.map(|option|
-            (option_name_formatter(option), option.help))
-        |> align_two_columns(text_style)
+options_help : List(OptionConfig), TextStyle -> Str
+options_help = |options, text_style| {
+	formatted_options = 
+		align_two_columns(options.map(|option| (option_name_formatter(option), option.help)), text_style)
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_and_underline_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
+	(style, reset) = 
+		match text_style {
+			Color => (bold_and_underline_ansi_code, reset_ansi_code)
+			Plain => ("", "")
+		}
 
-    """
-    $(style)Options:$(reset)
-    $(Str.join_with(formatted_options, "\n"))
-    """
+	"${style}Options:${reset}\n${Str.join_with(formatted_options, "\n")}"
+}
 
 indent_multiline_string_by : Str, U64 -> Str
-indent_multiline_string_by = |string, indent_amount|
-    indentation = Str.repeat(" ", indent_amount)
+indent_multiline_string_by = |string, indent_amount| {
+	indentation = Str.repeat(" ", indent_amount)
 
-    string
-    |> Str.split_on("\n")
-    |> List.map_with_index(|line, index|
-        if index == 0 then
-            line
-        else
-            Str.concat(indentation, line))
-    |> Str.join_with("\n")
+	indent_lines(string.split_on("\n"), indentation, True, [])
+}
 
-align_two_columns : List (Str, Str), TextStyle -> List Str
-align_two_columns = |columns, text_style|
-    max_first_column_len =
-        columns
-        |> List.map(|(first, _second)| Str.count_utf8_bytes(first))
-        |> List.max
-        |> Result.with_default(0)
+align_two_columns : List((Str, Str)), TextStyle -> List(Str)
+align_two_columns = |columns, text_style| {
+	max_first_column_len = 
+		max_or_zero(columns.map(|(first, _second)| first.count_utf8_bytes()))
 
-    (style, reset) =
-        when text_style is
-            Color -> (bold_ansi_code, reset_ansi_code)
-            Plain -> ("", "")
+	(style, reset) = 
+		match text_style {
+			Color => (bold_ansi_code, reset_ansi_code)
+			Plain => ("", "")
+		}
 
-    List.map(columns, |(first, second)|
-        buffer =
-            Str.repeat(" ", (max_first_column_len - Str.count_utf8_bytes(first)))
-        second_shifted =
-            indent_multiline_string_by(second, (max_first_column_len + 4))
+	columns.map(
+		|(first, second)| {
+			buffer = 
+				Str.repeat(" ", max_first_column_len - first.count_utf8_bytes())
 
-        "  $(style)$(first)$(buffer)$(reset)  $(second_shifted)")
+			second_shifted = 
+				indent_multiline_string_by(second, max_first_column_len + 4)
+
+			"  ${style}${first}${buffer}${reset}  ${second_shifted}"
+		},
+	)
+}
+
+filter_non_empty : List(Str) -> List(Str)
+filter_non_empty = |values|
+	match values {
+		[] => []
+		[first, .. as rest] =>
+			if first.is_empty() {
+				filter_non_empty(rest)
+			} else {
+				[first].concat(filter_non_empty(rest))
+			}
+		}
+
+join_lines_with : List(Str), Str -> Str
+join_lines_with = |values, separator|
+	Str.join_with(values, separator)
+
+filter_required_options : List(OptionConfig) -> List(OptionConfig)
+filter_required_options = |options|
+	match options {
+		[] => []
+		[option, .. as rest] =>
+			match option.expected_value {
+				NothingExpected => filter_required_options(rest)
+				ExpectsValue(_) => [option].concat(filter_required_options(rest))
+			}
+		}
+
+max_or_zero : List(U64) -> U64
+max_or_zero = |values|
+	match values {
+		[] => 0
+		[first, .. as rest] => max_help(rest, first)
+	}
+
+max_help : List(U64), U64 -> U64
+max_help = |values, current|
+	match values {
+		[] => current
+		[first, .. as rest] => max_help(rest, current.max(first))
+	}
+
+indent_lines : List(Str), Str, Bool, List(Str) -> Str
+indent_lines = |lines, indentation, is_first, out|
+	match lines {
+		[] => Str.join_with(out, "\n")
+		[line, .. as rest] => {
+			rendered = 
+				if is_first {
+					line
+				} else {
+					"${indentation}${line}"
+				}
+
+			indent_lines(rest, indentation, False, out.append(rendered))
+		}
+	}

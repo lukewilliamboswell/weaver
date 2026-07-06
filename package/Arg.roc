@@ -1,89 +1,88 @@
-module [
-    Arg,
-    from_raw_arg,
-    to_raw_arg,
-    from_str,
-    to_str,
-    to_bytes,
-    display,
-]
-
 ## An OS-aware representation of a command-line argument.
 ##
-## Though we tend to think of args as Unicode strings, most operating systems
-## represent command-line arguments as lists of bytes that aren't necessarily
-## UTF-8 encoded. Windows doesn't even use bytes, but U16s.
-##
-## Most of the time, you will pass these to packages and they will handle the
-## encoding for you, but for quick-and-dirty code you can use [display] to
-## convert these to [Str] in a lossy way.
-Arg := [Unix (List U8), Windows (List U16)] implements [Eq, Inspect { to_inspector: arg_inspector }]
+## Though we tend to think of args as Unicode strings, Unix represents
+## command-line arguments as bytes that are not necessarily UTF-8. Windows uses
+## UTF-16 code units. Weaver keeps that platform boundary explicit: string
+## parsers opt in to decoding, and future path parsers can opt in to
+## path-specific semantics.
+Arg := [Unix(List(U8)), Windows(List(U16))].{
+	to_inspect : Arg -> Str
+	to_inspect = |arg| Str.inspect(display(arg))
 
-arg_inspector : Arg -> Inspector f where f implements InspectFormatter
-arg_inspector = |arg| Inspect.str(display(arg))
+	## Wrap a raw, OS-aware numeric list into an `Arg`.
+	from_raw_arg : [Unix(List(U8)), Windows(List(U16))] -> Arg
+	from_raw_arg = |raw_arg|
+		match raw_arg {
+			Unix(bytes) => Unix(bytes)
+			Windows(code_units) => Windows(code_units)
+		}
 
-## Wrap a raw, OS-aware numeric list into an [Arg].
-from_raw_arg : [Unix (List U8), Windows (List U16)] -> Arg
-from_raw_arg = |raw_arg| @Arg(raw_arg)
+	## Unwrap an `Arg` into a raw, OS-aware numeric list.
+	to_raw_arg : Arg -> [Unix(List(U8)), Windows(List(U16))]
+	to_raw_arg = |arg|
+		match arg {
+			Unix(bytes) => Unix(bytes)
+			Windows(code_units) => Windows(code_units)
+		}
 
-## Unwrap an [Arg] into a raw, OS-aware numeric list.
-##
-## This is a good way to pass [Arg]s to Roc packages.
-to_raw_arg : Arg -> [Unix (List U8), Windows (List U16)]
-to_raw_arg = |@Arg(raw_arg)| raw_arg
+	## Encode a UTF-8 `Str` to a Unix-flavored `Arg`.
+	from_str : Str -> Arg
+	from_str = |str| Unix(Str.to_utf8(str))
 
-## Encode a UTF-8 [Str] to a Unix-flavored [Arg].
-from_str : Str -> Arg
-from_str = |str|
-    @Arg(Unix(Str.to_utf8(str)))
+	## Attempt to decode an `Arg` to a `Str`.
+	to_str : Arg -> Try(Str, [InvalidUtf8])
+	to_str = |arg|
+		match arg {
+			Unix(bytes) =>
+				match Str.from_utf8(bytes) {
+					Ok(str) => Ok(str)
+					Err(_) => Err(InvalidUtf8)
+				}
 
-## Attempt to decode an [Arg] to a UTF-8 [Str].
-to_str : Arg -> Result Str [InvalidUtf8]
-to_str = |@Arg(arg)|
-    when arg is
-        Unix(unix) ->
-            Str.from_utf8(unix)
-            |> Result.map_err(|_err| InvalidUtf8)
+			Windows(_) => Err(InvalidUtf8)
+		}
 
-        Windows(windows) ->
-            Str.from_utf16(windows)
-            |> Result.map_err(|_err| InvalidUtf8)
+	## Convert an `Arg` to raw bytes.
+	to_bytes : Arg -> List(U8)
+	to_bytes = |arg|
+		match arg {
+			Unix(bytes) => bytes
+			Windows(code_units) =>
+				code_units.fold(
+					[],
+					|bytes, code_unit| {
+						upper = U64.to_u8_wrap(U16.to_u64(code_unit / 256))
+						lower = U64.to_u8_wrap(U16.to_u64(code_unit % 256))
 
-## Convert an [Arg] to a list of bytes.
-to_bytes : Arg -> List U8
-to_bytes = |@Arg(arg)|
-    when arg is
-        Unix(unix) -> unix
-        Windows(windows) ->
-            # avoid intermediate list resizing allocations by
-            # appending to a list instead of using `List.join_map`
-            helper = |codepoints, bytes|
-                when codepoints is
-                    [] -> bytes
-                    [codepoint, .. as rest] ->
-                        lower = codepoint |> Num.to_u8
-                        upper =
-                            codepoint
-                            |> Num.shift_right_by(8)
-                            |> Num.to_u8
+						bytes.append(upper).append(lower)
+					},
+				)
+			}
 
-                        updated_bytes =
-                            bytes
-                            |> List.append(upper)
-                            |> List.append(lower)
+	## Convert an Arg to a `Str` for display purposes.
+	##
+	## This replaces invalid codepoints with the Unicode replacement character.
+	display : Arg -> Str
+	display = |arg|
+		match arg {
+			Unix(bytes) => Str.from_utf8_lossy(bytes)
+			Windows(code_units) => {
+				display_bytes = 
+					code_units.fold(
+						[],
+						|bytes, code_unit| {
+							byte = 
+								if code_unit <= 127 {
+									U64.to_u8_wrap(U16.to_u64(code_unit))
+								} else {
+									'?'
+								}
 
-                        helper(rest, updated_bytes)
+							bytes.append(byte)
+						},
+					)
 
-            bytes_out = List.with_capacity((2 * List.len(windows)))
-
-            helper(windows, bytes_out)
-
-## Convert an Arg to a `Str` for display purposes.
-##
-## This replaces invalid codepoints with the Unicode replacement character "\uFFFD".
-display : Arg -> Str
-display = |@Arg(arg)|
-    when arg is
-        Unix(unix) -> Str.from_utf8_lossy(unix)
-        Windows(windows) -> Str.from_utf16_lossy(windows)
-
+				Str.from_utf8_lossy(display_bytes)
+			}
+		}
+}

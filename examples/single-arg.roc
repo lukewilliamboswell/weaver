@@ -1,32 +1,54 @@
 app [main!] {
-    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.17.0/lZFLstMUCUvd5bjnnpYromZJXkQUrdhbva4xdBInicE.tar.br",
-    weaver: "../package/main.roc",
+	pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/1.0.0/AnZoxzoGPtSGQ15EQh6pBeeaHJ7aizP9MQhK81dES3Uq.tar.zst",
+	weaver: "../package/main.roc",
 }
 
-import pf.Arg
 import pf.Stdout
-import weaver.Opt
+import weaver.Arg
 import weaver.Cli
+import weaver.Opt
 
-main! = |args|
-    data =
-        Cli.parse_or_display_message(cli_parser, args, Arg.to_os_raw)
-        |> Result.on_err!(|message|
-            Stdout.line!(message)?
-            Err(Exit(1, ""))
-        )
+main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+main! = |args| {
+	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
+		Err(message) => {
+			Stdout.line!(message)?
+			Err(Exit(1))
+		}
 
-    Stdout.line!("Successfully parsed! Here's what I got:")?
-    Stdout.line!("")?
-    Stdout.line!(Inspect.to_str(data))?
+		Ok(data) => {
+			Stdout.line!("Successfully parsed! Here's what I got:")?
+			Stdout.line!("")?
+			Stdout.line!(Str.inspect(data))?
 
-    Ok({})
+			Ok({})
+		}
+	}
+}
 
-cli_parser =
-    Opt.u64({ short: "a", long: "alpha", help: "Set the alpha level." })
-    |> Cli.map(Alpha)
-    |> Cli.finish({
-        name: "single-arg",
-        version: "v0.0.1",
-    })
-    |> Cli.assert_valid
+cli_parser = 
+	Cli.assert_valid(
+		Cli.finish(
+			Cli.map(
+				Opt.u64(
+					{
+						short: "a",
+						long: "alpha",
+						help: "Set the alpha level.",
+						default: NoDefault,
+					},
+				),
+				|alpha| Alpha(alpha),
+			),
+			{
+				name: "single-arg",
+				version: "v0.0.1",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+str_to_raw_arg : Str -> [Unix(List(U8)), Windows(List(U16))]
+str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))

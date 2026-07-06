@@ -4,4 +4,6 @@
 !*/
 
 .direnv/
+.weaver-tmp/
+dist/
 generated-docs/
