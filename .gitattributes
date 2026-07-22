@@ -1,0 +1,2 @@
+# Roc formatting is line-ending-sensitive on Windows.
+*.roc text eol=lf
