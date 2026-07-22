@@ -137,6 +137,7 @@ Base := [].{
 	OptionConfig : {
 		expected_value : ExpectedValue,
 		plurality : Plurality,
+		required : Bool,
 		short : Str,
 		long : Str,
 		help : Str,
@@ -150,6 +151,7 @@ Base := [].{
 		help: "Show this help page.",
 		expected_value: NothingExpected,
 		plurality: Optional,
+		required: False,
 	}
 
 	## Metadata for the `-V/--version` option that we parse automatically.
@@ -160,6 +162,7 @@ Base := [].{
 		help: "Show the version.",
 		expected_value: NothingExpected,
 		plurality: Optional,
+		required: False,
 	}
 
 	ParameterConfigBaseParams : { name : Str, help : Str }
@@ -189,6 +192,7 @@ Base := [].{
 		help : Str,
 		type : Str,
 		plurality : Plurality,
+		required : Bool,
 	}
 
 	## Options for bundling a CLI.

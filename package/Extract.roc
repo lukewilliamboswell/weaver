@@ -240,6 +240,7 @@ test_flag = {
 	help: "Increase verbosity.",
 	expected_value: NothingExpected,
 	plurality: Many,
+	required: False,
 }
 
 test_value_option : OptionConfig
@@ -249,6 +250,7 @@ test_value_option = {
 	help: "Set alpha.",
 	expected_value: ExpectsValue("num"),
 	plurality: One,
+	required: True,
 }
 
 ## Every occurrence of a flag in one short group is extracted.

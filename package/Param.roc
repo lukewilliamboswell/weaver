@@ -32,7 +32,13 @@ Param := [].{
 	## Add a required parameter of a custom type.
 	single : DefaultableParameterConfigParams(data) -> CliBuilder(data, { ..action }, GetParamsAction)
 	single = |{ parser, type, name, help, default }| {
-		param = { name, type, help, plurality: One }
+		required =
+			match default {
+				NoDefault => True
+				Value(_) | Generate(_) => False
+			}
+
+		param = { name, type, help, plurality: One, required }
 
 		default_generator = |{}|
 			match default {
@@ -57,7 +63,7 @@ Param := [].{
 	## Add an optional parameter of a custom type.
 	maybe : ParameterConfigParams(data) -> CliBuilder(Try(data, [NoValue]), { ..action }, GetParamsAction)
 	maybe = |{ parser, type, name, help }| {
-		param = { name, type, help, plurality: Optional }
+		param = { name, type, help, plurality: Optional, required: False }
 
 		value_parser = |values|
 			match values {
@@ -75,7 +81,7 @@ Param := [].{
 	## Add a parameter that can be provided multiple times.
 	list : ParameterConfigParams(data) -> CliBuilder(List(data), { ..action }, StopCollectingAction)
 	list = |{ parser, type, name, help }| {
-		param = { name, type, help, plurality: Many }
+		param = { name, type, help, plurality: Many, required: False }
 
 		value_parser = |values|
 			parse_param_value_list(values, param, parser, [])

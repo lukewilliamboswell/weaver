@@ -42,7 +42,13 @@ Opt := [].{
 	## Add a required option that takes a custom type.
 	single : DefaultableOptionConfigParams(a) -> CliBuilder(a, GetOptionsAction, GetOptionsAction)
 	single = |{ parser, type, short, long, help, default }| {
-		option = { expected_value: ExpectsValue(type), plurality: One, short, long, help }
+		required =
+			match default {
+				NoDefault => True
+				Value(_) | Generate(_) => False
+			}
+
+		option = { expected_value: ExpectsValue(type), plurality: One, required, short, long, help }
 
 		default_generator = |{}|
 			match default {
@@ -71,7 +77,7 @@ Opt := [].{
 	## Add an optional option that takes a custom type.
 	maybe : OptionConfigParams(data) -> CliBuilder(Try(data, [NoValue]), GetOptionsAction, GetOptionsAction)
 	maybe = |{ parser, type, short, long, help }| {
-		option = { expected_value: ExpectsValue(type), plurality: Optional, short, long, help }
+		option = { expected_value: ExpectsValue(type), plurality: Optional, required: False, short, long, help }
 
 		value_parser = |values| {
 			value = Opt.get_maybe_value(values, option)?
@@ -93,7 +99,7 @@ Opt := [].{
 	## Add an option that takes a custom type and can be given multiple times.
 	list : OptionConfigParams(data) -> CliBuilder(List(data), GetOptionsAction, GetOptionsAction)
 	list = |{ parser, type, short, long, help }| {
-		option = { expected_value: ExpectsValue(type), plurality: Many, short, long, help }
+		option = { expected_value: ExpectsValue(type), plurality: Many, required: False, short, long, help }
 
 		value_parser = |values|
 			parse_option_value_list(values, option, parser, [])
@@ -104,7 +110,7 @@ Opt := [].{
 	## Add an optional flag.
 	flag : OptionConfigBaseParams -> CliBuilder(Bool, GetOptionsAction, GetOptionsAction)
 	flag = |{ short, long, help }| {
-		option = { expected_value: NothingExpected, plurality: Optional, short, long, help }
+		option = { expected_value: NothingExpected, plurality: Optional, required: False, short, long, help }
 
 		value_parser = |values| {
 			value = Opt.get_maybe_value(values, option)?
@@ -122,7 +128,7 @@ Opt := [].{
 	## Add a flag that can be given multiple times.
 	count : OptionConfigBaseParams -> CliBuilder(U64, GetOptionsAction, GetOptionsAction)
 	count = |{ short, long, help }| {
-		option = { expected_value: NothingExpected, plurality: Many, short, long, help }
+		option = { expected_value: NothingExpected, plurality: Many, required: False, short, long, help }
 
 		value_parser = |values|
 			if values.any(
@@ -375,6 +381,7 @@ expect {
 		help: params.help,
 		expected_value: NothingExpected,
 		plurality: Optional,
+		required: False,
 	}
 	{ parser, .. } = Builder.into_parts(Opt.flag(params))
 

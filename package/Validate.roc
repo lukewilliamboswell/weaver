@@ -283,6 +283,7 @@ test_option = |short, long| {
 	help: "test option",
 	expected_value: NothingExpected,
 	plurality: Optional,
+	required: False,
 }
 
 ## Options cannot reuse a short name in the same command.

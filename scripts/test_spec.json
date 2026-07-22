@@ -83,7 +83,7 @@
           "exit_code": 1,
           "stdout_contains": [
             "basic v0.0.1",
-            "Usage:\n  basic -a NUM [OPTIONS] <file> <files...>",
+            "Usage:\n  basic -a NUM [OPTIONS] [<file>] [<files>...]",
             "Arguments:\n  <file>",
             "-V, --version  Show the version."
           ]
@@ -170,7 +170,7 @@
           "exit_code": 1,
           "stdout_contains": [
             "default-values v0.0.1",
-            "Usage:\n  default-values -a/--alpha NUM -b/--beta NUM [OPTIONS] <file>",
+            "Usage:\n  default-values [OPTIONS] [<file>]",
             "[default: 123]",
             "[default: 3.14]",
             "[default: NONE]"

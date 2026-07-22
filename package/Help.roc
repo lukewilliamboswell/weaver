@@ -353,3 +353,39 @@ indent_lines = |lines, indentation, is_first, out|
 			indent_lines(rest, indentation, False, out.append(rendered))
 		}
 	}
+
+## Usage distinguishes required inputs from optional, defaulted, and variadic inputs.
+expect {
+	required_option = {
+		short: "r",
+		long: "required",
+		help: "A required option.",
+		expected_value: ExpectsValue("str"),
+		plurality: One,
+		required: True,
+	}
+	defaulted_option = {
+		short: "d",
+		long: "defaulted",
+		help: "A defaulted option.",
+		expected_value: ExpectsValue("str"),
+		plurality: One,
+		required: False,
+	}
+	config = {
+		name: "app",
+		version: "",
+		authors: [],
+		description: "",
+		options: [required_option, defaulted_option],
+		parameters: [
+			{ name: "input", help: "Input.", type: "str", plurality: One, required: True },
+			{ name: "output", help: "Output.", type: "str", plurality: Optional, required: False },
+			{ name: "rest", help: "Remaining.", type: "str", plurality: Many, required: False },
+		],
+		subcommands: NoSubcommands,
+	}
+
+	Help.usage_help(config, ["app"], Plain)
+		== "Usage:\n  app -r/--required STR [OPTIONS] <input> [<output>] [<rest>...]"
+}

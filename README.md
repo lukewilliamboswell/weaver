@@ -115,7 +115,7 @@ Some One <some.one@mail.com>
 This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!
 
 Usage:
-  basic -a NUM [options] <file> <files...>
+  basic -a NUM [OPTIONS] [<file>] [<files>...]
 
 Arguments:
   <file>      The file to process.
