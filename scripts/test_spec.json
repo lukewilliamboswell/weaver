@@ -26,68 +26,68 @@
         {
           "name": "missing-required-option",
           "exit_code": 1,
-          "stdout_contains": ["Error: Required option -a is missing.", "Usage:\n  basic -a NUM"]
+          "stdout_contains": ["Required option -a is missing.", "Usage:\n  basic -a NUM"]
         },
         {
           "name": "missing-option-value",
           "args": ["-a"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a expects a number.", "Usage:\n  basic -a NUM"]
+          "stdout_contains": ["Option -a expects a number.", "Usage:\n  basic -a NUM"]
         },
         {
           "name": "invalid-number",
           "args": ["-a", "nope"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a was not a valid number."]
+          "stdout_contains": ["The value provided to -a was not a valid number."]
         },
         {
           "name": "number-overflow",
           "args": ["-a", "18446744073709551616"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a was not a valid number."]
+          "stdout_contains": ["The value provided to -a was not a valid number."]
         },
         {
           "name": "duplicate-option",
           "args": ["-a", "1", "-a", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a can only be set once."]
+          "stdout_contains": ["Option -a can only be set once."]
         },
         {
           "name": "repeated-flag-in-group",
           "args": ["-ff", "-a", "1"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -f can only be set once."]
+          "stdout_contains": ["Option -f can only be set once."]
         },
         {
           "name": "unknown-short-option",
           "args": ["-a", "1", "-x"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument -x was not recognized."]
+          "stdout_contains": ["The argument -x was not recognized."]
         },
         {
           "name": "unknown-short-before-required",
           "args": ["-x"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument -x was not recognized."]
+          "stdout_contains": ["The argument -x was not recognized."]
         },
         {
           "name": "unknown-long-option",
           "args": ["-a", "1", "--alpha"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument --alpha was not recognized."]
+          "stdout_contains": ["The argument --alpha was not recognized."]
         },
         {
           "name": "unknown-long-before-required",
           "args": ["--wat"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument --wat was not recognized."]
+          "stdout_contains": ["The argument --wat was not recognized."]
         },
         {
           "name": "invalid-utf8-parameter",
           "args": ["-a", "1"],
           "unix_args_hex": ["ff"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to the 'file' parameter was not valid UTF-8."]
+          "stdout_contains": ["The value provided to the 'file' parameter was not valid UTF-8."]
         },
         {
           "name": "help",
@@ -137,7 +137,7 @@
           "name": "option-is-not-consumed-as-value",
           "args": ["--alpha", "--beta", "2.5"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a/--alpha expects a number."]
+          "stdout_contains": ["Option -a/--alpha expects a number."]
         },
         {
           "name": "delimiter-preserves-option-like-file",
@@ -148,31 +148,31 @@
           "name": "invalid-u64",
           "args": ["--alpha", "nope"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+          "stdout_contains": ["The value provided to -a/--alpha was not a valid number."]
         },
         {
           "name": "invalid-decimal",
           "args": ["-b", "nope"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -b/--beta was not a valid number."]
+          "stdout_contains": ["The value provided to -b/--beta was not a valid number."]
         },
         {
           "name": "missing-decimal-value",
           "args": ["-b"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -b/--beta expects a number."]
+          "stdout_contains": ["Option -b/--beta expects a number."]
         },
         {
           "name": "duplicate-defaulted-option",
           "args": ["-a", "1", "--alpha", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a/--alpha can only be set once."]
+          "stdout_contains": ["Option -a/--alpha can only be set once."]
         },
         {
           "name": "extra-positional",
           "args": ["one", "two"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The parameter \"two\" was not expected."]
+          "stdout_contains": ["The parameter \"two\" was not expected."]
         },
         {
           "name": "help",
@@ -213,56 +213,56 @@
         {
           "name": "missing-required-option",
           "exit_code": 1,
-          "stdout_contains": ["Error: Required option -a/--alpha is missing."]
+          "stdout_contains": ["Required option -a/--alpha is missing."]
         },
         {
           "name": "missing-option-value",
           "args": ["-a"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a/--alpha expects a number."]
+          "stdout_contains": ["Option -a/--alpha expects a number."]
         },
         {
           "name": "invalid-number",
           "args": ["-a", "x"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+          "stdout_contains": ["The value provided to -a/--alpha was not a valid number."]
         },
         {
           "name": "number-overflow",
           "args": ["-a", "18446744073709551616"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+          "stdout_contains": ["The value provided to -a/--alpha was not a valid number."]
         },
         {
           "name": "invalid-utf8-value",
           "args": ["-a"],
           "unix_args_hex": ["ff"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to -a/--alpha was not valid UTF-8."]
+          "stdout_contains": ["The value provided to -a/--alpha was not valid UTF-8."]
         },
         {
           "name": "duplicate-option",
           "args": ["-a", "1", "--alpha", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a/--alpha can only be set once."]
+          "stdout_contains": ["Option -a/--alpha can only be set once."]
         },
         {
           "name": "unknown-option-precedes-missing-required",
           "args": ["--beta", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument --beta was not recognized."]
+          "stdout_contains": ["The argument --beta was not recognized."]
         },
         {
           "name": "extra-positional",
           "args": ["-a", "1", "tail"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The parameter \"tail\" was not expected."]
+          "stdout_contains": ["The parameter \"tail\" was not expected."]
         },
         {
           "name": "partial-short-group",
           "args": ["-a1", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a/--alpha must be last in the short option group -a1."]
+          "stdout_contains": ["Option -a/--alpha must be last in the short option group -a1."]
         },
         {
           "name": "help",
@@ -316,13 +316,13 @@
           "name": "nested-grouped-options",
           "args": ["s1", "ss1", "-ab", "1", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -a must be last in the short option group -ab."]
+          "stdout_contains": ["Option -a must be last in the short option group -ab."]
         },
         {
           "name": "nested-required-option-missing",
           "args": ["s1", "ss1", "-a", "1"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Required option -b is missing.", "Usage:\n  subcommands s1 ss1"]
+          "stdout_contains": ["Required option -b is missing.", "Usage:\n  subcommands s1 ss1"]
         },
         {
           "name": "second-nested-subcommand",
@@ -333,7 +333,7 @@
           "name": "nested-required-parameter-missing",
           "args": ["s1", "ss2", "-a", "1", "-c", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The 'data' parameter did not receive a value.", "Usage:\n  subcommands s1 ss2"]
+          "stdout_contains": ["The 'data' parameter did not receive a value.", "Usage:\n  subcommands s1 ss2"]
         },
         {
           "name": "root-parameter-after-nested-subcommand",
@@ -349,7 +349,7 @@
           "name": "second-subcommand-value-missing",
           "args": ["s2", "-d"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Option -d expects a number.", "Usage:\n  subcommands s2"]
+          "stdout_contains": ["Option -d expects a number.", "Usage:\n  subcommands s2"]
         },
         {
           "name": "root-flag-after-subcommand",
@@ -365,19 +365,19 @@
           "name": "invalid-utf8-root-parameter",
           "unix_args_hex": ["ff"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The value provided to the 'file' parameter was not valid UTF-8."]
+          "stdout_contains": ["The value provided to the 'file' parameter was not valid UTF-8."]
         },
         {
           "name": "unknown-root-option",
           "args": ["--wat"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument --wat was not recognized.", "Usage:\n  subcommands"]
+          "stdout_contains": ["The argument --wat was not recognized.", "Usage:\n  subcommands"]
         },
         {
           "name": "unknown-subcommand-option",
           "args": ["s1", "--wat"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument --wat was not recognized.", "Usage:\n  subcommands s1"]
+          "stdout_contains": ["The argument --wat was not recognized.", "Usage:\n  subcommands s1"]
         },
         {
           "name": "root-help",

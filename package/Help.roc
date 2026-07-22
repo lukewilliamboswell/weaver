@@ -1,5 +1,3 @@
-import ansi.ANSI
-import ansi.Style
 import Base exposing [
 	CliConfig,
 	OptionConfig,
@@ -8,23 +6,11 @@ import Base exposing [
 	SubcommandsConfig,
 	TextStyle,
 ]
+import Terminal
 import Utils exposing [to_upper_case]
 
-style_text : Str, List(Style), TextStyle -> Str
-style_text = |text, styles, text_style|
-	match text_style {
-		Color => ANSI.style(text, styles).concat(ANSI.style("", [Default]))
-
-		Plain => text
-	}
-
-## Colored text applies each requested roc-ansi style and resets afterward.
-expect
-	style_text("Heading", [Bold(On), Underline(On)], Color)
-		== "\u(001b)[1m\u(001b)[4mHeading\u(001b)[0m"
-
-## Plain text does not contain terminal control sequences.
-expect style_text("Heading", [Bold(On), Underline(On)], Plain) == "Heading"
+terminal_width : U64
+terminal_width = 80
 
 Help := [].{
 
@@ -79,21 +65,34 @@ Help := [].{
 
 		name = Str.join_with(subcommand_path, " ")
 
-		top_line = 
-			join_lines_with(filter_non_empty([name, version]), " ")
+		styled_top_line = 
+			Terminal.render(
+				filter_non_empty_segments([
+					Terminal.heading(name),
+					Terminal.muted(version),
+				]),
+				text_style,
+			)
 
 		authors_text = 
 			if authors.is_empty() {
 				""
 			} else {
-				"\n${Str.join_with(authors, " ")}"
+				styled_authors = Terminal.render([Terminal.muted(Str.join_with(authors, " "))], text_style)
+				"\n${styled_authors}"
 			}
 
 		description_text = 
 			if description.is_empty() {
 				""
 			} else {
-				"\n\n${description}"
+				wrapped_description = 
+					Terminal.wrap(
+						description,
+						{ first_indent: "", continuation_indent: "", width: terminal_width },
+					)
+
+				"\n\n${wrapped_description}"
 			}
 
 		subcommands_text = 
@@ -120,8 +119,6 @@ Help := [].{
 
 		bottom_sections = 
 			join_lines_with(filter_non_empty([subcommands_text, parameters_text, options_text]), "\n\n")
-
-		styled_top_line = style_text(top_line, [Bold(On), Underline(On)], text_style)
 
 		"${styled_top_line}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
 	}
@@ -173,12 +170,22 @@ Help := [].{
 				_other => []
 			}
 
-		first_line = 
+		usage_parts = 
 			join_lines_with(required_options.concat(other_options).concat(params_strings).concat(subcommand_strings), " ")
 
-		styled_heading = style_text("Usage:", [Bold(On), Underline(On)], text_style)
+		styled_heading = Terminal.render([Terminal.section("Usage:")], text_style)
+		plain_usage = 
+			Terminal.wrap(
+				if usage_parts.is_empty() {
+					name
+				} else {
+					"${name} ${usage_parts}"
+				},
+				{ first_indent: "  ", continuation_indent: "  ", width: terminal_width },
+			)
+		styled_usage = Terminal.render([Terminal.label(plain_usage)], text_style)
 
-		"${styled_heading}\n  ${name} ${first_line}"
+		"${styled_heading}\n${styled_usage}"
 	}
 }
 
@@ -193,7 +200,7 @@ commands_help = |subcommands, text_style| {
 	aligned_commands = 
 		align_two_columns(commands.map(|(name, sub_config)| { label: name, help: sub_config.description }), text_style)
 
-	styled_heading = style_text("Commands:", [Bold(On), Underline(On)], text_style)
+	styled_heading = Terminal.render([Terminal.section("Commands:")], text_style)
 
 	"${styled_heading}\n${Str.join_with(aligned_commands, "\n")}"
 }
@@ -228,7 +235,7 @@ parameters_help = |params, text_style| {
 			text_style,
 		)
 
-	styled_heading = style_text("Arguments:", [Bold(On), Underline(On)], text_style)
+	styled_heading = Terminal.render([Terminal.section("Arguments:")], text_style)
 
 	"${styled_heading}\n${Str.join_with(formatted_params, "\n")}"
 }
@@ -288,7 +295,7 @@ options_help = |options, text_style| {
 	formatted_options = 
 		align_two_columns(options.map(|option| { label: option_name_formatter(option), help: option.help }), text_style)
 
-	styled_heading = style_text("Options:", [Bold(On), Underline(On)], text_style)
+	styled_heading = Terminal.render([Terminal.section("Options:")], text_style)
 
 	"${styled_heading}\n${Str.join_with(formatted_options, "\n")}"
 }
@@ -312,14 +319,30 @@ align_two_columns = |columns, text_style| {
 			buffer = 
 				Str.repeat(" ", max_first_column_len - label.count_utf8_bytes())
 
-			second_shifted = 
-				indent_multiline_string_by(help, max_first_column_len + 4)
+			available_width = terminal_width - (max_first_column_len + 4).min(terminal_width - 1)
+			wrapped_help = 
+				Terminal.wrap(
+					help,
+					{ first_indent: "", continuation_indent: "", width: available_width },
+				)
+			second_shifted = indent_multiline_string_by(wrapped_help, max_first_column_len + 4)
 
-			styled_label = style_text("${label}${buffer}", [Bold(On)], text_style)
+			styled_label = Terminal.render([Terminal.label(label), Terminal.plain(buffer)], text_style)
 
 			"  ${styled_label}  ${second_shifted}"
 		},
 	)
+}
+
+filter_non_empty_segments : List(Terminal.Segment) -> List(Terminal.Segment)
+filter_non_empty_segments = |segments| {
+	non_empty = segments.keep_if(|segment| !segment.text.is_empty())
+
+	match non_empty {
+		[] => []
+		[first, .. as rest] =>
+			rest.fold([first], |out, segment| out.append(Terminal.plain(" ")).append(segment))
+		}
 }
 
 filter_non_empty : List(Str) -> List(Str)

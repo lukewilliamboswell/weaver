@@ -101,7 +101,7 @@ cli_parser =
                 version: "v0.1.0",
                 authors: ["Some One <some.one@mail.com>"],
                 description: "This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!",
-                text_style: Plain,
+                text_style: Color,
             },
         ),
     )
@@ -109,6 +109,9 @@ cli_parser =
 str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
 str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))
 ```
+
+Set `text_style` to `Color` for ANSI-styled terminal help and diagnostics, or
+choose `Plain` when output is redirected or your application honors `NO_COLOR`.
 
 And here's us calling the above example from the command line:
 

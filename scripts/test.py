@@ -22,6 +22,7 @@ LOCAL_PACKAGE_PATH = "../package/main.roc"
 RELEASE_PACKAGE_PREFIX = "https://github.com/lukewilliamboswell/weaver/releases/download/"
 PACKAGE_DEPENDENCY_RE = re.compile(r'(?m)^(?P<indent>\s*)weaver:\s*"(?P<dependency>[^"]+)",\s*$')
 ROC = os.environ.get("ROC", "roc")
+ANSI_SGR_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def roc_path(path: Path) -> str:
@@ -205,14 +206,17 @@ def validate_package(docs_dir: Path) -> None:
 
 
 def normalize_output(value: str) -> str:
-    return value.replace("\r\n", "\n").replace("\r", "\n")
+    normalized_lines = value.replace("\r\n", "\n").replace("\r", "\n")
+    return ANSI_SGR_RE.sub("", normalized_lines)
 
 
 def assert_output(path: str, case: dict[str, object], stream: str, actual: str) -> None:
     name = str(case["name"])
     normalized = normalize_output(actual)
+    raw_normalized = actual.replace("\r\n", "\n").replace("\r", "\n")
+    raw_note = "" if raw_normalized == normalized else f"\n--- raw {stream} ---\n{raw_normalized!r}"
     if "[ROC CRASHED]" in normalized:
-        raise SystemExit(f"{path} [{name}]: Roc runtime crash\n{normalized}")
+        raise SystemExit(f"{path} [{name}]: Roc runtime crash\n{normalized}{raw_note}")
 
     stream_assertions = {
         stream,
@@ -233,19 +237,19 @@ def assert_output(path: str, case: dict[str, object], stream: str, actual: str) 
                     tofile=f"actual {stream}",
                 )
             )
-            raise SystemExit(f"{path} [{name}]: unexpected {stream}\n{diff}")
+            raise SystemExit(f"{path} [{name}]: unexpected {stream}\n{diff}{raw_note}")
 
     for expected_text in case.get(f"{stream}_contains", []):
         if expected_text not in normalized:
             raise SystemExit(
                 f"{path} [{name}]: missing {stream} output {expected_text!r}"
-                f"\n--- {stream} ---\n{normalized}"
+                f"\n--- {stream} ---\n{normalized}{raw_note}"
             )
     for pattern in case.get(f"{stream}_regex", []):
         if re.search(pattern, normalized, re.MULTILINE) is None:
             raise SystemExit(
                 f"{path} [{name}]: {stream} did not match {pattern!r}"
-                f"\n--- {stream} ---\n{normalized}"
+                f"\n--- {stream} ---\n{normalized}{raw_note}"
             )
 
 

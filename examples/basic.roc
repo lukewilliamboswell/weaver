@@ -73,7 +73,7 @@ cli_parser =
 				version: "v0.0.1",
 				authors: ["Some One <some.one@mail.com>"],
 				description: "This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!",
-				text_style: Plain,
+				text_style: Color,
 			},
 		),
 	)

@@ -55,7 +55,7 @@ cli_parser =
 				version: "v0.0.1",
 				authors: [],
 				description: "",
-				text_style: Plain,
+				text_style: Color,
 			},
 		),
 	)

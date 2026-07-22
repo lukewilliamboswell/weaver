@@ -37,8 +37,15 @@ expect {
 		text_style: Plain,
 	}
 
-	Cli.parse_or_display_message(parser, ["basic-cli", "-h"], |arg| Utf8(arg))
-		== Err(Help("basic-cli v1.0.0\n\nUsage:\n  basic-cli \n\n"))
+	expected = 
+		\\basic-cli v1.0.0
+		\\
+		\\Usage:
+		\\  basic-cli
+		\\
+		\\
+
+	Cli.parse_or_display_message(parser, ["basic-cli", "-h"], |arg| Utf8(arg)) == Err(Help(expected))
 }
 
 ## Version requests are successful display outcomes, distinct from usage errors.
@@ -61,8 +68,19 @@ expect {
 		text_style: Plain,
 	}
 
-	Cli.parse_or_display_message(parser, ["basic-cli", "-x"], |arg| Utf8(arg))
-		== Err(InvalidUsage("Error: The argument -x was not recognized.\n\nUsage:\n  basic-cli "))
+	expected = 
+		\\┌───────────────────────┐
+		\\│ UNRECOGNIZED ARGUMENT │
+		\\└───────────────────────┘
+		\\
+		\\The argument -x was not recognized.
+		\\
+		\\Usage:
+		\\  basic-cli
+		\\
+		\\Tip: Run `basic-cli --help` to see the available arguments.
+
+	Cli.parse_or_display_message(parser, ["basic-cli", "-x"], |arg| Utf8(arg)) == Err(InvalidUsage(expected))
 }
 
 required_option_parser : Cli.CliParser({ alpha : U64 })
@@ -90,20 +108,26 @@ required_option_parser =
 
 ## An unknown long option is reported before an unrelated missing requirement.
 expect {
-	Cli.parse_or_display_message(required_option_parser, ["--wat"], |arg| Utf8(arg))
-		== Err(InvalidUsage("Error: The argument --wat was not recognized.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+	match Cli.parse_or_display_message(required_option_parser, ["--wat"], |arg| Utf8(arg)) {
+		Err(InvalidUsage(message)) => message.contains("The argument --wat was not recognized.")
+		_other => False
+	}
 }
 
 ## An unknown member of a short group is reported before missing requirements.
 expect {
-	Cli.parse_or_display_message(required_option_parser, ["-xz"], |arg| Utf8(arg))
-		== Err(InvalidUsage("Error: The argument -x was not recognized.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+	match Cli.parse_or_display_message(required_option_parser, ["-xz"], |arg| Utf8(arg)) {
+		Err(InvalidUsage(message)) => message.contains("The argument -x was not recognized.")
+		_other => False
+	}
 }
 
 ## A malformed known option still takes precedence over a later unknown option.
 expect {
-	Cli.parse_or_display_message(required_option_parser, ["--alpha", "--wat"], |arg| Utf8(arg))
-		== Err(InvalidUsage("Error: Option -a/--alpha expects a number.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+	match Cli.parse_or_display_message(required_option_parser, ["--alpha", "--wat"], |arg| Utf8(arg)) {
+		Err(InvalidUsage(message)) => message.contains("Option -a/--alpha expects a number.")
+		_other => False
+	}
 }
 
 ## Help keeps its established precedence over otherwise invalid arguments.

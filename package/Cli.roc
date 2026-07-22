@@ -11,7 +11,7 @@ import Base exposing [
 	map_successfully_parsed,
 ]
 import Builder exposing [CliBuilder]
-import ErrorFormatter exposing [format_arg_extract_err]
+import ErrorFormatter exposing [render_arg_extract_err]
 import Help exposing [help_text, usage_help]
 import Parser exposing [ParsedArg, parse_args]
 import Validate exposing [CliValidationErr, validate_cli]
@@ -141,7 +141,8 @@ Cli := [].{
 			ShowVersion => Err(Version(config.version))
 			IncorrectUsage(err, { subcommand_path }) => {
 				usage_str = usage_help(config, subcommand_path, text_style)
-				incorrect_usage_str = "Error: ${format_arg_extract_err(err)}\n\n${usage_str}"
+				command = Str.join_with(subcommand_path, " ")
+				incorrect_usage_str = render_arg_extract_err(err, { command, usage: usage_str }, text_style)
 
 				Err(InvalidUsage(incorrect_usage_str))
 			}
