@@ -1,6 +1,7 @@
 import path.Path
 import Base exposing [
 	ArgExtractErr,
+	ArgParserResult,
 	DefaultableParameterConfigBaseParams,
 	DefaultableParameterConfigParams,
 	InvalidValue,
@@ -290,3 +291,104 @@ parse_param_value_list = |values, param, parser, out|
 				Err(err) => Err(InvalidParamValue(err, param))
 			}
 		}
+
+parse_test_param : CliBuilder(data, from_action, to_action), List(Parser.ParsedArg) -> Try(data, ArgExtractErr)
+parse_test_param = |builder, args| {
+	{ parser, .. } = Builder.into_parts(builder)
+
+	match parser({ args, subcommand_path: ["app"] }) {
+		SuccessfullyParsed({ data, .. }) => Ok(data)
+		IncorrectUsage(err, _) => Err(err)
+		ShowHelp(_) | ShowVersion => {
+			crash "Unexpected display result in parameter test."
+		}
+	}
+}
+
+## Required, literal-defaulted, and generated parameters have distinct behavior.
+expect {
+	required = Param.str({ name: "value", help: "Value.", default: NoDefault })
+	literal_default = Param.str({ name: "value", help: "Value.", default: Value("literal") })
+	generated_default = Param.str({ name: "value", help: "Value.", default: Generate(|{}| "generated") })
+
+	{ parameters: [required_config], .. } = Builder.into_parts(required)
+	{ parameters: [literal_config], .. } = Builder.into_parts(literal_default)
+	{ parameters: [generated_config], .. } = Builder.into_parts(generated_default)
+
+	required_config.required
+		and !literal_config.required
+			and !generated_config.required
+				and parse_test_param(literal_default, []) == Ok("literal")
+					and parse_test_param(generated_default, []) == Ok("generated")
+						and parse_test_param(required, [Parameter(Path.utf8("provided"))]) == Ok("provided")
+}
+
+## Optional parameters consume at most one value and variadic parameters consume the rest.
+expect {
+	optional = Param.maybe_str({ name: "value", help: "Value." })
+	variadic = Param.str_list({ name: "values", help: "Values." })
+
+	parse_test_param(optional, []) == Ok(Err(NoValue))
+		and parse_test_param(optional, [Parameter(Path.utf8("one"))]) == Ok(Ok("one"))
+			and parse_test_param(variadic, [Parameter(Path.utf8("one")), Parameter(Path.utf8("two"))]) == Ok(["one", "two"])
+}
+
+## Custom parameter parser failures retain their reason and parameter metadata.
+expect {
+	builder = Param.single({
+		name: "mode",
+		help: "Mode.",
+		type: "mode",
+		default: NoDefault,
+		parser: |_arg| Err(InvalidValue("choose fast or safe")),
+	})
+
+	match parse_test_param(builder, [Parameter(Path.utf8("other"))]) {
+		Err(InvalidParamValue(InvalidValue(reason), config)) =>
+			reason == "choose fast or safe" and config.name == "mode"
+
+		_other => False
+	}
+}
+
+## Raw and byte parameter constructors preserve undecodable Unix bytes.
+expect {
+	raw = Path.from_raw(UnixBytes([255, 0, 128]))
+	raw_builder = Param.arg({ name: "path", help: "Path.", default: NoDefault })
+	bytes_builder = Param.bytes({ name: "path", help: "Path.", default: NoDefault })
+
+	match (parse_test_param(raw_builder, [Parameter(raw)]), parse_test_param(bytes_builder, [Parameter(raw)])) {
+		(Ok(parsed_raw), Ok(parsed_bytes)) =>
+			Path.to_raw(parsed_raw) == UnixBytes([255, 0, 128]) and parsed_bytes == [255, 0, 128]
+
+		_other => False
+	}
+}
+
+## String parameters reject undecodable input at the typed parser boundary.
+expect {
+	raw = Path.from_raw(UnixBytes([255]))
+	builder = Param.str({ name: "text", help: "Text.", default: NoDefault })
+
+	match parse_test_param(builder, [Parameter(raw)]) {
+		Err(InvalidParamValue(InvalidUtf8, config)) => config.name == "text"
+		_other => False
+	}
+}
+
+## Representative numeric constructors enforce signedness and width.
+expect {
+	u8_builder = Param.u8({ name: "n", help: "Number.", default: NoDefault })
+	u128_builder = Param.u128({ name: "n", help: "Number.", default: NoDefault })
+	i8_builder = Param.i8({ name: "n", help: "Number.", default: NoDefault })
+	dec_builder = Param.dec({ name: "n", help: "Number.", default: NoDefault })
+
+	parse_test_param(u8_builder, [Parameter(Path.utf8("255"))]) == Ok(255)
+		and parse_test_param(u128_builder, [Parameter(Path.utf8("340282366920938463463374607431768211455"))]) == Ok(340282366920938463463374607431768211455)
+			and parse_test_param(i8_builder, [Parameter(Path.utf8("-128"))]) == Ok(-128)
+				and parse_test_param(dec_builder, [Parameter(Path.utf8("-2.5"))]) == Ok(-2.5)
+					and match parse_test_param(u8_builder, [Parameter(Path.utf8("256"))]) {
+						Err(InvalidParamValue(InvalidNumStr, _)) => True
+						_other => False
+					}
+}

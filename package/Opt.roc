@@ -372,6 +372,112 @@ expect {
 		})
 }
 
+parse_test_option : CliBuilder(data, from_action, to_action), List(Parser.ParsedArg) -> Try(data, ArgExtractErr)
+parse_test_option = |builder, args| {
+	{ parser, .. } = Builder.into_parts(builder)
+
+	match parser({ args, subcommand_path: ["app"] }) {
+		SuccessfullyParsed({ data, .. }) => Ok(data)
+		IncorrectUsage(err, _) => Err(err)
+		ShowHelp(_) | ShowVersion => {
+			crash "Unexpected display result in option test."
+		}
+	}
+}
+
+## Required, literal-defaulted, and generated options have distinct behavior.
+expect {
+	required = Opt.str({ short: "v", long: "value", help: "Value.", default: NoDefault })
+	literal_default = Opt.str({ short: "v", long: "value", help: "Value.", default: Value("literal") })
+	generated_default = Opt.str({ short: "v", long: "value", help: "Value.", default: Generate(|{}| "generated") })
+
+	{ options: [required_config], .. } = Builder.into_parts(required)
+	{ options: [literal_config], .. } = Builder.into_parts(literal_default)
+	{ options: [generated_config], .. } = Builder.into_parts(generated_default)
+
+	required_config.required
+		and !literal_config.required
+			and !generated_config.required
+				and parse_test_option(literal_default, []) == Ok("literal")
+					and parse_test_option(generated_default, []) == Ok("generated")
+						and parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })]) == Ok("provided")
+}
+
+## Optional and repeatable options parse absent, single, and repeated values.
+expect {
+	optional = Opt.maybe_str({ short: "v", long: "value", help: "Value." })
+	repeatable = Opt.str_list({ short: "v", long: "value", help: "Value." })
+	one = Long({ name: "value", value: Ok(Path.utf8("one")) })
+	two = Long({ name: "value", value: Ok(Path.utf8("two")) })
+
+	parse_test_option(optional, []) == Ok(Err(NoValue))
+		and parse_test_option(optional, [one]) == Ok(Ok("one"))
+			and parse_test_option(repeatable, [one, two]) == Ok(["one", "two"])
+}
+
+## Custom option parser failures retain their reason and option metadata.
+expect {
+	builder = Opt.single({
+		short: "m",
+		long: "mode",
+		help: "Mode.",
+		type: "mode",
+		default: NoDefault,
+		parser: |_arg| Err(InvalidValue("choose fast or safe")),
+	})
+
+	match parse_test_option(builder, [Long({ name: "mode", value: Ok(Path.utf8("other")) })]) {
+		Err(InvalidOptionValue(InvalidValue(reason), config)) =>
+			reason == "choose fast or safe" and config.long == "mode"
+
+		_other => False
+	}
+}
+
+## Raw and byte option constructors preserve undecodable Unix bytes.
+expect {
+	raw = Path.from_raw(UnixBytes([255, 0, 128]))
+	raw_builder = Opt.arg({ short: "p", long: "path", help: "Path.", default: NoDefault })
+	bytes_builder = Opt.bytes({ short: "p", long: "path", help: "Path.", default: NoDefault })
+	arg = Long({ name: "path", value: Ok(raw) })
+
+	match (parse_test_option(raw_builder, [arg]), parse_test_option(bytes_builder, [arg])) {
+		(Ok(parsed_raw), Ok(parsed_bytes)) =>
+			Path.to_raw(parsed_raw) == UnixBytes([255, 0, 128]) and parsed_bytes == [255, 0, 128]
+
+		_other => False
+	}
+}
+
+## String options reject undecodable input at the typed parser boundary.
+expect {
+	raw = Path.from_raw(UnixBytes([255]))
+	builder = Opt.str({ short: "t", long: "text", help: "Text.", default: NoDefault })
+
+	match parse_test_option(builder, [Long({ name: "text", value: Ok(raw) })]) {
+		Err(InvalidOptionValue(InvalidUtf8, config)) => config.long == "text"
+		_other => False
+	}
+}
+
+## Representative numeric constructors enforce signedness and width.
+expect {
+	u8_builder = Opt.u8({ short: "n", long: "number", help: "Number.", default: NoDefault })
+	u128_builder = Opt.u128({ short: "n", long: "number", help: "Number.", default: NoDefault })
+	i8_builder = Opt.i8({ short: "n", long: "number", help: "Number.", default: NoDefault })
+	dec_builder = Opt.dec({ short: "n", long: "number", help: "Number.", default: NoDefault })
+	value_arg = |text| [Long({ name: "number", value: Ok(Path.utf8(text)) })]
+
+	parse_test_option(u8_builder, value_arg("255")) == Ok(255)
+		and parse_test_option(u128_builder, value_arg("340282366920938463463374607431768211455")) == Ok(340282366920938463463374607431768211455)
+			and parse_test_option(i8_builder, value_arg("-128")) == Ok(-128)
+				and parse_test_option(dec_builder, value_arg("-2.5")) == Ok(-2.5)
+					and match parse_test_option(u8_builder, value_arg("256")) {
+						Err(InvalidOptionValue(InvalidNumStr, _)) => True
+						_other => False
+					}
+}
+
 ## Repeating an ordinary flag inside one group reports a duplicate.
 expect {
 	params = { short: "f", long: "force", help: "Force the operation." }
