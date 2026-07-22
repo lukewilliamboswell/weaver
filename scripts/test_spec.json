@@ -250,7 +250,7 @@
           "name": "unknown-option-precedes-missing-required",
           "args": ["--beta", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: Required option -a/--alpha is missing."]
+          "stdout_contains": ["Error: The argument --beta was not recognized."]
         },
         {
           "name": "extra-positional",
