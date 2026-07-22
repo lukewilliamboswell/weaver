@@ -44,7 +44,8 @@ BasicConfig : {
 
 main! : List(Str) => Try({}, _)
 main! = |args| {
-    match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
+    # This legacy platform includes the executable path in `args`.
+    match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
         Err(message) => {
             Stdout.line!(message)?
             Err(Exit(1))
@@ -127,12 +128,13 @@ Options:
   -V, --version  Show the version.
 ```
 
-The example platform supplies `List(Str)`, so its legacy adapter preserves the
-underlying argument bytes. Modern platforms such as `basic-cli` supply
-`List(OsStr)`; pass `OsStr.to_raw` directly to preserve UTF-8, native Unix bytes,
-and Windows UTF-16 code units at Weaver's `Path` boundary. If the platform includes
-the executable path as the first argument, drop it before calling
-`Cli.parse_or_display_message`.
+Weaver parses exactly the arguments passed to `Cli.parse_or_display_message`; it
+never implicitly drops the first element. The example platform supplies `List(Str)`
+including the executable path, so the example drops that element explicitly and its
+legacy adapter preserves the underlying argument bytes. Modern platforms such as
+`basic-cli` supply `List(OsStr)`; pass `OsStr.to_raw` directly to preserve UTF-8,
+native Unix bytes, and Windows UTF-16 code units at Weaver's `Path` boundary. Only
+drop the first element when the platform documents that it is the executable path.
 
 Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
 [`path.Path`](https://github.com/roc-lang/path/releases/tag/3.0.0-rc1). String

@@ -16,7 +16,6 @@ Parser := [].{
 
 		state_after = 
 			args
-				.drop_first(1)
 				.fold(
 					starting_state,
 					|state, arg|
@@ -111,11 +110,18 @@ expect {
 
 ## Delimiter recognition is independent of the platform's raw string representation.
 expect {
-	program = Path.from_raw(Utf8("program"))
 	delimiter = Path.from_raw(UnixBytes(Str.to_utf8("--")))
 	option_like_value = Path.from_raw(WindowsU16s([0x002D, 0x0078]))
 
-	Parser.parse_args([program, delimiter, option_like_value]) == [Parameter(option_like_value)]
+	Parser.parse_args([delimiter, option_like_value]) == [Parameter(option_like_value)]
+}
+
+## Parsing preserves the first argument; callers own any executable-path removal.
+expect {
+	first = Path.utf8("first")
+	second = Path.utf8("second")
+
+	Parser.parse_args([first, second]) == [Parameter(first), Parameter(second)]
 }
 
 ## A one-character short option parses as a short argument.
@@ -163,7 +169,7 @@ expect {
 ## Parsing stops interpreting options after the double-dash delimiter.
 expect {
 	parsed = 
-		Parser.parse_args(["this-wont-show", "-a", "123", "--passed", "-bcd", "xyz", "--", "--subject=world"].map(Path.utf8))
+		Parser.parse_args(["-a", "123", "--passed", "-bcd", "xyz", "--", "--subject=world"].map(Path.utf8))
 
 	parsed
 		== [

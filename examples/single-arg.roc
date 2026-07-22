@@ -11,7 +11,7 @@ SingleArgConfig : [Alpha(U64)]
 
 main! : List(Str) => Try({}, _)
 main! = |args| {
-	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
+	match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
 		Err(message) => {
 			Stdout.line!(message)?
 			Err(Exit(1))
