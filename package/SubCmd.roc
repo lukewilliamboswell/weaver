@@ -58,16 +58,20 @@ SubCmd := [].{
 	}
 
 	get_first_arg_to_check_for_subcommand_call :
-		ArgParserState(_), List(SubcommandParserConfig(sub_state)), (Try(SubcommandParserConfig(sub_state), [NotFound]) -> ArgParserResult(ArgParserState(state))) -> ArgParserResult(ArgParserState(state))
+		ArgParserState(_), List(SubcommandParserConfig(sub_state)), (Try(SubcommandParserConfig(sub_state), [AfterDelimiter, NoArgument, UnknownCommand(Path)]) -> ArgParserResult(ArgParserState(state))) -> ArgParserResult(ArgParserState(state))
 	get_first_arg_to_check_for_subcommand_call = |{ remaining_args, subcommand_path, .. }, subcommand_parsers, callback| {
 		find_subcommand = |param|
 			match param {
-				Err(NoValue) => Err(NotFound)
+				Err(NoValue) => Err(NoArgument)
 				Ok(arg) =>
 					match Path.to_str(arg) {
-						Err(_) => Err(NotFound)
-						Ok(name) => find_subcommand_by_name(subcommand_parsers, name)
-					}
+						Err(_) => Err(UnknownCommand(arg))
+						Ok(name) =>
+							match find_subcommand_by_name(subcommand_parsers, name) {
+								Ok(subcommand) => Ok(subcommand)
+								Err(NotFound) => Err(UnknownCommand(arg))
+							}
+						}
 				}
 
 		match remaining_args.first() {
@@ -78,7 +82,7 @@ SubCmd := [].{
 					Long(long) => ArgParserResult.IncorrectUsage(UnrecognizedLongArg(long.name), { subcommand_path: subcommand_path })
 					ShortGroup(sg) => ArgParserResult.IncorrectUsage(UnrecognizedShortArg(first_or_empty(sg.names)), { subcommand_path: subcommand_path })
 					Parameter(p) => callback(find_subcommand(Ok(p)))
-					PassedThrough(_) => callback(Err(NotFound))
+					PassedThrough(_) => callback(Err(AfterDelimiter))
 				}
 			}
 	}
@@ -98,7 +102,7 @@ SubCmd := [].{
 				subcommand_configs,
 				|subcommand_found|
 					match subcommand_found {
-						Err(NotFound) =>
+						Err(_) =>
 							ArgParserResult.SuccessfullyParsed({ data: Err(NoSubcommand), remaining_args: args, subcommand_path })
 
 						Ok(subcommand) => {
@@ -135,8 +139,11 @@ SubCmd := [].{
 				subcommand_configs,
 				|subcommand_found|
 					match subcommand_found {
-						Err(NotFound) =>
+						Err(NoArgument) | Err(AfterDelimiter) =>
 							ArgParserResult.IncorrectUsage(NoSubcommandCalled, { subcommand_path: subcommand_path })
+
+						Err(UnknownCommand(command)) =>
+							ArgParserResult.IncorrectUsage(UnrecognizedSubcommand(command), { subcommand_path: subcommand_path })
 
 						Ok(subcommand) => {
 							sub_parser = 
@@ -226,4 +233,34 @@ expect {
 		HasSubcommands({ required, .. }) => required
 		NoSubcommands => False
 	}
+}
+
+## Required subcommands distinguish a missing command from an unknown one.
+expect {
+	{ parser, .. } =
+		Builder.into_parts(
+			SubCmd.required([
+				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
+			]),
+		)
+	unknown = Path.utf8("wat")
+
+	missing_result = parser({ args: [], subcommand_path: ["app"] })
+	unknown_result = parser({ args: [Parameter(unknown)], subcommand_path: ["app"] })
+
+	missing_result == ArgParserResult.IncorrectUsage(NoSubcommandCalled, { subcommand_path: ["app"] })
+		and unknown_result == ArgParserResult.IncorrectUsage(UnrecognizedSubcommand(unknown), { subcommand_path: ["app"] })
+}
+
+## The delimiter cannot satisfy a required subcommand, even when its value matches.
+expect {
+	{ parser, .. } =
+		Builder.into_parts(
+			SubCmd.required([
+				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
+			]),
+		)
+
+	parser({ args: [PassedThrough(Path.utf8("run"))], subcommand_path: ["app"] })
+		== ArgParserResult.IncorrectUsage(NoSubcommandCalled, { subcommand_path: ["app"] })
 }

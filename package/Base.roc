@@ -57,6 +57,7 @@ Base := [].{
 		InvalidOptionValue(InvalidValue, OptionConfig),
 		InvalidParamValue(InvalidValue, ParameterConfig),
 		MissingParam(ParameterConfig),
+		UnrecognizedSubcommand(Path),
 		UnrecognizedShortArg(Str),
 		UnrecognizedLongArg(Str),
 		ExtraParamProvided(Path),

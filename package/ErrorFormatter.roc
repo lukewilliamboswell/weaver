@@ -62,6 +62,9 @@ ErrorFormatter := [].{
 			MissingParam(parameter) =>
 				"The '${parameter.name}' parameter did not receive a value."
 
+			UnrecognizedSubcommand(command) =>
+				"The subcommand ${Str.inspect(Path.display(command))} was not recognized."
+
 			UnrecognizedShortArg(short) =>
 				"The argument -${short} was not recognized."
 
