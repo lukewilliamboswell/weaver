@@ -53,6 +53,7 @@ Base := [].{
 		NoValueProvidedForOption(OptionConfig),
 		OptionDoesNotExpectValue(OptionConfig),
 		CannotUsePartialShortGroupAsValue(OptionConfig, List(Str)),
+		ValueOptionMustBeLastInShortGroup(OptionConfig, List(Str)),
 		InvalidOptionValue(InvalidValue, OptionConfig),
 		InvalidParamValue(InvalidValue, ParameterConfig),
 		MissingParam(ParameterConfig),

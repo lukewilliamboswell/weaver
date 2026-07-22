@@ -29,6 +29,12 @@ ErrorFormatter := [].{
 				"The short option group ${rendered_group} was partially consumed and cannot be used as a value for ${option_display_name(option)}."
 			}
 
+			ValueOptionMustBeLastInShortGroup(option, group) => {
+				rendered_group = "-${Str.join_with(group, "")}"
+
+				"Option ${option_display_name(option)} must be last in the short option group ${rendered_group}."
+			}
+
 			InvalidOptionValue(value_err, option) =>
 				match value_err {
 					InvalidNumStr =>

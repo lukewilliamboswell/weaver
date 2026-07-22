@@ -1,6 +1,7 @@
 import path.Path
 import Base exposing [
 	ArgExtractErr,
+	ArgParserResult,
 	DefaultableOptionConfigBaseParams,
 	DefaultableOptionConfigParams,
 	InvalidValue,
@@ -346,3 +347,40 @@ parse_option_value_list = |values, option, parser, out|
 					}
 				}
 		}
+
+## Count options include every occurrence inside one grouped token.
+expect {
+	{ parser, .. } =
+		Builder.into_parts(
+			Opt.count({ short: "v", long: "verbose", help: "Increase verbosity." }),
+		)
+
+	parser({
+		args: [ShortGroup({ names: ["v", "v", "v"], complete: Complete })],
+		subcommand_path: ["app"],
+	})
+		== ArgParserResult.SuccessfullyParsed({
+			data: 3,
+			remaining_args: [],
+			subcommand_path: ["app"],
+		})
+}
+
+## Repeating an ordinary flag inside one group reports a duplicate.
+expect {
+	params = { short: "f", long: "force", help: "Force the operation." }
+	option = {
+		short: params.short,
+		long: params.long,
+		help: params.help,
+		expected_value: NothingExpected,
+		plurality: Optional,
+	}
+	{ parser, .. } = Builder.into_parts(Opt.flag(params))
+
+	parser({
+		args: [ShortGroup({ names: ["f", "f"], complete: Complete })],
+		subcommand_path: ["app"],
+	})
+		== ArgParserResult.IncorrectUsage(OptionCanOnlyBeSetOnce(option), { subcommand_path: ["app"] })
+}

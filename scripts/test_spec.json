@@ -56,7 +56,7 @@
           "name": "repeated-flag-in-group",
           "args": ["-ff", "-a", "1"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument -f was not recognized."]
+          "stdout_contains": ["Error: Option -f can only be set once."]
         },
         {
           "name": "unknown-short-option",
@@ -243,7 +243,7 @@
           "name": "partial-short-group",
           "args": ["-a1", "2"],
           "exit_code": 1,
-          "stdout_contains": ["Error: The argument -1 was not recognized."]
+          "stdout_contains": ["Error: Option -a/--alpha must be last in the short option group -a1."]
         },
         {
           "name": "help",
@@ -298,7 +298,8 @@
         {
           "name": "nested-grouped-options",
           "args": ["s1", "ss1", "-ab", "1", "2"],
-          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS1({ a: 1, b: 2 })), volume: Err(NoValue) })) }\n"
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a must be last in the short option group -ab."]
         },
         {
           "name": "nested-required-option-missing",

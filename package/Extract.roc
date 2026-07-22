@@ -166,7 +166,8 @@ Extract := [].{
 
 			Ok({ before, after }) =>
 				if option.expected_value == NothingExpected {
-					remaining = before.concat(after)
+					remaining = short_group.names.keep_if(|name| name != option.short)
+					values = append_flag_values(short_group.names, option.short, state.values)
 
 					next_remaining_args = 
 						if remaining.is_empty() {
@@ -175,28 +176,20 @@ Extract := [].{
 							state.remaining_args.append(ShortGroup({ names: remaining, complete: short_group.complete }))
 						}
 
-					Ok({ ..state, values: state.values.append(Err(NoValue)), remaining_args: next_remaining_args })
+					Ok({ ..state, values, remaining_args: next_remaining_args })
+				} else if short_group.complete == Partial {
+					Err(CannotUsePartialShortGroupAsValue(option, short_group.names))
 				} else if after.is_empty() {
 					next_remaining_args = 
 						if before.is_empty() {
 							state.remaining_args
 						} else {
-							state.remaining_args.append(ShortGroup({ names: before, complete: short_group.complete }))
+							state.remaining_args.append(ShortGroup({ names: before, complete: Partial }))
 						}
 
 					Ok({ ..state, action: GetValue, remaining_args: next_remaining_args })
 				} else {
-					remaining = 
-						if before.is_empty() {
-							[ShortGroup({ names: after, complete: Partial })]
-						} else {
-							[
-								ShortGroup({ names: before, complete: short_group.complete }),
-								ShortGroup({ names: after, complete: Partial }),
-							]
-						}
-
-					Ok({ ..state, action: GetValue, remaining_args: state.remaining_args.concat(remaining) })
+					Err(ValueOptionMustBeLastInShortGroup(option, short_group.names))
 				}
 			}
 	}
@@ -228,3 +221,74 @@ split_short_group = |names, target, before|
 				split_short_group(rest, target, before.append(name))
 			}
 		}
+
+append_flag_values : List(Str), Str, List(ArgValue) -> List(ArgValue)
+append_flag_values = |names, target, values|
+	match names {
+		[] => values
+		[name, .. as rest] =>
+			if name == target {
+				append_flag_values(rest, target, values.append(Err(NoValue)))
+			} else {
+				append_flag_values(rest, target, values)
+			}
+		}
+
+test_flag : OptionConfig
+test_flag = {
+	short: "v",
+	long: "verbose",
+	help: "Increase verbosity.",
+	expected_value: NothingExpected,
+	plurality: Many,
+}
+
+test_value_option : OptionConfig
+test_value_option = {
+	short: "a",
+	long: "alpha",
+	help: "Set alpha.",
+	expected_value: ExpectsValue("num"),
+	plurality: One,
+}
+
+## Every occurrence of a flag in one short group is extracted.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["v", "v", "v"], complete: Complete })],
+		option: test_flag,
+	})?
+
+	out.values == [Err(NoValue), Err(NoValue), Err(NoValue)] and out.remaining_args == []
+}
+
+## Grouped flags before a value option remain available to their own parser.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["v", "a"], complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_value_option,
+	})?
+
+	out.values == [Ok(Path.utf8("7"))]
+		and out.remaining_args == [ShortGroup({ names: ["v"], complete: Partial })]
+}
+
+## A value option cannot have more short-option characters after it.
+expect {
+	group = ["a", "v"]
+
+	Extract.extract_option_values({
+		args: [ShortGroup({ names: group, complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_value_option,
+	}) == Err(ValueOptionMustBeLastInShortGroup(test_value_option, group))
+}
+
+## A value option cannot be recovered from a group another value option consumed.
+expect {
+	group = ["a"]
+
+	Extract.extract_option_values({
+		args: [ShortGroup({ names: group, complete: Partial }), Parameter(Path.utf8("7"))],
+		option: test_value_option,
+	}) == Err(CannotUsePartialShortGroupAsValue(test_value_option, group))
+}
