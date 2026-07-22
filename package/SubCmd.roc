@@ -214,7 +214,9 @@ expect {
 
 	match subcommands {
 		HasSubcommands({ commands, required }) =>
-			!required and commands.map(|(name, _)| name) == ["z-last", "a-first"]
+			Str.inspect((required, commands.map(|(name, _)| name)))
+				==
+				\\(False, ["z-last", "a-first"])
 
 		NoSubcommands => False
 	}
@@ -247,9 +249,20 @@ expect {
 
 	missing_result = parser({ args: [], subcommand_path: ["app"] })
 	unknown_result = parser({ args: [Parameter(unknown)], subcommand_path: ["app"] })
+	summarize = |result|
+		match result {
+			IncorrectUsage(NoSubcommandCalled, { subcommand_path }) =>
+				Missing({ subcommand_path: subcommand_path })
 
-	missing_result == ArgParserResult.IncorrectUsage(NoSubcommandCalled, { subcommand_path: ["app"] })
-		and unknown_result == ArgParserResult.IncorrectUsage(UnrecognizedSubcommand(unknown), { subcommand_path: ["app"] })
+			IncorrectUsage(UnrecognizedSubcommand(command), { subcommand_path }) =>
+				Unknown({ command: Path.display(command), subcommand_path })
+
+			_other => Unexpected
+		}
+
+	Str.inspect((summarize(missing_result), summarize(unknown_result)))
+		==
+		\\(Missing({ subcommand_path: ["app"] }), Unknown({ command: "wat", subcommand_path: ["app"] }))
 }
 
 ## The delimiter cannot satisfy a required subcommand, even when its value matches.

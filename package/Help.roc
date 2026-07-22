@@ -454,7 +454,9 @@ expect {
 	optional_usage = Help.usage_help(optional_config, ["app"], Plain)
 	required_usage = Help.usage_help(required_config, ["app"], Plain)
 
-	optional_usage == "Usage:\n  app [COMMAND]" and required_usage == "Usage:\n  app <COMMAND>"
+	Str.inspect((optional_usage, required_usage))
+		==
+		\\("Usage:\n  app [COMMAND]", "Usage:\n  app <COMMAND>")
 }
 
 ## Command help preserves declaration order.

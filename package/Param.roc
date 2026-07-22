@@ -315,12 +315,27 @@ expect {
 	{ parameters: [literal_config], .. } = Builder.into_parts(literal_default)
 	{ parameters: [generated_config], .. } = Builder.into_parts(generated_default)
 
-	required_config.required
-		and !literal_config.required
-			and !generated_config.required
-				and parse_test_param(literal_default, []) == Ok("literal")
-					and parse_test_param(generated_default, []) == Ok("generated")
-						and parse_test_param(required, [Parameter(Path.utf8("provided"))]) == Ok("provided")
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(required_config.required),
+				Str.inspect(literal_config.required),
+				Str.inspect(generated_config.required),
+				Str.inspect(parse_test_param(literal_default, [])),
+				Str.inspect(parse_test_param(generated_default, [])),
+				Str.inspect(parse_test_param(required, [Parameter(Path.utf8("provided"))])),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\True
+		\\False
+		\\False
+		\\Ok("literal")
+		\\Ok("generated")
+		\\Ok("provided")
 }
 
 ## Optional parameters consume at most one value and variadic parameters consume the rest.
@@ -328,9 +343,21 @@ expect {
 	optional = Param.maybe_str({ name: "value", help: "Value." })
 	variadic = Param.str_list({ name: "values", help: "Values." })
 
-	parse_test_param(optional, []) == Ok(Err(NoValue))
-		and parse_test_param(optional, [Parameter(Path.utf8("one"))]) == Ok(Ok("one"))
-			and parse_test_param(variadic, [Parameter(Path.utf8("one")), Parameter(Path.utf8("two"))]) == Ok(["one", "two"])
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(parse_test_param(optional, [])),
+				Str.inspect(parse_test_param(optional, [Parameter(Path.utf8("one"))])),
+				Str.inspect(parse_test_param(variadic, [Parameter(Path.utf8("one")), Parameter(Path.utf8("two"))])),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Ok(Err(NoValue))
+		\\Ok(Ok("one"))
+		\\Ok(["one", "two"])
 }
 
 ## Custom parameter parser failures retain their reason and parameter metadata.
@@ -345,7 +372,9 @@ expect {
 
 	match parse_test_param(builder, [Parameter(Path.utf8("other"))]) {
 		Err(InvalidParamValue(InvalidValue(reason), config)) =>
-			reason == "choose fast or safe" and config.name == "mode"
+			Str.inspect((reason, config.name))
+				==
+				\\("choose fast or safe", "mode")
 
 		_other => False
 	}
@@ -359,7 +388,9 @@ expect {
 
 	match (parse_test_param(raw_builder, [Parameter(raw)]), parse_test_param(bytes_builder, [Parameter(raw)])) {
 		(Ok(parsed_raw), Ok(parsed_bytes)) =>
-			Path.to_raw(parsed_raw) == UnixBytes([255, 0, 128]) and parsed_bytes == [255, 0, 128]
+			Str.inspect((Path.to_raw(parsed_raw), parsed_bytes))
+				==
+				\\(UnixBytes([255, 0, 128]), [255, 0, 128])
 
 		_other => False
 	}
@@ -383,12 +414,28 @@ expect {
 	i8_builder = Param.i8({ name: "n", help: "Number.", default: NoDefault })
 	dec_builder = Param.dec({ name: "n", help: "Number.", default: NoDefault })
 
-	parse_test_param(u8_builder, [Parameter(Path.utf8("255"))]) == Ok(255)
-		and parse_test_param(u128_builder, [Parameter(Path.utf8("340282366920938463463374607431768211455"))]) == Ok(340282366920938463463374607431768211455)
-			and parse_test_param(i8_builder, [Parameter(Path.utf8("-128"))]) == Ok(-128)
-				and parse_test_param(dec_builder, [Parameter(Path.utf8("-2.5"))]) == Ok(-2.5)
-					and match parse_test_param(u8_builder, [Parameter(Path.utf8("256"))]) {
-						Err(InvalidParamValue(InvalidNumStr, _)) => True
-						_other => False
-					}
+	overflow =
+		match parse_test_param(u8_builder, [Parameter(Path.utf8("256"))]) {
+			Err(InvalidParamValue(InvalidNumStr, _)) => InvalidNumStr
+			_other => UnexpectedResult
+		}
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(parse_test_param(u8_builder, [Parameter(Path.utf8("255"))])),
+				Str.inspect(parse_test_param(u128_builder, [Parameter(Path.utf8("340282366920938463463374607431768211455"))])),
+				Str.inspect(parse_test_param(i8_builder, [Parameter(Path.utf8("-128"))])),
+				Str.inspect(parse_test_param(dec_builder, [Parameter(Path.utf8("-2.5"))])),
+				Str.inspect(overflow),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Ok(255)
+		\\Ok(340282366920938463463374607431768211455)
+		\\Ok(-128)
+		\\Ok(-2.5)
+		\\InvalidNumStr
 }

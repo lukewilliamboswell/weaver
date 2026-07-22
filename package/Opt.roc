@@ -395,12 +395,27 @@ expect {
 	{ options: [literal_config], .. } = Builder.into_parts(literal_default)
 	{ options: [generated_config], .. } = Builder.into_parts(generated_default)
 
-	required_config.required
-		and !literal_config.required
-			and !generated_config.required
-				and parse_test_option(literal_default, []) == Ok("literal")
-					and parse_test_option(generated_default, []) == Ok("generated")
-						and parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })]) == Ok("provided")
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(required_config.required),
+				Str.inspect(literal_config.required),
+				Str.inspect(generated_config.required),
+				Str.inspect(parse_test_option(literal_default, [])),
+				Str.inspect(parse_test_option(generated_default, [])),
+				Str.inspect(parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })])),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\True
+		\\False
+		\\False
+		\\Ok("literal")
+		\\Ok("generated")
+		\\Ok("provided")
 }
 
 ## Optional and repeatable options parse absent, single, and repeated values.
@@ -410,9 +425,21 @@ expect {
 	one = Long({ name: "value", value: Ok(Path.utf8("one")) })
 	two = Long({ name: "value", value: Ok(Path.utf8("two")) })
 
-	parse_test_option(optional, []) == Ok(Err(NoValue))
-		and parse_test_option(optional, [one]) == Ok(Ok("one"))
-			and parse_test_option(repeatable, [one, two]) == Ok(["one", "two"])
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(parse_test_option(optional, [])),
+				Str.inspect(parse_test_option(optional, [one])),
+				Str.inspect(parse_test_option(repeatable, [one, two])),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Ok(Err(NoValue))
+		\\Ok(Ok("one"))
+		\\Ok(["one", "two"])
 }
 
 ## Custom option parser failures retain their reason and option metadata.
@@ -428,7 +455,9 @@ expect {
 
 	match parse_test_option(builder, [Long({ name: "mode", value: Ok(Path.utf8("other")) })]) {
 		Err(InvalidOptionValue(InvalidValue(reason), config)) =>
-			reason == "choose fast or safe" and config.long == "mode"
+			Str.inspect((reason, config.long))
+				==
+				\\("choose fast or safe", "mode")
 
 		_other => False
 	}
@@ -443,7 +472,9 @@ expect {
 
 	match (parse_test_option(raw_builder, [arg]), parse_test_option(bytes_builder, [arg])) {
 		(Ok(parsed_raw), Ok(parsed_bytes)) =>
-			Path.to_raw(parsed_raw) == UnixBytes([255, 0, 128]) and parsed_bytes == [255, 0, 128]
+			Str.inspect((Path.to_raw(parsed_raw), parsed_bytes))
+				==
+				\\(UnixBytes([255, 0, 128]), [255, 0, 128])
 
 		_other => False
 	}
@@ -468,14 +499,30 @@ expect {
 	dec_builder = Opt.dec({ short: "n", long: "number", help: "Number.", default: NoDefault })
 	value_arg = |text| [Long({ name: "number", value: Ok(Path.utf8(text)) })]
 
-	parse_test_option(u8_builder, value_arg("255")) == Ok(255)
-		and parse_test_option(u128_builder, value_arg("340282366920938463463374607431768211455")) == Ok(340282366920938463463374607431768211455)
-			and parse_test_option(i8_builder, value_arg("-128")) == Ok(-128)
-				and parse_test_option(dec_builder, value_arg("-2.5")) == Ok(-2.5)
-					and match parse_test_option(u8_builder, value_arg("256")) {
-						Err(InvalidOptionValue(InvalidNumStr, _)) => True
-						_other => False
-					}
+	overflow =
+		match parse_test_option(u8_builder, value_arg("256")) {
+			Err(InvalidOptionValue(InvalidNumStr, _)) => InvalidNumStr
+			_other => UnexpectedResult
+		}
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(parse_test_option(u8_builder, value_arg("255"))),
+				Str.inspect(parse_test_option(u128_builder, value_arg("340282366920938463463374607431768211455"))),
+				Str.inspect(parse_test_option(i8_builder, value_arg("-128"))),
+				Str.inspect(parse_test_option(dec_builder, value_arg("-2.5"))),
+				Str.inspect(overflow),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Ok(255)
+		\\Ok(340282366920938463463374607431768211455)
+		\\Ok(-128)
+		\\Ok(-2.5)
+		\\InvalidNumStr
 }
 
 ## Repeating an ordinary flag inside one group reports a duplicate.
