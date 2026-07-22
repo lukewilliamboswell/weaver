@@ -30,7 +30,7 @@ SubCmd := [].{
 			description,
 			options,
 			parameters,
-			subcommands: SubcommandsConfig.HasSubcommands(subcommands),
+			subcommands,
 		}
 
 		{ name, config, parser }
@@ -51,7 +51,7 @@ SubCmd := [].{
 			description,
 			options,
 			parameters,
-			subcommands: SubcommandsConfig.HasSubcommands(subcommands),
+			subcommands,
 		}
 
 		{ name, config, parser }
@@ -87,7 +87,10 @@ SubCmd := [].{
 	optional : List(SubcommandParserConfig(sub_state)) -> CliBuilder(Try(sub_state, [NoSubcommand]), GetOptionsAction, GetParamsAction)
 	optional = |subcommand_configs| {
 		subcommands = 
-			Dict.from_list(subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)))
+			HasSubcommands({
+				commands: subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)),
+				required: False,
+			})
 
 		full_parser = |{ args, subcommand_path }|
 			SubCmd.get_first_arg_to_check_for_subcommand_call(
@@ -121,7 +124,10 @@ SubCmd := [].{
 	required : List(SubcommandParserConfig(sub_data)) -> CliBuilder(sub_data, GetOptionsAction, GetParamsAction)
 	required = |subcommand_configs| {
 		subcommands = 
-			Dict.from_list(subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)))
+			HasSubcommands({
+				commands: subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)),
+				required: True,
+			})
 
 		full_parser = |{ args, subcommand_path }|
 			SubCmd.get_first_arg_to_check_for_subcommand_call(
@@ -187,4 +193,37 @@ expect {
 			remaining_args: [PassedThrough(arg)],
 			subcommand_path: ["app"],
 		})
+}
+
+## Optional subcommands retain their declaration order and optionality in metadata.
+expect {
+	{ subcommands, .. } =
+		Builder.into_parts(
+			SubCmd.optional([
+				SubCmd.empty({ name: "z-last", description: "Last.", value: Selected("z") }),
+				SubCmd.empty({ name: "a-first", description: "First.", value: Selected("a") }),
+			]),
+		)
+
+	match subcommands {
+		HasSubcommands({ commands, required }) =>
+			!required and commands.map(|(name, _)| name) == ["z-last", "a-first"]
+
+		NoSubcommands => False
+	}
+}
+
+## Required subcommands mark their usage metadata as required.
+expect {
+	{ subcommands, .. } =
+		Builder.into_parts(
+			SubCmd.required([
+				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
+			]),
+		)
+
+	match subcommands {
+		HasSubcommands({ required, .. }) => required
+		NoSubcommands => False
+	}
 }

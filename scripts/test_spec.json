@@ -372,7 +372,7 @@
           "args": ["--help"],
           "stdout_contains": [
             "subcommands v0.0.1",
-            "subcommands <COMMAND>",
+            "Usage:\n  subcommands [OPTIONS] [<file>] [<files>...] [COMMAND]",
             "Commands:\n  s1  A first subcommand.\n  s2  Another subcommand."
           ]
         },
@@ -381,7 +381,7 @@
           "args": ["s1", "--help"],
           "stdout_contains": [
             "subcommands s1 v0.0.1",
-            "subcommands s1 <COMMAND>",
+            "Usage:\n  subcommands s1 [OPTIONS] [COMMAND]",
             "ss1  A sub-subcommand.",
             "ss2  Another sub-subcommand."
           ]

@@ -18,6 +18,8 @@ Validate := [].{
 	CliValidationErr : [
 		OverlappingParameterNames({ first : Str, second : Str, subcommand_path : List(Str) }),
 		OverlappingOptionNames({ left : OptionAtSubcommand, right : OptionAtSubcommand }),
+		DuplicateSubcommandName(NameAtSubcommand),
+		RequiredSubcommandsCannotBeEmpty(List(Str)),
 		InvalidShortFlagName(NameAtSubcommand),
 		InvalidLongFlagName(NameAtSubcommand),
 		InvalidCommandName(NameAtSubcommand),
@@ -57,10 +59,18 @@ Validate := [].{
 		Validate.check_if_there_are_overlapping_parameters(parameters, subcommand_path)?
 
 		match subcommands {
-			HasSubcommands(subcommand_configs) if !subcommand_configs.is_empty() => {
+			HasSubcommands({ commands: [], required: True }) => {
+				err : CliValidationErr
+				err = RequiredSubcommandsCannotBeEmpty(subcommand_path)
+
+				Err(err)
+			}
+
+			HasSubcommands({ commands, .. }) if !commands.is_empty() => {
+				check_duplicate_subcommand_names(commands, subcommand_path)?
 				_ = 
 					validate_subcommands(
-						subcommand_configs.to_list(),
+						commands,
 						options,
 						parent_options,
 						subcommand_path,
@@ -209,6 +219,18 @@ check_parameter_pairs = |parameters, subcommand_path|
 		}
 	}
 
+check_duplicate_subcommand_names : List((Str, Base.SubcommandConfig)), List(Str) -> Try({}, Validate.CliValidationErr)
+check_duplicate_subcommand_names = |subcommands, subcommand_path|
+	match subcommands {
+		[] => Ok({})
+		[(name, _), .. as rest] =>
+			if rest.any(|(other_name, _)| other_name == name) {
+				Err(DuplicateSubcommandName({ name, subcommand_path }))
+			} else {
+				check_duplicate_subcommand_names(rest, subcommand_path)
+			}
+		}
+
 check_parameter_against_rest : ParameterConfig, List(ParameterConfig), List(Str) -> Try({}, Validate.CliValidationErr)
 check_parameter_against_rest = |first, rest, subcommand_path|
 	match rest {
@@ -347,4 +369,49 @@ expect {
 	child_version = { option: version_option, subcommand_path: ["app", "run"] }
 
 	Validate.check_if_there_are_overlapping_options([child_help, child_version, root_help, root_version]) == Ok({})
+}
+
+empty_subcommand_config : Base.SubcommandConfig
+empty_subcommand_config = {
+	description: "",
+	options: [],
+	parameters: [],
+	subcommands: NoSubcommands,
+}
+
+## Duplicate subcommand declarations are rejected before either can be lost.
+expect {
+	config : CliConfig
+	config = {
+		name: "app",
+		version: "",
+		authors: [],
+		description: "",
+		options: [],
+		parameters: [],
+		subcommands: HasSubcommands({
+			commands: [("run", empty_subcommand_config), ("run", empty_subcommand_config)],
+			required: False,
+		}),
+	}
+
+	Validate.validate_cli(config)
+		== Err(DuplicateSubcommandName({ name: "run", subcommand_path: ["app"] }))
+}
+
+## A required subcommand set must contain at least one possible command.
+expect {
+	config : CliConfig
+	config = {
+		name: "app",
+		version: "",
+		authors: [],
+		description: "",
+		options: [],
+		parameters: [],
+		subcommands: HasSubcommands({ commands: [], required: True }),
+	}
+
+	Validate.validate_cli(config)
+		== Err(RequiredSubcommandsCannotBeEmpty(["app"]))
 }

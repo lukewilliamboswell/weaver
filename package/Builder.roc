@@ -7,6 +7,7 @@ import Base exposing [
 	OptionConfig,
 	ParameterConfig,
 	SubcommandConfig,
+	SubcommandsConfig,
 	help_option,
 	map_successfully_parsed,
 	on_successful_arg_parse,
@@ -18,7 +19,7 @@ Builder(data, from_action, to_action) := {
 	parser : ArgParser(data),
 	options : List(OptionConfig),
 	parameters : List(ParameterConfig),
-	subcommands : Dict(Str, SubcommandConfig),
+	subcommands : SubcommandsConfig,
 }.{
 	GetOptionsAction : { get_options : {} }
 	GetParamsAction : { get_params : {} }
@@ -41,7 +42,7 @@ Builder(data, from_action, to_action) := {
 			parser: new_parser,
 			options: [],
 			parameters: [],
-			subcommands: Dict.empty(),
+			subcommands: NoSubcommands,
 		}
 	}
 
@@ -50,7 +51,7 @@ Builder(data, from_action, to_action) := {
 		parser,
 		options: [],
 		parameters: [],
-		subcommands: Dict.empty(),
+		subcommands: NoSubcommands,
 	}
 
 	add_option : CliBuilder(state, from_action, to_action), OptionConfig -> CliBuilder(state, from_action, to_action)
@@ -69,12 +70,12 @@ Builder(data, from_action, to_action) := {
 		subcommands,
 	}
 
-	add_subcommands : CliBuilder(state, from_action, to_action), Dict(Str, SubcommandConfig) -> CliBuilder(state, from_action, to_action)
+	add_subcommands : CliBuilder(state, from_action, to_action), SubcommandsConfig -> CliBuilder(state, from_action, to_action)
 	add_subcommands = |{ parser, options, parameters, subcommands }, new_subcommands| {
 		parser,
 		options,
 		parameters,
-		subcommands: Dict.insert_all(subcommands, new_subcommands),
+		subcommands: merge_subcommands(subcommands, new_subcommands),
 	}
 
 	set_parser : CliBuilder(state, from_action, to_action), ArgParser(next_state) -> CliBuilder(next_state, from_action, to_action)
@@ -119,7 +120,7 @@ Builder(data, from_action, to_action) := {
 			parser : ArgParser(state),
 			options : List(OptionConfig),
 			parameters : List(ParameterConfig),
-			subcommands : Dict(Str, SubcommandConfig),
+			subcommands : SubcommandsConfig,
 		}
 	into_parts = |{ parser, options, parameters, subcommands }| {
 		parser,
@@ -166,7 +167,7 @@ Builder(data, from_action, to_action) := {
 			parser: combined_parser,
 			options: left_options.concat(right_options),
 			parameters: left_parameters.concat(right_parameters),
-			subcommands: Dict.insert_all(left_subcommands, right_subcommands),
+			subcommands: merge_subcommands(left_subcommands, right_subcommands),
 		}
 	}
 
@@ -206,6 +207,18 @@ Builder(data, from_action, to_action) := {
 		}
 	}
 }
+
+merge_subcommands : SubcommandsConfig, SubcommandsConfig -> SubcommandsConfig
+merge_subcommands = |left, right|
+	match (left, right) {
+		(NoSubcommands, other) => other
+		(other, NoSubcommands) => other
+		(HasSubcommands(left_group), HasSubcommands(right_group)) =>
+			HasSubcommands({
+				commands: left_group.commands.concat(right_group.commands),
+				required: left_group.required or right_group.required,
+			})
+		}
 
 ## Mapping a builder transforms parsed data without consuming extra arguments.
 expect {

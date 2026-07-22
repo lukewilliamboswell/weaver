@@ -89,7 +89,7 @@ Cli := [].{
 			description,
 			options,
 			parameters,
-			subcommands: HasSubcommands(subcommands),
+			subcommands,
 		}
 
 		{

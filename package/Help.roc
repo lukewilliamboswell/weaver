@@ -64,8 +64,8 @@ Help := [].{
 			[first, .. as rest] =>
 				match command.subcommands {
 					NoSubcommands => Err(KeyNotFound)
-					HasSubcommands(subcommands) => {
-						subcommand = subcommands.get(first)?
+					HasSubcommands({ commands, .. }) => {
+						subcommand = find_command(commands, first)?
 						Help.find_subcommand(subcommand, rest)
 					}
 				}
@@ -98,7 +98,7 @@ Help := [].{
 
 		subcommands_text = 
 			match subcommands {
-				HasSubcommands(subcommand_dict) if !subcommand_dict.is_empty() =>
+				HasSubcommands({ commands, .. }) if !commands.is_empty() =>
 					commands_help(subcommands, text_style)
 
 				_no_subcommands => ""
@@ -161,18 +161,24 @@ Help := [].{
 				},
 			)
 
-		first_line = 
-			join_lines_with(required_options.concat(other_options).concat(params_strings), " ")
-
-		subcommand_usage = 
+		subcommand_strings =
 			match subcommands {
-				HasSubcommands(subcommand_dict) if !subcommand_dict.is_empty() => "\n  ${name} <COMMAND>"
-				_other => ""
+				HasSubcommands({ commands, required }) if !commands.is_empty() =>
+					if required {
+						["<COMMAND>"]
+					} else {
+						["[COMMAND]"]
+					}
+
+				_other => []
 			}
+
+		first_line =
+			join_lines_with(required_options.concat(other_options).concat(params_strings).concat(subcommand_strings), " ")
 
 		styled_heading = style_text("Usage:", [Bold(On), Underline(On)], text_style)
 
-		"${styled_heading}\n  ${name} ${first_line}${subcommand_usage}"
+		"${styled_heading}\n  ${name} ${first_line}"
 	}
 }
 
@@ -181,7 +187,7 @@ commands_help = |subcommands, text_style| {
 	commands = 
 		match subcommands {
 			NoSubcommands => []
-			HasSubcommands(subcommand_dict) => subcommand_dict.to_list()
+			HasSubcommands({ commands: declared_commands, .. }) => declared_commands
 		}
 
 	aligned_commands = 
@@ -191,6 +197,18 @@ commands_help = |subcommands, text_style| {
 
 	"${styled_heading}\n${Str.join_with(aligned_commands, "\n")}"
 }
+
+find_command : List((Str, SubcommandConfig)), Str -> Try(SubcommandConfig, [KeyNotFound])
+find_command = |commands, target|
+	match commands {
+		[] => Err(KeyNotFound)
+		[(name, command), .. as rest] =>
+			if name == target {
+				Ok(command)
+			} else {
+				find_command(rest, target)
+			}
+		}
 
 parameters_help : List(ParameterConfig), TextStyle -> Str
 parameters_help = |params, text_style| {
@@ -388,4 +406,65 @@ expect {
 
 	Help.usage_help(config, ["app"], Plain)
 		== "Usage:\n  app -r/--required STR [OPTIONS] <input> [<output>] [<rest>...]"
+}
+
+help_test_subcommand : SubcommandConfig
+help_test_subcommand = {
+	description: "Run the task.",
+	options: [],
+	parameters: [],
+	subcommands: NoSubcommands,
+}
+
+## Optional and required subcommands use distinct usage notation.
+expect {
+	base_config : CliConfig
+	base_config = {
+		name: "app",
+		version: "",
+		authors: [],
+		description: "",
+		options: [],
+		parameters: [],
+		subcommands: NoSubcommands,
+	}
+	commands : List((Str, SubcommandConfig))
+	commands = [("run", help_test_subcommand)]
+
+	optional_config : CliConfig
+	optional_config = {
+		name: base_config.name,
+		version: base_config.version,
+		authors: base_config.authors,
+		description: base_config.description,
+		options: base_config.options,
+		parameters: base_config.parameters,
+		subcommands: HasSubcommands({ commands, required: False }),
+	}
+	required_config : CliConfig
+	required_config = {
+		name: base_config.name,
+		version: base_config.version,
+		authors: base_config.authors,
+		description: base_config.description,
+		options: base_config.options,
+		parameters: base_config.parameters,
+		subcommands: HasSubcommands({ commands, required: True }),
+	}
+	optional_usage = Help.usage_help(optional_config, ["app"], Plain)
+	required_usage = Help.usage_help(required_config, ["app"], Plain)
+
+	optional_usage == "Usage:\n  app [COMMAND]" and required_usage == "Usage:\n  app <COMMAND>"
+}
+
+## Command help preserves declaration order.
+expect {
+	commands_help(
+		HasSubcommands({
+			commands: [("z-last", help_test_subcommand), ("a-first", help_test_subcommand)],
+			required: False,
+		}),
+		Plain,
+	)
+		== "Commands:\n  z-last   Run the task.\n  a-first  Run the task."
 }

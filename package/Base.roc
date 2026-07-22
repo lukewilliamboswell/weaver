@@ -226,7 +226,14 @@ Base := [].{
 		subcommands : SubcommandsConfig,
 	}
 
-	## Subcommands intentionally distinguish an explicitly empty set from
-	## commands that cannot have subcommands.
-	SubcommandsConfig := [NoSubcommands, HasSubcommands(Dict(Str, SubcommandConfig))]
+	## Subcommands retain declaration order and duplicate names for validation.
+	SubcommandsConfig := [
+		NoSubcommands,
+		HasSubcommands(
+			{
+				commands : List((Str, SubcommandConfig)),
+				required : Bool,
+			},
+		),
+	]
 }

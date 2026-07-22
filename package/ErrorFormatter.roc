@@ -99,6 +99,12 @@ ErrorFormatter := [].{
 			OverlappingParameterNames({ first, second, subcommand_path }) =>
 				"The ${param_at_subcommand_name({ name: first, subcommand_path })} overlaps with the ${param_at_subcommand_name({ name: second, subcommand_path })}."
 
+			DuplicateSubcommandName({ name, subcommand_path }) =>
+				"The command '${name}' is declared more than once for '${Str.join_with(subcommand_path, " ")}'."
+
+			RequiredSubcommandsCannotBeEmpty(subcommand_path) =>
+				"The command '${Str.join_with(subcommand_path, " ")}' requires a subcommand but declares none."
+
 			InvalidShortFlagName({ name, subcommand_path }) => {
 				value_name = "option '-${name}'"
 				"The ${value_at_subcommand_name({ name: value_name, subcommand_path })} is not a single character."
