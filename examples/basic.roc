@@ -9,7 +9,14 @@ import weaver.Cli
 import weaver.Opt
 import weaver.Param
 
-main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+BasicConfig : {
+	alpha : U64,
+	force : Bool,
+	file : Try(Str, [NoValue]),
+	files : List(Str),
+}
+
+main! : List(Str) => Try({}, _)
 main! = |args| {
 	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
 		Err(message) => {
@@ -27,6 +34,7 @@ main! = |args| {
 	}
 }
 
+cli_parser : Cli.CliParser(BasicConfig)
 cli_parser = 
 	Cli.assert_valid(
 		Cli.finish(

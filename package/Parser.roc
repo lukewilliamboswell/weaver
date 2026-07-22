@@ -73,14 +73,13 @@ Parser := [].{
 	}
 
 	parse_long_arg : Str -> ParsedArg
-	parse_long_arg = |arg| {
+	parse_long_arg = |arg|
 		match arg.split_on("=") {
 			[] => Long({ name: arg, value: Err(NoValue) })
 			[option] => Long({ name: option, value: Err(NoValue) })
 			[option, .. as value_parts] =>
 				Long({ name: option, value: Ok(Arg.from_str(Str.join_with(value_parts, "="))) })
 			}
-	}
 
 	construct_set_of_options : Str -> ParsedArg
 	construct_set_of_options = |combined| {
@@ -103,46 +102,55 @@ Parser := [].{
 	}
 }
 
+single_dash_arg : Arg
 single_dash_arg = Arg.from_str("-")
 
+double_dash_arg : Arg
 double_dash_arg = Arg.from_str("--")
 
+## A single dash remains a positional parameter.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("-"))
 
 	parsed == Parameter(Arg.from_str("-"))
 }
 
+## A one-character short option parses as a short argument.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("-a"))
 
 	parsed == Short("a")
 }
 
+## Adjacent short options parse as a complete short group.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("-abc"))
 
 	parsed == ShortGroup({ names: ["a", "b", "c"], complete: Complete })
 }
 
+## A long option without an equals sign has no attached value.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("--abc"))
 
 	parsed == Long({ name: "abc", value: Err(NoValue) })
 }
 
+## A long option preserves the value following its first equals sign.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("--abc=xyz"))
 
 	parsed == Long({ name: "abc", value: Ok(Arg.from_str("xyz")) })
 }
 
+## Plain text parses as a positional parameter.
 expect {
 	parsed = Parser.parse_arg(Arg.from_str("123"))
 
 	parsed == Parameter(Arg.from_str("123"))
 }
 
+## Parsing stops interpreting options after the double-dash delimiter.
 expect {
 	parsed = 
 		Parser.parse_args(["this-wont-show", "-a", "123", "--passed", "-bcd", "xyz", "--", "--subject=world"].map(Arg.from_str))

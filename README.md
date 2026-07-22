@@ -132,6 +132,22 @@ boundary, so future path parsers can preserve path-specific semantics.
 There are also some examples in the [examples](./examples) directory that are more
 feature-complete, with more to come as this library matures.
 
+## Testing
+
+Run the complete package and example suite with:
+
+```sh
+python3 scripts/test.py
+```
+
+The runner formats, checks, tests, documents, and bundles the package; then it
+formats, checks, tests, and builds every example against that bundle. Each built
+example is exercised with the cases in [`scripts/test_spec.json`](./scripts/test_spec.json),
+including successful parses, help and version output, malformed values, missing
+arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
+arguments on Unix. Every example must have a spec entry, so adding an example
+without test cases fails the suite.
+
 ## Roadmap
 
 Now that an initial release has happened, these are some ideas I have for future development:

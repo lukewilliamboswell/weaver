@@ -1,0 +1,412 @@
+{
+  "apps": [
+    {
+      "path": "examples/basic.roc",
+      "cases": [
+        {
+          "name": "minimal-required-option",
+          "args": ["-a", "1"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Err(NoValue), files: [], force: False }\n"
+        },
+        {
+          "name": "all-fields",
+          "args": ["-a", "123", "-f", "file1.txt", "file2.txt"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, file: Ok(\"file1.txt\"), files: [\"file2.txt\"], force: True }\n"
+        },
+        {
+          "name": "grouped-short-options",
+          "args": ["-fa", "7"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 7, file: Err(NoValue), files: [], force: True }\n"
+        },
+        {
+          "name": "double-dash-delimiter",
+          "args": ["-a", "1", "--", "-f", "tail"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Ok(\"-f\"), files: [\"tail\"], force: False }\n"
+        },
+        {
+          "name": "missing-required-option",
+          "exit_code": 1,
+          "stdout_contains": ["Error: Required option -a is missing.", "Usage:\n  basic -a NUM"]
+        },
+        {
+          "name": "missing-option-value",
+          "args": ["-a"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a expects a number.", "Usage:\n  basic -a NUM"]
+        },
+        {
+          "name": "invalid-number",
+          "args": ["-a", "nope"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a was not a valid number."]
+        },
+        {
+          "name": "number-overflow",
+          "args": ["-a", "18446744073709551616"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a was not a valid number."]
+        },
+        {
+          "name": "duplicate-option",
+          "args": ["-a", "1", "-a", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a can only be set once."]
+        },
+        {
+          "name": "repeated-flag-in-group",
+          "args": ["-ff", "-a", "1"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument -f was not recognized."]
+        },
+        {
+          "name": "unknown-short-option",
+          "args": ["-a", "1", "-x"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument -x was not recognized."]
+        },
+        {
+          "name": "unknown-long-option",
+          "args": ["-a", "1", "--alpha"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument --alpha was not recognized."]
+        },
+        {
+          "name": "invalid-utf8-parameter",
+          "args": ["-a", "1"],
+          "unix_args_hex": ["ff"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to the 'file' parameter was not valid UTF-8."]
+        },
+        {
+          "name": "help",
+          "args": ["--help"],
+          "exit_code": 1,
+          "stdout_contains": [
+            "basic v0.0.1",
+            "Usage:\n  basic -a NUM [OPTIONS] <file> <files...>",
+            "Arguments:\n  <file>",
+            "-V, --version  Show the version."
+          ]
+        },
+        {
+          "name": "version",
+          "args": ["--version"],
+          "exit_code": 1,
+          "stdout": "v0.0.1\n"
+        }
+      ]
+    },
+    {
+      "path": "examples/default-values.roc",
+      "cases": [
+        {
+          "name": "all-defaults",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"NONE\" }\n"
+        },
+        {
+          "name": "positional-file",
+          "args": ["file.txt"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"file.txt\" }\n"
+        },
+        {
+          "name": "override-defaults",
+          "args": ["--alpha=9", "--beta", "2.5", "file.txt"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 9, beta: 2.5, file: \"file.txt\" }\n"
+        },
+        {
+          "name": "negative-decimal",
+          "args": ["--beta=-2.5"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
+        },
+        {
+          "name": "delimiter-preserves-option-like-file",
+          "args": ["--", "-a"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"-a\" }\n"
+        },
+        {
+          "name": "invalid-u64",
+          "args": ["--alpha", "nope"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+        },
+        {
+          "name": "invalid-decimal",
+          "args": ["-b", "nope"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -b/--beta was not a valid number."]
+        },
+        {
+          "name": "missing-decimal-value",
+          "args": ["-b"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -b/--beta expects a number."]
+        },
+        {
+          "name": "duplicate-defaulted-option",
+          "args": ["-a", "1", "--alpha", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a/--alpha can only be set once."]
+        },
+        {
+          "name": "extra-positional",
+          "args": ["one", "two"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The parameter \"two\" was not expected."]
+        },
+        {
+          "name": "help",
+          "args": ["--help"],
+          "exit_code": 1,
+          "stdout_contains": [
+            "default-values v0.0.1",
+            "Usage:\n  default-values -a/--alpha NUM -b/--beta NUM [OPTIONS] <file>",
+            "[default: 123]",
+            "[default: 3.14]",
+            "[default: NONE]"
+          ]
+        },
+        {
+          "name": "version",
+          "args": ["--version"],
+          "exit_code": 1,
+          "stdout": "v0.0.1\n"
+        }
+      ]
+    },
+    {
+      "path": "examples/single-arg.roc",
+      "cases": [
+        {
+          "name": "short-option",
+          "args": ["-a", "123"],
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(123)\n"
+        },
+        {
+          "name": "long-option",
+          "args": ["--alpha", "42"],
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(42)\n"
+        },
+        {
+          "name": "long-option-with-equals",
+          "args": ["--alpha=7"],
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(7)\n"
+        },
+        {
+          "name": "missing-required-option",
+          "exit_code": 1,
+          "stdout_contains": ["Error: Required option -a/--alpha is missing."]
+        },
+        {
+          "name": "missing-option-value",
+          "args": ["-a"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a/--alpha expects a number."]
+        },
+        {
+          "name": "invalid-number",
+          "args": ["-a", "x"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+        },
+        {
+          "name": "number-overflow",
+          "args": ["-a", "18446744073709551616"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a/--alpha was not a valid number."]
+        },
+        {
+          "name": "invalid-utf8-value",
+          "args": ["-a"],
+          "unix_args_hex": ["ff"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to -a/--alpha was not valid UTF-8."]
+        },
+        {
+          "name": "duplicate-option",
+          "args": ["-a", "1", "--alpha", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a/--alpha can only be set once."]
+        },
+        {
+          "name": "unknown-option-precedes-missing-required",
+          "args": ["--beta", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Required option -a/--alpha is missing."]
+        },
+        {
+          "name": "extra-positional",
+          "args": ["-a", "1", "tail"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The parameter \"tail\" was not expected."]
+        },
+        {
+          "name": "partial-short-group",
+          "args": ["-a1", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument -1 was not recognized."]
+        },
+        {
+          "name": "help",
+          "args": ["--help"],
+          "exit_code": 1,
+          "stdout_contains": [
+            "single-arg v0.0.1",
+            "Usage:\n  single-arg -a/--alpha NUM [OPTIONS]",
+            "-a NUM, --alpha NUM  Set the alpha level."
+          ]
+        },
+        {
+          "name": "version",
+          "args": ["--version"],
+          "exit_code": 1,
+          "stdout": "v0.0.1\n"
+        }
+      ]
+    },
+    {
+      "path": "examples/subcommands.roc",
+      "cases": [
+        {
+          "name": "empty-root",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "name": "root-fields",
+          "args": ["-f", "file.txt", "tail.txt"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"file.txt\"), files: [\"tail.txt\"], force: True, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "name": "unknown-subcommand-is-root-parameter",
+          "args": ["wat"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"wat\"), files: [], force: False, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "name": "first-subcommand-empty",
+          "args": ["s1"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "name": "first-subcommand-options",
+          "args": ["s1", "-d", "3", "--volume=8"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Ok(3), sc: Err(NoSubcommand), volume: Ok(8) })) }\n"
+        },
+        {
+          "name": "first-nested-subcommand",
+          "args": ["s1", "ss1", "-a", "1", "-b", "2"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS1({ a: 1, b: 2 })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "name": "nested-grouped-options",
+          "args": ["s1", "ss1", "-ab", "1", "2"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS1({ a: 1, b: 2 })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "name": "nested-required-option-missing",
+          "args": ["s1", "ss1", "-a", "1"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Required option -b is missing.", "Usage:\n  subcommands s1 ss1"]
+        },
+        {
+          "name": "second-nested-subcommand",
+          "args": ["s1", "ss2", "-a", "1", "-c", "2", "payload"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS2({ a: 1, c: 2, data: \"payload\" })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "name": "nested-required-parameter-missing",
+          "args": ["s1", "ss2", "-a", "1", "-c", "2"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The 'data' parameter did not receive a value.", "Usage:\n  subcommands s1 ss2"]
+        },
+        {
+          "name": "root-parameter-after-nested-subcommand",
+          "args": ["s1", "ss2", "-a", "1", "-c", "2", "one", "two"],
+          "stdout_contains": ["data: \"one\"", "file: Ok(\"two\")"]
+        },
+        {
+          "name": "second-subcommand",
+          "args": ["s2", "-d", "9"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S2(DFlag(Ok(9)))) }\n"
+        },
+        {
+          "name": "second-subcommand-value-missing",
+          "args": ["s2", "-d"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -d expects a number.", "Usage:\n  subcommands s2"]
+        },
+        {
+          "name": "root-flag-after-subcommand",
+          "args": ["s1", "-f"],
+          "stdout_contains": ["force: True", "sc: Ok(S1("]
+        },
+        {
+          "name": "delimiter-before-subcommand-name",
+          "args": ["--", "s1", "tail"],
+          "stdout_contains": ["file: Ok(\"tail\")", "sc: Ok(S1("]
+        },
+        {
+          "name": "invalid-utf8-root-parameter",
+          "unix_args_hex": ["ff"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The value provided to the 'file' parameter was not valid UTF-8."]
+        },
+        {
+          "name": "unknown-root-option",
+          "args": ["--wat"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument --wat was not recognized.", "Usage:\n  subcommands"]
+        },
+        {
+          "name": "unknown-subcommand-option",
+          "args": ["s1", "--wat"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument --wat was not recognized.", "Usage:\n  subcommands s1"]
+        },
+        {
+          "name": "root-help",
+          "args": ["--help"],
+          "exit_code": 1,
+          "stdout_contains": [
+            "subcommands v0.0.1",
+            "subcommands <COMMAND>",
+            "Commands:\n  s1  A first subcommand.\n  s2  Another subcommand."
+          ]
+        },
+        {
+          "name": "subcommand-help",
+          "args": ["s1", "--help"],
+          "exit_code": 1,
+          "stdout_contains": [
+            "subcommands s1 v0.0.1",
+            "subcommands s1 <COMMAND>",
+            "ss1  A sub-subcommand.",
+            "ss2  Another sub-subcommand."
+          ]
+        },
+        {
+          "name": "first-nested-help",
+          "args": ["s1", "ss1", "--help"],
+          "exit_code": 1,
+          "stdout_contains": ["subcommands s1 ss1 v0.0.1", "-a NUM", "-b NUM"]
+        },
+        {
+          "name": "second-nested-help",
+          "args": ["s1", "ss2", "--help"],
+          "exit_code": 1,
+          "stdout_contains": ["subcommands s1 ss2 v0.0.1", "-c NUM, --create NUM", "<data>"]
+        },
+        {
+          "name": "root-version",
+          "args": ["--version"],
+          "exit_code": 1,
+          "stdout": "v0.0.1\n"
+        },
+        {
+          "name": "subcommand-version",
+          "args": ["s1", "--version"],
+          "exit_code": 1,
+          "stdout": "v0.0.1\n"
+        }
+      ]
+    }
+  ]
+}

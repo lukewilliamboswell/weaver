@@ -103,7 +103,7 @@ jobs:
           path: dist
 
       - name: Test examples against downloaded bundle
-        run: python3 ci/test_bundle_examples.py --bundle-path "dist/${{ needs.build-bundle.outputs.bundle_filename }}"
+        run: python3 scripts/test.py --bundle-path "dist/${{ needs.build-bundle.outputs.bundle_filename }}" --examples-only
 
   create-release:
     name: Create GitHub release

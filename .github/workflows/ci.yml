@@ -41,4 +41,4 @@ jobs:
           version: nightly-new-compiler
 
       - name: Run checks
-        run: ci/all_tests.sh
+        run: python3 scripts/test.py

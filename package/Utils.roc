@@ -65,24 +65,40 @@ is_lower_case : U8 -> Bool
 is_lower_case = |char|
 	char >= 'a' and char <= 'z'
 
+## ASCII digits are recognized without accepting letters or spaces.
 expect {
 	sample = "19aB "
 
 	sample.to_utf8().map(is_digit) == [True, True, False, False, False]
 }
 
+## Lowercase ASCII letters exclude uppercase letters and punctuation.
 expect {
 	sample = "aAzZ-"
 
 	sample.to_utf8().map(is_lower_case) == [True, False, True, False, False]
 }
 
+## Kebab-case words may contain a separating dash.
 expect Utils.is_kebab_case("abc-def")
+
+## Kebab-case words cannot begin with a dash.
 expect !(Utils.is_kebab_case("-abc-def"))
+
+## Kebab-case words cannot end with a dash.
 expect !(Utils.is_kebab_case("abc-def-"))
+
+## A dash alone is not a kebab-case word.
 expect !(Utils.is_kebab_case("-"))
+
+## An empty string is not a kebab-case word.
 expect !(Utils.is_kebab_case(""))
 
+## Lowercase ASCII text is converted to uppercase.
 expect Utils.to_upper_case("abc") == "ABC"
+
+## Uppercase ASCII text remains unchanged.
 expect Utils.to_upper_case("ABC") == "ABC"
+
+## Case conversion preserves digits and punctuation.
 expect Utils.to_upper_case("aBc00-") == "ABC00-"

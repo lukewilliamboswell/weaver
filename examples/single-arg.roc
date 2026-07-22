@@ -8,7 +8,9 @@ import weaver.Arg
 import weaver.Cli
 import weaver.Opt
 
-main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+SingleArgConfig : [Alpha(U64)]
+
+main! : List(Str) => Try({}, _)
 main! = |args| {
 	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
 		Err(message) => {
@@ -26,6 +28,7 @@ main! = |args| {
 	}
 }
 
+cli_parser : Cli.CliParser(SingleArgConfig)
 cli_parser = 
 	Cli.assert_valid(
 		Cli.finish(

@@ -178,7 +178,7 @@ commands_help = |subcommands, text_style| {
 		}
 
 	aligned_commands = 
-		align_two_columns(commands.map(|(name, sub_config)| (name, sub_config.description)), text_style)
+		align_two_columns(commands.map(|(name, sub_config)| { label: name, help: sub_config.description }), text_style)
 
 	(style, reset) = 
 		match text_style {
@@ -201,7 +201,7 @@ parameters_help = |params, text_style| {
 							Many => "..."
 						}
 
-					("<${param.name}${ellipsis}>", param.help)
+					{ label: "<${param.name}${ellipsis}>", help: param.help }
 				},
 			),
 			text_style,
@@ -269,7 +269,7 @@ option_simple_name_formatter = |{ short, long, expected_value, .. }| {
 options_help : List(OptionConfig), TextStyle -> Str
 options_help = |options, text_style| {
 	formatted_options = 
-		align_two_columns(options.map(|option| (option_name_formatter(option), option.help)), text_style)
+		align_two_columns(options.map(|option| { label: option_name_formatter(option), help: option.help }), text_style)
 
 	(style, reset) = 
 		match text_style {
@@ -287,10 +287,12 @@ indent_multiline_string_by = |string, indent_amount| {
 	indent_lines(string.split_on("\n"), indentation, True, [])
 }
 
-align_two_columns : List((Str, Str)), TextStyle -> List(Str)
+HelpColumn : { label : Str, help : Str }
+
+align_two_columns : List(HelpColumn), TextStyle -> List(Str)
 align_two_columns = |columns, text_style| {
 	max_first_column_len = 
-		max_or_zero(columns.map(|(first, _second)| first.count_utf8_bytes()))
+		max_or_zero(columns.map(|{ label, .. }| label.count_utf8_bytes()))
 
 	(style, reset) = 
 		match text_style {
@@ -299,14 +301,14 @@ align_two_columns = |columns, text_style| {
 		}
 
 	columns.map(
-		|(first, second)| {
+		|{ label, help }| {
 			buffer = 
-				Str.repeat(" ", max_first_column_len - first.count_utf8_bytes())
+				Str.repeat(" ", max_first_column_len - label.count_utf8_bytes())
 
 			second_shifted = 
-				indent_multiline_string_by(second, max_first_column_len + 4)
+				indent_multiline_string_by(help, max_first_column_len + 4)
 
-			"  ${style}${first}${buffer}${reset}  ${second_shifted}"
+			"  ${style}${label}${buffer}${reset}  ${second_shifted}"
 		},
 	)
 }

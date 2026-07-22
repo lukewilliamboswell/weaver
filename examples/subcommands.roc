@@ -10,7 +10,30 @@ import weaver.Opt
 import weaver.Param
 import weaver.SubCmd
 
-main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+SubSubcommandConfig : [
+	SS1({ a : U64, b : U64 }),
+	SS2({ a : U64, c : U64, data : Str }),
+]
+
+FirstSubcommandConfig : {
+	d : Try(U64, [NoValue]),
+	volume : Try(U64, [NoValue]),
+	sc : Try(SubSubcommandConfig, [NoSubcommand]),
+}
+
+SubcommandConfig : [
+	S1(FirstSubcommandConfig),
+	S2([DFlag(Try(U64, [NoValue]))]),
+]
+
+RootConfig : {
+	force : Bool,
+	sc : Try(SubcommandConfig, [NoSubcommand]),
+	file : Try(Str, [NoValue]),
+	files : List(Str),
+}
+
+main! : List(Str) => Try({}, _)
 main! = |args| {
 	match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
 		Err(message) => {
@@ -28,6 +51,7 @@ main! = |args| {
 	}
 }
 
+cli_parser : Cli.CliParser(RootConfig)
 cli_parser = 
 	Cli.assert_valid(
 		Cli.finish(
@@ -57,6 +81,7 @@ cli_parser =
 		),
 	)
 
+subcommand_parser1 : SubCmd.SubcommandParserConfig(SubcommandConfig)
 subcommand_parser1 = 
 	SubCmd.finish(
 		{
@@ -82,6 +107,7 @@ subcommand_parser1 =
 str_to_raw_arg : Str -> [Unix(List(U8)), Windows(List(U16))]
 str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))
 
+subcommand_parser2 : SubCmd.SubcommandParserConfig(SubcommandConfig)
 subcommand_parser2 = 
 	SubCmd.finish(
 		Cli.map(
@@ -99,6 +125,7 @@ subcommand_parser2 =
 		},
 	)
 
+sub_subcommand_parser1 : SubCmd.SubcommandParserConfig(SubSubcommandConfig)
 sub_subcommand_parser1 = 
 	SubCmd.finish(
 		{
@@ -122,6 +149,7 @@ sub_subcommand_parser1 =
 		},
 	)
 
+sub_subcommand_parser2 : SubCmd.SubcommandParserConfig(SubSubcommandConfig)
 sub_subcommand_parser2 = 
 	SubCmd.finish(
 		{

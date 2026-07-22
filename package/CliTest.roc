@@ -1,9 +1,10 @@
 import Arg
-import Base exposing [ArgParserResult, SubcommandsConfig]
+import Base exposing [ArgParserResult, CliConfig, SubcommandsConfig]
 import Cli
 
 CliTest := [].{}
 
+test_config : CliConfig
 test_config = {
 	name: "basic-cli",
 	version: "v1.0.0",
@@ -14,6 +15,7 @@ test_config = {
 	subcommands: SubcommandsConfig.NoSubcommands,
 }
 
+## Successful parses return the parser's transformed data.
 expect {
 	parser = {
 		config: test_config,
@@ -21,10 +23,12 @@ expect {
 		text_style: Plain,
 	}
 
-	Cli.parse_or_display_message(parser, ["basic-cli", "ignored"], |arg| Unix(Str.to_utf8(arg)))
-		== Ok(["basic-cli", "ignored"])
+	actual = Cli.parse_or_display_message(parser, ["basic-cli", "ignored"], |arg| Unix(Str.to_utf8(arg)))?
+
+	actual == ["basic-cli", "ignored"]
 }
 
+## Help requests render the root command's help text.
 expect {
 	parser = {
 		config: test_config,
@@ -36,6 +40,7 @@ expect {
 		== Err("basic-cli v1.0.0\n\nUsage:\n  basic-cli \n\n")
 }
 
+## Incorrect usage includes both the parser error and usage text.
 expect {
 	parser = {
 		config: test_config,

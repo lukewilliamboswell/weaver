@@ -47,12 +47,10 @@ Builder(data, from_action, to_action) := {
 
 	from_full_parser : ArgParser(data) -> CliBuilder(data, from_action, to_action)
 	from_full_parser = |parser| {
-		{
-			parser,
-			options: [],
-			parameters: [],
-			subcommands: Dict.empty(),
-		}
+		parser,
+		options: [],
+		parameters: [],
+		subcommands: Dict.empty(),
 	}
 
 	add_option : CliBuilder(state, from_action, to_action), OptionConfig -> CliBuilder(state, from_action, to_action)
@@ -81,12 +79,10 @@ Builder(data, from_action, to_action) := {
 
 	set_parser : CliBuilder(state, from_action, to_action), ArgParser(next_state) -> CliBuilder(next_state, from_action, to_action)
 	set_parser = |{ options, parameters, subcommands, parser: _old_parser }, next_parser| {
-		{
-			options,
-			parameters,
-			subcommands,
-			parser: next_parser,
-		}
+		options,
+		parameters,
+		subcommands,
+		parser: next_parser,
 	}
 
 	update_parser : CliBuilder(state, from_action, to_action), ({ data : state, remaining_args : List(ParsedArg) } -> Try({ data : next_state, remaining_args : List(ParsedArg) }, ArgExtractErr)) -> CliBuilder(next_state, from_action, to_action)
@@ -211,6 +207,7 @@ Builder(data, from_action, to_action) := {
 	}
 }
 
+## Mapping a builder transforms parsed data without consuming extra arguments.
 expect {
 	{ parser, .. } = 
 		Builder.into_parts(
@@ -230,24 +227,28 @@ expect {
 		})
 }
 
+## Raw parameter text does not trigger the built-in help flag.
 expect {
 	args = [Parameter(Arg.from_str("-h"))]
 
 	!(Builder.flag_was_passed(help_option, args))
 }
 
+## The short help option triggers the built-in help flag.
 expect {
 	args = [Short("h")]
 
 	Builder.flag_was_passed(help_option, args)
 }
 
+## The long help option triggers the built-in help flag.
 expect {
 	args = [Long({ name: "help", value: Err(NoValue) })]
 
 	Builder.flag_was_passed(help_option, args)
 }
 
+## A value attached to the long help option still triggers help handling.
 expect {
 	args = [Long({ name: "help", value: Ok(Arg.from_str("123")) })]
 
