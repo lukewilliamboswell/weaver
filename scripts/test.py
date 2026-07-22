@@ -194,7 +194,11 @@ def copy_examples_with_bundle_url(destination: Path, bundle_url: str) -> dict[st
 
 def validate_package(docs_dir: Path) -> None:
     print("\n=== PACKAGE ===")
-    command(ROC, "fmt", "--check", "package", "examples")
+    roc_sources = sorted((ROOT / "package").rglob("*.roc")) + sorted(
+        (ROOT / "examples").rglob("*.roc")
+    )
+    for source in roc_sources:
+        command(ROC, "fmt", "--check", roc_path(source))
     command(ROC, "check", "package/main.roc", "--no-cache")
     command(ROC, "test", "package/main.roc", "--no-cache")
     command(ROC, "docs", "package/main.roc", f"--output={roc_path(docs_dir)}")
