@@ -94,7 +94,7 @@
           "args": ["--help"],
           "stdout_contains": [
             "basic v0.0.1",
-            "Usage:\n  basic -a NUM [OPTIONS] [<file>] [<files>...]",
+            "Usage:\n  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]",
             "Arguments:\n  <file>",
             "-V, --version  Show the version."
           ]
@@ -123,7 +123,7 @@
           "name": "missing-environment",
           "args": ["ghcr.io/acme/api:v2"],
           "exit_code": 1,
-          "stdout_contains": ["MISSING OPTION", "Required option -e/--environment is missing.", "Usage:\n  deploy -e/--environment STR [OPTIONS] <image>", "Tip: Provide `-e/--environment string` as shown in Usage."]
+          "stdout_contains": ["MISSING OPTION", "Required option -e/--environment is missing.", "Usage:\n  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>", "Tip: Provide `-e/--environment string` as shown in Usage."]
         },
         {
           "name": "invalid-replicas",
@@ -134,7 +134,7 @@
         {
           "name": "help",
           "args": ["--help"],
-          "stdout_contains": ["deploy v0.1.0", "Roll out a container image", "Usage:\n  deploy -e/--environment STR [OPTIONS] <image>", "--dry-run", "--label STR", "<image>"]
+          "stdout_contains": ["deploy v0.1.0", "Roll out a container image", "Usage:\n  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>", "--dry-run", "--label STR", "<image>"]
         },
         {
           "name": "version",
@@ -216,7 +216,7 @@
           "args": ["--help"],
           "stdout_contains": [
             "default-values v0.0.1",
-            "Usage:\n  default-values [OPTIONS] [<file>]",
+            "Usage:\n  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]",
             "[default: 123]",
             "[default: 3.14]",
             "[default: NONE]"
@@ -306,7 +306,7 @@
           "args": ["--help"],
           "stdout_contains": [
             "single-arg v0.0.1",
-            "Usage:\n  single-arg -a/--alpha NUM [OPTIONS]",
+            "Usage:\n  single-arg -a/--alpha NUM [-h/--help] [-V/--version]",
             "-a NUM, --alpha NUM  Set the alpha level."
           ]
         },
@@ -421,7 +421,7 @@
           "args": ["--help"],
           "stdout_contains": [
             "subcommands v0.0.1",
-            "Usage:\n  subcommands [OPTIONS] [<file>] [<files>...] [COMMAND]",
+            "Usage:\n  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]",
             "Commands:\n  s1  A first subcommand.\n  s2  Another subcommand."
           ]
         },
@@ -430,7 +430,7 @@
           "args": ["s1", "--help"],
           "stdout_contains": [
             "subcommands s1 v0.0.1",
-            "Usage:\n  subcommands s1 [OPTIONS] [COMMAND]",
+            "Usage:\n  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]",
             "ss1  A sub-subcommand.",
             "ss2  Another sub-subcommand."
           ]

@@ -160,9 +160,9 @@ def apply_sgr(style: Style, codes: list[int]) -> Style:
     return current
 
 
-def styled_runs(line: str) -> list[tuple[str, Style]]:
+def styled_runs(line: str, initial_style: Style) -> tuple[list[tuple[str, Style]], Style]:
     runs: list[tuple[str, Style]] = []
-    style = Style()
+    style = initial_style
     cursor = 0
 
     for match in SGR_RE.finditer(line):
@@ -175,7 +175,7 @@ def styled_runs(line: str) -> list[tuple[str, Style]]:
 
     if cursor < len(line):
         runs.append((line[cursor:], style))
-    return runs
+    return runs, style
 
 
 def render_svg(terminal_text: str) -> str:
@@ -191,9 +191,11 @@ def render_svg(terminal_text: str) -> str:
     height = title_height + content_padding * 2 + len(lines) * line_height
 
     rendered_lines: list[str] = []
+    current_style = Style()
     for index, line in enumerate(lines):
         spans: list[str] = []
-        for text, style in styled_runs(line):
+        runs, current_style = styled_runs(line, current_style)
+        for text, style in runs:
             attributes = [f'fill="{style.foreground}"']
             if style.bold:
                 attributes.append('font-weight="700"')

@@ -132,14 +132,10 @@ Help := [].{
 		name = Str.join_with(subcommand_path, " ")
 
 		required_options = 
-			filter_required_options(options).map(option_simple_name_formatter)
+			filter_required_options(options).map(option_usage_formatter)
 
-		other_options = 
-			if required_options.len() == options.len() {
-				[]
-			} else {
-				["[OPTIONS]"]
-			}
+		optional_options = 
+			options.keep_if(|option| !option.required).map(option_usage_formatter)
 
 		params_strings = 
 			parameters.map(
@@ -171,7 +167,7 @@ Help := [].{
 			}
 
 		usage_parts = 
-			join_lines_with(required_options.concat(other_options).concat(params_strings).concat(subcommand_strings), " ")
+			join_lines_with(required_options.concat(optional_options).concat(params_strings).concat(subcommand_strings), " ")
 
 		styled_heading = Terminal.render([Terminal.section("Usage:")], text_style)
 		plain_usage = 
@@ -288,6 +284,22 @@ option_simple_name_formatter = |{ short, long, expected_value, .. }| {
 		}
 
 	"${join_lines_with(filter_non_empty([short_name, long_name]), "/")}${type_name}"
+}
+
+option_usage_formatter : OptionConfig -> Str
+option_usage_formatter = |option| {
+	name = option_simple_name_formatter(option)
+	suffix = 
+		match option.plurality {
+			Many => "..."
+			Optional | One => ""
+		}
+
+	if option.required {
+		"${name}${suffix}"
+	} else {
+		"[${name}]${suffix}"
+	}
 }
 
 options_help : List(OptionConfig), TextStyle -> Str
@@ -428,7 +440,21 @@ expect {
 	}
 
 	Help.usage_help(config, ["app"], Plain)
-		== "Usage:\n  app -r/--required STR [OPTIONS] <input> [<output>] [<rest>...]"
+		== "Usage:\n  app -r/--required STR [-d/--defaulted STR] <input> [<output>] [<rest>...]"
+}
+
+## Repeatable optional options show both their value and plurality in usage.
+expect {
+	repeatable_option = {
+		short: "t",
+		long: "tag",
+		help: "A repeatable tag.",
+		expected_value: ExpectsValue("str"),
+		plurality: Many,
+		required: False,
+	}
+
+	option_usage_formatter(repeatable_option) == "[-t/--tag STR]..."
 }
 
 help_test_subcommand : SubcommandConfig
@@ -542,7 +568,8 @@ expect {
 		\\A representative command.
 		\\
 		\\Usage:
-		\\  app -r/--required STR [OPTIONS] <input> [<output>] [<rest>...] [COMMAND]
+		\\  app -r/--required STR [-d/--defaulted STR] <input> [<output>] [<rest>...]
+		\\  [COMMAND]
 		\\
 		\\Commands:
 		\\  run    Run the task.

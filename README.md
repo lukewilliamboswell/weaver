@@ -134,7 +134,7 @@ Some One <some.one@mail.com>
 This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!
 
 Usage:
-  basic -a NUM [OPTIONS] [<file>] [<files>...]
+  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
 
 Arguments:
   <file>      The file to process.
@@ -154,7 +154,7 @@ $ roc examples/basic.roc -- --wat
 The argument --wat was not recognized.
 
 Usage:
-  basic -a NUM [OPTIONS] [<file>] [<files>...]
+  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
 
 Tip: Run `basic --help` to see the available arguments.
 ```
