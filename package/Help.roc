@@ -144,10 +144,10 @@ Help := [].{
 				["[OPTIONS]"]
 			}
 
-		params_strings =
+		params_strings = 
 			parameters.map(
 				|param| {
-					value =
+					value = 
 						match param.plurality {
 							Optional | One => "<${param.name}>"
 							Many => "<${param.name}>..."
@@ -161,7 +161,7 @@ Help := [].{
 				},
 			)
 
-		subcommand_strings =
+		subcommand_strings = 
 			match subcommands {
 				HasSubcommands({ commands, required }) if !commands.is_empty() =>
 					if required {
@@ -173,7 +173,7 @@ Help := [].{
 				_other => []
 			}
 
-		first_line =
+		first_line = 
 			join_lines_with(required_options.concat(other_options).concat(params_strings).concat(subcommand_strings), " ")
 
 		styled_heading = style_text("Usage:", [Bold(On), Underline(On)], text_style)

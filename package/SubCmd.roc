@@ -187,7 +187,7 @@ first_or_empty = |values|
 ## The double-dash boundary prevents a following value from dispatching a subcommand.
 expect {
 	arg = Path.utf8("run")
-	{ parser, .. } =
+	{ parser, .. } = 
 		Builder.into_parts(
 			SubCmd.optional([
 				SubCmd.empty({ name: "run", description: "Run the task.", value: Ran }),
@@ -204,7 +204,7 @@ expect {
 
 ## Optional subcommands retain their declaration order and optionality in metadata.
 expect {
-	{ subcommands, .. } =
+	{ subcommands, .. } = 
 		Builder.into_parts(
 			SubCmd.optional([
 				SubCmd.empty({ name: "z-last", description: "Last.", value: Selected("z") }),
@@ -224,7 +224,7 @@ expect {
 
 ## Required subcommands mark their usage metadata as required.
 expect {
-	{ subcommands, .. } =
+	{ subcommands, .. } = 
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
@@ -239,7 +239,7 @@ expect {
 
 ## Required subcommands distinguish a missing command from an unknown one.
 expect {
-	{ parser, .. } =
+	{ parser, .. } = 
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
@@ -267,7 +267,7 @@ expect {
 
 ## The delimiter cannot satisfy a required subcommand, even when its value matches.
 expect {
-	{ parser, .. } =
+	{ parser, .. } = 
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),

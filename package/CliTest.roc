@@ -66,7 +66,7 @@ expect {
 }
 
 required_option_parser : Cli.CliParser({ alpha : U64 })
-required_option_parser =
+required_option_parser = 
 	Cli.assert_valid(
 		Cli.finish(
 			Cli.map(

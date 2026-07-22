@@ -33,7 +33,7 @@ Param := [].{
 	## Add a required parameter of a custom type.
 	single : DefaultableParameterConfigParams(data) -> CliBuilder(data, { ..action }, GetParamsAction)
 	single = |{ parser, type, name, help, default }| {
-		required =
+		required = 
 			match default {
 				NoDefault => True
 				Value(_) | Generate(_) => False
@@ -315,7 +315,7 @@ expect {
 	{ parameters: [literal_config], .. } = Builder.into_parts(literal_default)
 	{ parameters: [generated_config], .. } = Builder.into_parts(generated_default)
 
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(required_config.required),
@@ -343,7 +343,7 @@ expect {
 	optional = Param.maybe_str({ name: "value", help: "Value." })
 	variadic = Param.str_list({ name: "values", help: "Values." })
 
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(parse_test_param(optional, [])),
@@ -414,12 +414,12 @@ expect {
 	i8_builder = Param.i8({ name: "n", help: "Number.", default: NoDefault })
 	dec_builder = Param.dec({ name: "n", help: "Number.", default: NoDefault })
 
-	overflow =
+	overflow = 
 		match parse_test_param(u8_builder, [Parameter(Path.utf8("256"))]) {
 			Err(InvalidParamValue(InvalidNumStr, _)) => InvalidNumStr
 			_other => UnexpectedResult
 		}
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(parse_test_param(u8_builder, [Parameter(Path.utf8("255"))])),

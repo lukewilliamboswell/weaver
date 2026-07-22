@@ -101,7 +101,7 @@ Cli := [].{
 			parser: |args| {
 				parsed_args = parse_args(args)
 				raw_result = parser({ args: parsed_args, subcommand_path: [name] })
-				parser_result =
+				parser_result = 
 					match raw_result {
 						IncorrectUsage(MissingOption(_), { subcommand_path }) =>
 							match find_unrecognized_option(config, parsed_args) {

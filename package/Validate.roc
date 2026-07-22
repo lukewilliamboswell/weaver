@@ -418,7 +418,7 @@ expect {
 
 ## Short names must be exactly one invokable byte and cannot be the delimiter.
 expect {
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(Validate.ensure_short_flag_is_well_named({ name: "ab", subcommand_path: ["app"] })),
@@ -439,7 +439,7 @@ expect {
 
 ## Long option names must be multi-character kebab-case identifiers.
 expect {
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(Validate.ensure_long_flag_is_well_named({ name: "a", subcommand_path: ["app"] })),
@@ -461,7 +461,7 @@ expect {
 	nameless = test_option("", "")
 	bad_type = { ..test_option("a", "alpha"), expected_value: ExpectsValue("Bad Type") }
 
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(Validate.ensure_option_is_well_named({ option: nameless, subcommand_path: ["app"] })),
@@ -480,7 +480,7 @@ expect {
 expect {
 	bad_param = { name: "input", help: "Input.", type: "Bad Type", plurality: One, required: True }
 
-	actual =
+	actual = 
 		Str.join_with(
 			[
 				Str.inspect(Validate.ensure_command_is_well_named({ name: "Bad Command", subcommand_path: ["app"] })),

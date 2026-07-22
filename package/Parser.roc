@@ -124,7 +124,7 @@ parse_raw_unix_long_arg = |bytes|
 	match bytes {
 		[45, 45, .. as rest] => {
 			{ name_units, value_units } = split_u8_at_equals(rest, [])?
-			name =
+			name = 
 				match Str.from_utf8(name_units) {
 					Ok(value) => value
 					Err(_) => return Err(NotRawLong)
@@ -145,7 +145,7 @@ parse_raw_windows_long_arg = |code_units|
 	match code_units {
 		[45, 45, .. as rest] => {
 			{ name_units, value_units } = split_u16_at_equals(rest, [])?
-			name =
+			name = 
 				match Path.to_str(Path.from_raw(WindowsU16s(name_units))) {
 					Ok(value) => value
 					Err(_) => return Err(NotRawLong)
