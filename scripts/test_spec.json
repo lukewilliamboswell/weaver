@@ -65,10 +65,22 @@
           "stdout_contains": ["Error: The argument -x was not recognized."]
         },
         {
+          "name": "unknown-short-before-required",
+          "args": ["-x"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument -x was not recognized."]
+        },
+        {
           "name": "unknown-long-option",
           "args": ["-a", "1", "--alpha"],
           "exit_code": 1,
           "stdout_contains": ["Error: The argument --alpha was not recognized."]
+        },
+        {
+          "name": "unknown-long-before-required",
+          "args": ["--wat"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: The argument --wat was not recognized."]
         },
         {
           "name": "invalid-utf8-parameter",

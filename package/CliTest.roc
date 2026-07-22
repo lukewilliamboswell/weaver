@@ -1,5 +1,6 @@
 import Base exposing [ArgParserResult, CliConfig, SubcommandsConfig]
 import Cli
+import Opt
 import path.Path
 
 CliTest := [].{}
@@ -62,4 +63,53 @@ expect {
 
 	Cli.parse_or_display_message(parser, ["basic-cli", "-x"], |arg| Utf8(arg))
 		== Err(InvalidUsage("Error: The argument -x was not recognized.\n\nUsage:\n  basic-cli "))
+}
+
+required_option_parser : Cli.CliParser({ alpha : U64 })
+required_option_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			Cli.map(
+				Opt.u64({
+					short: "a",
+					long: "alpha",
+					help: "Alpha.",
+					default: NoDefault,
+				}),
+				|alpha| { alpha: alpha },
+			),
+			{
+				name: "app",
+				version: "",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+## An unknown long option is reported before an unrelated missing requirement.
+expect {
+	Cli.parse_or_display_message(required_option_parser, ["--wat"], |arg| Utf8(arg))
+		== Err(InvalidUsage("Error: The argument --wat was not recognized.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+}
+
+## An unknown member of a short group is reported before missing requirements.
+expect {
+	Cli.parse_or_display_message(required_option_parser, ["-xz"], |arg| Utf8(arg))
+		== Err(InvalidUsage("Error: The argument -x was not recognized.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+}
+
+## A malformed known option still takes precedence over a later unknown option.
+expect {
+	Cli.parse_or_display_message(required_option_parser, ["--alpha", "--wat"], |arg| Utf8(arg))
+		== Err(InvalidUsage("Error: Option -a/--alpha expects a number.\n\nUsage:\n  app -a/--alpha NUM [OPTIONS]"))
+}
+
+## Help keeps its established precedence over otherwise invalid arguments.
+expect {
+	match Cli.parse_or_display_message(required_option_parser, ["--help", "--wat"], |arg| Utf8(arg)) {
+		Err(Help(message)) => message.starts_with("app\n\nUsage:")
+		_other => False
+	}
 }

@@ -4,6 +4,9 @@ import Base exposing [
 	ArgParserResult,
 	CliConfig,
 	CliConfigParams,
+	OptionConfig,
+	SubcommandConfig,
+	SubcommandsConfig,
 	TextStyle,
 	map_successfully_parsed,
 ]
@@ -95,11 +98,22 @@ Cli := [].{
 		{
 			config,
 			text_style,
-			parser: |args|
-				map_successfully_parsed(
-					parser({ args: parse_args(args), subcommand_path: [name] }),
-					|{ data, .. }| data,
-				),
+			parser: |args| {
+				parsed_args = parse_args(args)
+				raw_result = parser({ args: parsed_args, subcommand_path: [name] })
+				parser_result =
+					match raw_result {
+						IncorrectUsage(MissingOption(_), { subcommand_path }) =>
+							match find_unrecognized_option(config, parsed_args) {
+								Ok({}) => raw_result
+								Err(err) => ArgParserResult.IncorrectUsage(err, { subcommand_path: subcommand_path })
+							}
+
+						_other => raw_result
+					}
+
+				map_successfully_parsed(parser_result, |{ data, .. }| data)
+			},
 		}
 	}
 
@@ -134,6 +148,72 @@ Cli := [].{
 		}
 	}
 }
+
+find_unrecognized_option : CliConfig, List(ParsedArg) -> Try({}, ArgExtractErr)
+find_unrecognized_option = |config, args| {
+	known_options = config.options.concat(collect_subcommand_options(config.subcommands))
+	find_unrecognized_option_in_args(args, known_options)
+}
+
+collect_subcommand_options : SubcommandsConfig -> List(OptionConfig)
+collect_subcommand_options = |subcommands|
+	match subcommands {
+		NoSubcommands => []
+		HasSubcommands({ commands, .. }) => collect_command_options(commands)
+	}
+
+collect_command_options : List((Str, SubcommandConfig)) -> List(OptionConfig)
+collect_command_options = |commands|
+	match commands {
+		[] => []
+		[(_, command), .. as rest] =>
+			command.options
+				.concat(collect_subcommand_options(command.subcommands))
+				.concat(collect_command_options(rest))
+		}
+
+find_unrecognized_option_in_args : List(ParsedArg), List(OptionConfig) -> Try({}, ArgExtractErr)
+find_unrecognized_option_in_args = |args, known_options|
+	match args {
+		[] => Ok({})
+		[first, .. as rest] => {
+			match first {
+				Short(name) =>
+					if known_options.any(|option| option.short == name) {
+						find_unrecognized_option_in_args(rest, known_options)
+					} else {
+						Err(UnrecognizedShortArg(name))
+					}
+
+				ShortGroup({ names, .. }) => {
+					find_unrecognized_short_name(names, known_options)?
+					find_unrecognized_option_in_args(rest, known_options)
+				}
+
+				Long({ name, .. }) =>
+					if known_options.any(|option| option.long == name) {
+						find_unrecognized_option_in_args(rest, known_options)
+					} else {
+						Err(UnrecognizedLongArg(name))
+					}
+
+				Parameter(_) | PassedThrough(_) =>
+					find_unrecognized_option_in_args(rest, known_options)
+				}
+		}
+	}
+
+find_unrecognized_short_name : List(Str), List(OptionConfig) -> Try({}, ArgExtractErr)
+find_unrecognized_short_name = |names, known_options|
+	match names {
+		[] => Ok({})
+		[name, .. as rest] =>
+			if known_options.any(|option| option.short == name) {
+				find_unrecognized_short_name(rest, known_options)
+			} else {
+				Err(UnrecognizedShortArg(name))
+			}
+		}
 
 first_or_empty : List(Str) -> Str
 first_or_empty = |values|
