@@ -24,6 +24,13 @@ PACKAGE_DEPENDENCY_RE = re.compile(r'(?m)^(?P<indent>\s*)weaver:\s*"(?P<dependen
 ROC = os.environ.get("ROC", "roc")
 
 
+def roc_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.resolve().as_posix()
+
+
 def command(*args: str | Path, cwd: Path = ROOT) -> None:
     values = [str(arg) for arg in args]
     print(f"+ {' '.join(values)}", flush=True)
@@ -187,10 +194,10 @@ def copy_examples_with_bundle_url(destination: Path, bundle_url: str) -> dict[st
 
 def validate_package(docs_dir: Path) -> None:
     print("\n=== PACKAGE ===")
-    command(ROC, "fmt", "--check", ROOT / "package", ROOT / "examples")
-    command(ROC, "check", ROOT / "package" / "main.roc", "--no-cache")
-    command(ROC, "test", ROOT / "package" / "main.roc", "--no-cache")
-    command(ROC, "docs", ROOT / "package" / "main.roc", f"--output={docs_dir}")
+    command(ROC, "fmt", "--check", "package", "examples")
+    command(ROC, "check", "package/main.roc", "--no-cache")
+    command(ROC, "test", "package/main.roc", "--no-cache")
+    command(ROC, "docs", "package/main.roc", f"--output={roc_path(docs_dir)}")
 
 
 def normalize_output(value: str) -> str:
@@ -288,11 +295,12 @@ def run_examples(apps: list[dict[str, object]], sources: dict[str, Path], build_
     for app in apps:
         path = str(app["path"])
         source = sources[path]
-        command(ROC, "fmt", "--check", source)
-        command(ROC, "check", source, "--no-cache")
-        command(ROC, "test", source, "--no-cache")
+        source_arg = roc_path(source)
+        command(ROC, "fmt", "--check", source_arg)
+        command(ROC, "check", source_arg, "--no-cache")
+        command(ROC, "test", source_arg, "--no-cache")
         binary = build_dir / f"{source.stem}{suffix}"
-        command(ROC, "build", source, f"--output={binary}", "--no-cache")
+        command(ROC, "build", source_arg, f"--output={roc_path(binary)}", "--no-cache")
         binaries[path] = binary
 
     print("\n=== SPEC CASES ===")
