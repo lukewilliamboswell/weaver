@@ -141,7 +141,7 @@ Validate := [].{
 
 	ensure_short_flag_is_well_named : NameAtSubcommand -> Try({}, CliValidationErr)
 	ensure_short_flag_is_well_named = |{ name, subcommand_path }|
-		if name.count_utf8_bytes() != 1 {
+		if name.count_utf8_bytes() != 1 or name == "-" {
 			Err(InvalidShortFlagName({ name, subcommand_path }))
 		} else {
 			Ok({})
@@ -414,4 +414,94 @@ expect {
 
 	Validate.validate_cli(config)
 		== Err(RequiredSubcommandsCannotBeEmpty(["app"]))
+}
+
+## Short names must be exactly one invokable byte and cannot be the delimiter.
+expect {
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(Validate.ensure_short_flag_is_well_named({ name: "ab", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_short_flag_is_well_named({ name: "é", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_short_flag_is_well_named({ name: "-", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_short_flag_is_well_named({ name: "a", subcommand_path: ["app"] })),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Err(InvalidShortFlagName({ name: "ab", subcommand_path: ["app"] }))
+		\\Err(InvalidShortFlagName({ name: "é", subcommand_path: ["app"] }))
+		\\Err(InvalidShortFlagName({ name: "-", subcommand_path: ["app"] }))
+		\\Ok({})
+}
+
+## Long option names must be multi-character kebab-case identifiers.
+expect {
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(Validate.ensure_long_flag_is_well_named({ name: "a", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_long_flag_is_well_named({ name: "Alpha", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_long_flag_is_well_named({ name: "alpha-value", subcommand_path: ["app"] })),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Err(InvalidLongFlagName({ name: "a", subcommand_path: ["app"] }))
+		\\Err(InvalidLongFlagName({ name: "Alpha", subcommand_path: ["app"] }))
+		\\Ok({})
+}
+
+## Options must have at least one name and valid value-type metadata.
+expect {
+	nameless = test_option("", "")
+	bad_type = { ..test_option("a", "alpha"), expected_value: ExpectsValue("Bad Type") }
+
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(Validate.ensure_option_is_well_named({ option: nameless, subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_option_value_type_is_well_named({ option: bad_type, subcommand_path: ["app"] })),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Err(OptionMustHaveShortOrLongName({ subcommand_path: ["app"] }))
+		\\Err(InvalidOptionValueType({ option: { expected_value: ExpectsValue("Bad Type"), help: "test option", long: "alpha", plurality: Optional, required: False, short: "a" }, subcommand_path: ["app"] }))
+}
+
+## Command, parameter, and parameter-type names use the same kebab-case rules.
+expect {
+	bad_param = { name: "input", help: "Input.", type: "Bad Type", plurality: One, required: True }
+
+	actual =
+		Str.join_with(
+			[
+				Str.inspect(Validate.ensure_command_is_well_named({ name: "Bad Command", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_param_is_well_named({ name: "Bad Param", subcommand_path: ["app"] })),
+				Str.inspect(Validate.ensure_param_value_type_is_well_named({ param: bad_param, subcommand_path: ["app"] })),
+			],
+			"\n",
+		)
+
+	actual
+		==
+		\\Err(InvalidCommandName({ name: "Bad Command", subcommand_path: ["app"] }))
+		\\Err(InvalidParameterName({ name: "Bad Param", subcommand_path: ["app"] }))
+		\\Err(InvalidParameterValueType({ param: { help: "Input.", name: "input", plurality: One, required: True, type: "Bad Type" }, subcommand_path: ["app"] }))
+}
+
+## Positional parameter names cannot overlap within one command.
+expect {
+	first = { name: "input", help: "First.", type: "str", plurality: One, required: True }
+	second = { name: "input", help: "Second.", type: "str", plurality: Optional, required: False }
+
+	Validate.check_if_there_are_overlapping_parameters([first, second], ["app"])
+		== Err(OverlappingParameterNames({ first: "input", second: "input", subcommand_path: ["app"] }))
 }

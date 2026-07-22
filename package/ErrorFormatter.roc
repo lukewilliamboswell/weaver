@@ -110,7 +110,7 @@ ErrorFormatter := [].{
 
 			InvalidShortFlagName({ name, subcommand_path }) => {
 				value_name = "option '-${name}'"
-				"The ${value_at_subcommand_name({ name: value_name, subcommand_path })} is not a single character."
+				"The ${value_at_subcommand_name({ name: value_name, subcommand_path })} must be a single-byte character other than '-'."
 			}
 
 			InvalidLongFlagName({ name, subcommand_path }) => {
