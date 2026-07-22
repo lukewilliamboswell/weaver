@@ -49,12 +49,29 @@ Parser := [].{
 
 	parse_arg : Path -> ParsedArg
 	parse_arg = |arg| {
-		str_arg = 
-			match Path.to_str(arg) {
-				Ok(str) => str
-				Err(_) => return Parameter(arg)
-			}
+		match Path.to_str(arg) {
+			Ok(str_arg) => Parser.parse_decoded_arg(arg, str_arg)
+			Err(_) =>
+				match Path.to_raw(arg) {
+					UnixBytes(bytes) =>
+						match parse_raw_unix_long_arg(bytes) {
+							Ok(parsed) => parsed
+							Err(NotRawLong) => Parameter(arg)
+						}
 
+					WindowsU16s(code_units) =>
+						match parse_raw_windows_long_arg(code_units) {
+							Ok(parsed) => parsed
+							Err(NotRawLong) => Parameter(arg)
+						}
+
+					Utf8(_) => Parameter(arg)
+				}
+			}
+	}
+
+	parse_decoded_arg : Path, Str -> ParsedArg
+	parse_decoded_arg = |arg, str_arg| {
 		if str_arg == "-" {
 			Parameter(arg)
 		} else if str_arg.starts_with("--") {
@@ -101,6 +118,64 @@ Parser := [].{
 		}
 	}
 }
+
+parse_raw_unix_long_arg : List(U8) -> Try(Parser.ParsedArg, [NotRawLong])
+parse_raw_unix_long_arg = |bytes|
+	match bytes {
+		[45, 45, .. as rest] => {
+			{ name_units, value_units } = split_u8_at_equals(rest, [])?
+			name =
+				match Str.from_utf8(name_units) {
+					Ok(value) => value
+					Err(_) => return Err(NotRawLong)
+				}
+
+			if name == "" or name.starts_with("-") {
+				Err(NotRawLong)
+			} else {
+				Ok(Long({ name, value: Ok(Path.from_raw(UnixBytes(value_units))) }))
+			}
+		}
+
+		_other => Err(NotRawLong)
+	}
+
+parse_raw_windows_long_arg : List(U16) -> Try(Parser.ParsedArg, [NotRawLong])
+parse_raw_windows_long_arg = |code_units|
+	match code_units {
+		[45, 45, .. as rest] => {
+			{ name_units, value_units } = split_u16_at_equals(rest, [])?
+			name =
+				match Path.to_str(Path.from_raw(WindowsU16s(name_units))) {
+					Ok(value) => value
+					Err(_) => return Err(NotRawLong)
+				}
+
+			if name == "" or name.starts_with("-") {
+				Err(NotRawLong)
+			} else {
+				Ok(Long({ name, value: Ok(Path.from_raw(WindowsU16s(value_units))) }))
+			}
+		}
+
+		_other => Err(NotRawLong)
+	}
+
+split_u8_at_equals : List(U8), List(U8) -> Try({ name_units : List(U8), value_units : List(U8) }, [NotRawLong])
+split_u8_at_equals = |units, name_units|
+	match units {
+		[] => Err(NotRawLong)
+		[61, .. as value_units] => Ok({ name_units, value_units })
+		[unit, .. as rest] => split_u8_at_equals(rest, name_units.append(unit))
+	}
+
+split_u16_at_equals : List(U16), List(U16) -> Try({ name_units : List(U16), value_units : List(U16) }, [NotRawLong])
+split_u16_at_equals = |units, name_units|
+	match units {
+		[] => Err(NotRawLong)
+		[61, .. as value_units] => Ok({ name_units, value_units })
+		[unit, .. as rest] => split_u16_at_equals(rest, name_units.append(unit))
+	}
 
 ## A single dash remains a positional parameter.
 expect {
@@ -158,6 +233,25 @@ expect {
 	parsed = Parser.parse_arg(Path.windows("--alpha=42"))
 
 	parsed == Long({ name: "alpha", value: Ok(Path.utf8("42")) })
+}
+
+## A long option preserves an attached non-UTF-8 Unix value.
+expect {
+	raw_value = [0xFF, 0x80]
+	arg = Path.from_raw(UnixBytes(Str.to_utf8("--file=").concat(raw_value)))
+
+	Parser.parse_arg(arg)
+		== Long({ name: "file", value: Ok(Path.from_raw(UnixBytes(raw_value))) })
+}
+
+## A long option preserves an attached unpaired Windows UTF-16 value.
+expect {
+	raw_value = [0xD800]
+	prefix = [0x002D, 0x002D, 0x0066, 0x0069, 0x006C, 0x0065, 0x003D]
+	arg = Path.from_raw(WindowsU16s(prefix.concat(raw_value)))
+
+	Parser.parse_arg(arg)
+		== Long({ name: "file", value: Ok(Path.from_raw(WindowsU16s(raw_value))) })
 }
 
 ## Plain text parses as a positional parameter.

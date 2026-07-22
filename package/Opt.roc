@@ -384,3 +384,27 @@ expect {
 	})
 		== ArgParserResult.IncorrectUsage(OptionCanOnlyBeSetOnce(option), { subcommand_path: ["app"] })
 }
+
+## Raw option parsers preserve an attached non-UTF-8 Unix value end to end.
+expect {
+	value = Path.from_raw(UnixBytes([0xFF, 0x80]))
+	{ parser, .. } =
+		Builder.into_parts(
+			Opt.arg({
+				short: "",
+				long: "file",
+				help: "Select a file.",
+				default: NoDefault,
+			}),
+		)
+
+	parser({
+		args: [Long({ name: "file", value: Ok(value) })],
+		subcommand_path: ["app"],
+	})
+		== ArgParserResult.SuccessfullyParsed({
+			data: value,
+			remaining_args: [],
+			subcommand_path: ["app"],
+		})
+}
