@@ -187,7 +187,12 @@ def copy_examples_with_bundle_url(destination: Path, bundle_url: str) -> dict[st
             + f'{match.group("indent")}weaver: "{bundle_url}",'
             + contents[match.end() :]
         )
-        source.write_text(updated, encoding="utf-8")
+        # Write bytes so Windows does not translate Roc's required LF endings
+        # back to CRLF after replacing the package URL.
+        encoded = updated.encode("utf-8")
+        if b"\r\n" in encoded:
+            raise SystemExit(f"{source.name}: rewritten Roc source contains CRLF line endings")
+        source.write_bytes(encoded)
         rewritten[f"examples/{source.name}"] = source
 
     return rewritten
