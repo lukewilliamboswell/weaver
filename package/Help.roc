@@ -470,3 +470,68 @@ expect {
 	)
 		== "Commands:\n  z-last   Run the task.\n  a-first  Run the task."
 }
+
+full_help_snapshot_config : CliConfig
+full_help_snapshot_config = {
+	name: "app",
+	version: "v1.2.3",
+	authors: ["A. Person <a@example.com>"],
+	description: "A representative command.",
+	options: [
+		{
+			short: "r",
+			long: "required",
+			help: "Required value.",
+			expected_value: ExpectsValue("str"),
+			plurality: One,
+			required: True,
+		},
+		{
+			short: "d",
+			long: "defaulted",
+			help: "Defaulted value.\nContinued explanation.",
+			expected_value: ExpectsValue("str"),
+			plurality: One,
+			required: False,
+		},
+	],
+	parameters: [
+		{ name: "input", help: "Input file.", type: "str", plurality: One, required: True },
+		{ name: "output", help: "Output file.", type: "str", plurality: Optional, required: False },
+		{ name: "rest", help: "Remaining files.", type: "str", plurality: Many, required: False },
+	],
+	subcommands: HasSubcommands({
+		commands: [
+			("run", { ..help_test_subcommand, description: "Run the task." }),
+			("build", { ..help_test_subcommand, description: "Build the task." }),
+		],
+		required: False,
+	}),
+}
+
+## Full plain help is an exact golden covering layout, ordering, and wrapping.
+expect {
+	Help.help_text(full_help_snapshot_config, ["app"], Plain)
+		==
+		\\app v1.2.3
+		\\A. Person <a@example.com>
+		\\
+		\\A representative command.
+		\\
+		\\Usage:
+		\\  app -r/--required STR [OPTIONS] <input> [<output>] [<rest>...] [COMMAND]
+		\\
+		\\Commands:
+		\\  run    Run the task.
+		\\  build  Build the task.
+		\\
+		\\Arguments:
+		\\  <input>    Input file.
+		\\  <output>   Output file.
+		\\  <rest...>  Remaining files.
+		\\
+		\\Options:
+		\\  -r STR, --required STR   Required value.
+		\\  -d STR, --defaulted STR  Defaulted value.
+		\\                           Continued explanation.
+}
