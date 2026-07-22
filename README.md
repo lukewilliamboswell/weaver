@@ -98,7 +98,7 @@ And here's us calling the above example from the command line:
 $ roc examples/basic.roc -- file1.txt file2.txt -f -a 123
 Successfully parsed! Here's what I got:
 
-{ alpha: 123, file: (Ok "file1.txt"), files: ["file2.txt"], force: True }
+{ alpha: 123, file: Ok("file1.txt"), files: ["file2.txt"], force: True }
 
 $ roc examples/basic.roc -- --help
 basic v0.1.0

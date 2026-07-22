@@ -58,9 +58,7 @@ SubCmd := [].{
 	}
 
 	get_first_arg_to_check_for_subcommand_call :
-		ArgParserState(_),
-		List(SubcommandParserConfig(sub_state)),
-		(Try(SubcommandParserConfig(sub_state), [NotFound]) -> ArgParserResult(ArgParserState(state))) -> ArgParserResult(ArgParserState(state))
+		ArgParserState(_), List(SubcommandParserConfig(sub_state)), (Try(SubcommandParserConfig(sub_state), [NotFound]) -> ArgParserResult(ArgParserState(state))) -> ArgParserResult(ArgParserState(state))
 	get_first_arg_to_check_for_subcommand_call = |{ remaining_args, subcommand_path, .. }, subcommand_parsers, callback| {
 		find_subcommand = |param|
 			match param {
@@ -107,12 +105,10 @@ SubCmd := [].{
 										ArgParserResult.SuccessfullyParsed({ data: Ok(sub_data), remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }),
 								)
 
-							sub_parser(
-								{
-									args: args.drop_first(1),
-									subcommand_path: subcommand_path.append(subcommand.name),
-								},
-							)
+							sub_parser({
+								args: args.drop_first(1),
+								subcommand_path: subcommand_path.append(subcommand.name),
+							})
 						}
 					},
 			)
@@ -143,12 +139,10 @@ SubCmd := [].{
 										ArgParserResult.SuccessfullyParsed({ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }),
 								)
 
-							sub_parser(
-								{
-									args: args.drop_first(1),
-									subcommand_path: subcommand_path.append(subcommand.name),
-								},
-							)
+							sub_parser({
+								args: args.drop_first(1),
+								subcommand_path: subcommand_path.append(subcommand.name),
+							})
 						}
 					},
 			)

@@ -30,16 +30,14 @@ Validate := [].{
 	## Ensure that a CLI's configuration is valid.
 	validate_cli : CliConfig -> Try({}, CliValidationErr)
 	validate_cli = |{ name, options, parameters, subcommands, .. }|
-		Validate.validate_command(
-			{
-				name,
-				options,
-				parent_options: [],
-				parameters,
-				subcommands,
-				subcommand_path: [name],
-			},
-		)
+		Validate.validate_command({
+			name,
+			options,
+			parent_options: [],
+			parameters,
+			subcommands,
+			subcommand_path: [name],
+		})
 
 	validate_command :
 		{
@@ -188,16 +186,14 @@ validate_subcommands = |subcommands, options, parent_options, subcommand_path|
 					.map(|option| { option, subcommand_path })
 					.concat(parent_options)
 
-			Validate.validate_command(
-				{
-					name: subcommand_name,
-					options: subcommand.options,
-					parent_options: updated_parent_options,
-					parameters: subcommand.parameters,
-					subcommands: subcommand.subcommands,
-					subcommand_path: subcommand_path.append(subcommand_name),
-				},
-			)?
+			Validate.validate_command({
+				name: subcommand_name,
+				options: subcommand.options,
+				parent_options: updated_parent_options,
+				parameters: subcommand.parameters,
+				subcommands: subcommand.subcommands,
+				subcommand_path: subcommand_path.append(subcommand_name),
+			})?
 
 			validate_subcommands(rest, options, parent_options, subcommand_path)
 		}

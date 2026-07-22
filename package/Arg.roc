@@ -6,6 +6,8 @@
 ## parsers opt in to decoding, and future path parsers can opt in to
 ## path-specific semantics.
 Arg := [Unix(List(U8)), Windows(List(U16))].{
+	is_eq : _
+
 	to_inspect : Arg -> Str
 	to_inspect = |arg| Str.inspect(display(arg))
 

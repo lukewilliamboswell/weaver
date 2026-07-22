@@ -32,26 +32,20 @@ cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			{
-				force: Opt.flag(
-					{
-						short: "f",
-						long: "",
-						help: "Force the task to complete.",
-					},
-				),
+				force: Opt.flag({
+					short: "f",
+					long: "",
+					help: "Force the task to complete.",
+				}),
 				sc: SubCmd.optional([subcommand_parser1, subcommand_parser2]),
-				file: Param.maybe_str(
-					{
-						name: "file",
-						help: "The file to process.",
-					},
-				),
-				files: Param.str_list(
-					{
-						name: "files",
-						help: "The rest of the files.",
-					},
-				),
+				file: Param.maybe_str({
+					name: "file",
+					help: "The file to process.",
+				}),
+				files: Param.str_list({
+					name: "files",
+					help: "The rest of the files.",
+				}),
 			}.Cli,
 			{
 				name: "subcommands",
@@ -66,20 +60,16 @@ cli_parser =
 subcommand_parser1 = 
 	SubCmd.finish(
 		{
-			d: Opt.maybe_u64(
-				{
-					short: "d",
-					long: "",
-					help: "A non-overlapping subcommand flag with s2.",
-				},
-			),
-			volume: Opt.maybe_u64(
-				{
-					short: "v",
-					long: "volume",
-					help: "How loud to grind the gears.",
-				},
-			),
+			d: Opt.maybe_u64({
+				short: "d",
+				long: "",
+				help: "A non-overlapping subcommand flag with s2.",
+			}),
+			volume: Opt.maybe_u64({
+				short: "v",
+				long: "volume",
+				help: "How loud to grind the gears.",
+			}),
 			sc: SubCmd.optional([sub_subcommand_parser1, sub_subcommand_parser2]),
 		}.Cli,
 		{
@@ -95,13 +85,11 @@ str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))
 subcommand_parser2 = 
 	SubCmd.finish(
 		Cli.map(
-			Opt.maybe_u64(
-				{
-					short: "d",
-					long: "",
-					help: "This doesn't overlap with s1's -d flag.",
-				},
-			),
+			Opt.maybe_u64({
+				short: "d",
+				long: "",
+				help: "This doesn't overlap with s1's -d flag.",
+			}),
 			|d_flag| DFlag(d_flag),
 		),
 		{
@@ -114,22 +102,18 @@ subcommand_parser2 =
 sub_subcommand_parser1 = 
 	SubCmd.finish(
 		{
-			a: Opt.u64(
-				{
-					short: "a",
-					long: "",
-					help: "An example short flag for a sub-subcommand.",
-					default: NoDefault,
-				},
-			),
-			b: Opt.u64(
-				{
-					short: "b",
-					long: "",
-					help: "Another example short flag for a sub-subcommand.",
-					default: NoDefault,
-				},
-			),
+			a: Opt.u64({
+				short: "a",
+				long: "",
+				help: "An example short flag for a sub-subcommand.",
+				default: NoDefault,
+			}),
+			b: Opt.u64({
+				short: "b",
+				long: "",
+				help: "Another example short flag for a sub-subcommand.",
+				default: NoDefault,
+			}),
 		}.Cli,
 		{
 			name: "ss1",
@@ -141,29 +125,23 @@ sub_subcommand_parser1 =
 sub_subcommand_parser2 = 
 	SubCmd.finish(
 		{
-			a: Opt.u64(
-				{
-					short: "a",
-					long: "",
-					help: "Set the alpha level.",
-					default: NoDefault,
-				},
-			),
-			c: Opt.u64(
-				{
-					short: "c",
-					long: "create",
-					help: "Create a doohickey.",
-					default: NoDefault,
-				},
-			),
-			data: Param.str(
-				{
-					name: "data",
-					help: "Data to manipulate.",
-					default: NoDefault,
-				},
-			),
+			a: Opt.u64({
+				short: "a",
+				long: "",
+				help: "Set the alpha level.",
+				default: NoDefault,
+			}),
+			c: Opt.u64({
+				short: "c",
+				long: "create",
+				help: "Create a doohickey.",
+				default: NoDefault,
+			}),
+			data: Param.str({
+				name: "data",
+				help: "Data to manipulate.",
+				default: NoDefault,
+			}),
 		}.Cli,
 		{
 			name: "ss2",

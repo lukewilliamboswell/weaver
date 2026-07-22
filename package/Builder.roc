@@ -223,13 +223,11 @@ expect {
 	out = parser({ args: [Parameter(Arg.from_str("123"))], subcommand_path: [] })
 
 	out
-		== ArgParserResult.SuccessfullyParsed(
-			{
-				data: Count(1),
-				remaining_args: [],
-				subcommand_path: [],
-			},
-		)
+		== ArgParserResult.SuccessfullyParsed({
+			data: Count(1),
+			remaining_args: [],
+			subcommand_path: [],
+		})
 }
 
 expect {

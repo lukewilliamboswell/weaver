@@ -53,4 +53,4 @@ scripts/bundle.sh --output-dir "$bundle_dir"
 
 echo ""
 echo "Testing examples against localhost bundle..."
-python3 ci/test_bundle_examples.py --skip-build-run
+python3 ci/test_bundle_examples.py

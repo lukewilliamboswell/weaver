@@ -31,29 +31,23 @@ cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			{
-				alpha: Opt.u64(
-					{
-						short: "a",
-						long: "alpha",
-						help: "Set the alpha level. [default: 123]",
-						default: Value(123),
-					},
-				),
-				beta: Opt.dec(
-					{
-						short: "b",
-						long: "beta",
-						help: "Set the beta level. [default: 3.14]",
-						default: Generate(|{}| 3.14),
-					},
-				),
+				alpha: Opt.u64({
+					short: "a",
+					long: "alpha",
+					help: "Set the alpha level. [default: 123]",
+					default: Value(123),
+				}),
+				beta: Opt.dec({
+					short: "b",
+					long: "beta",
+					help: "Set the beta level. [default: 3.14]",
+					default: Generate(|{}| 3.14),
+				}),
 				file: Cli.map(
-					Param.maybe_str(
-						{
-							name: "file",
-							help: "The file to process. [default: NONE]",
-						},
-					),
+					Param.maybe_str({
+						name: "file",
+						help: "The file to process. [default: NONE]",
+					}),
 					maybe_file_default,
 				),
 			}.Cli,

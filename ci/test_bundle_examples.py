@@ -24,8 +24,10 @@ PACKAGE_DEPENDENCY_RE = re.compile(r'(?m)^(?P<indent>\s*)weaver:\s*"(?P<dependen
 ROC = os.environ.get("ROC", "roc")
 
 RUNTIME_EXAMPLE_ARGS = {
+    "basic.roc": ["-a", "123", "-f", "file1.txt", "file2.txt"],
     "default-values.roc": ["file.txt"],
     "single-arg.roc": ["-a", "123"],
+    "subcommands.roc": ["-f", "file.txt", "file2.txt"],
 }
 
 
@@ -120,13 +122,7 @@ def run_example_checks(examples: list[Path]) -> None:
 
 def run_example_apps(examples: list[Path]) -> None:
     for example in examples:
-        args = RUNTIME_EXAMPLE_ARGS.get(example.name)
-        if args is None:
-            # The current compiler checks these examples, but lowering examples
-            # with list fields can hit a postcheck invariant while running.
-            print(f"Skipping runtime smoke test for {example.name}")
-            continue
-
+        args = RUNTIME_EXAMPLE_ARGS[example.name]
         run([ROC, example.name, "--no-cache", "--", *args], cwd=example.parent)
 
 
@@ -135,11 +131,7 @@ def build_and_run_examples(examples: list[Path], build_dir: Path) -> None:
     exe_suffix = ".exe" if os.name == "nt" else ""
 
     for example in examples:
-        args = RUNTIME_EXAMPLE_ARGS.get(example.name)
-        if args is None:
-            print(f"Skipping compiled runtime smoke test for {example.name}")
-            continue
-
+        args = RUNTIME_EXAMPLE_ARGS[example.name]
         output = build_dir / f"{example.stem}{exe_suffix}"
         run([ROC, "build", example.name, f"--output={output}", "--no-cache"], cwd=example.parent)
         run([str(output), *args])

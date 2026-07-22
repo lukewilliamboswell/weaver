@@ -12,3 +12,5 @@ package
 		Validate,
 	]
 	{}
+
+import CliTest

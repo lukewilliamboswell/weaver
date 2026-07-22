@@ -30,14 +30,12 @@ cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			Cli.map(
-				Opt.u64(
-					{
-						short: "a",
-						long: "alpha",
-						help: "Set the alpha level.",
-						default: NoDefault,
-					},
-				),
+				Opt.u64({
+					short: "a",
+					long: "alpha",
+					help: "Set the alpha level.",
+					default: NoDefault,
+				}),
 				|alpha| Alpha(alpha),
 			),
 			{

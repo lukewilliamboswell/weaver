@@ -9,7 +9,9 @@ Base := [].{
 		ShowVersion,
 		IncorrectUsage(ArgExtractErr, { subcommand_path : List(Str) }),
 		SuccessfullyParsed(a),
-	]
+	].{
+		is_eq : _
+	}
 
 	## The parameters that an `ArgParser` takes to extract data from args.
 	ArgParserParams : { args : List(ParsedArg), subcommand_path : List(Str) }
