@@ -78,6 +78,7 @@ SubCmd := [].{
 					Long(long) => ArgParserResult.IncorrectUsage(UnrecognizedLongArg(long.name), { subcommand_path: subcommand_path })
 					ShortGroup(sg) => ArgParserResult.IncorrectUsage(UnrecognizedShortArg(first_or_empty(sg.names)), { subcommand_path: subcommand_path })
 					Parameter(p) => callback(find_subcommand(Ok(p)))
+					PassedThrough(_) => callback(Err(NotFound))
 				}
 			}
 	}
@@ -169,3 +170,21 @@ first_or_empty = |values|
 		[] => ""
 		[first, ..] => first
 	}
+
+## The double-dash boundary prevents a following value from dispatching a subcommand.
+expect {
+	arg = Path.utf8("run")
+	{ parser, .. } =
+		Builder.into_parts(
+			SubCmd.optional([
+				SubCmd.empty({ name: "run", description: "Run the task.", value: Ran }),
+			]),
+		)
+
+	parser({ args: [PassedThrough(arg)], subcommand_path: ["app"] })
+		== ArgParserResult.SuccessfullyParsed({
+			data: Err(NoSubcommand),
+			remaining_args: [PassedThrough(arg)],
+			subcommand_path: ["app"],
+		})
+}

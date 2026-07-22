@@ -64,7 +64,7 @@ Extract := [].{
 
 			Long(long) => Err(UnrecognizedLongArg(long.name))
 
-			Parameter(p) =>
+			Parameter(p) | PassedThrough(p) =>
 				match param.plurality {
 					Optional | One => Ok({ ..state, action: StopParsing, values: state.values.append(p) })
 					Many => Ok({ ..state, values: state.values.append(p) })
@@ -152,7 +152,7 @@ Extract := [].{
 					Ok({ ..state, remaining_args: state.remaining_args.append(arg) })
 				}
 
-			Parameter(_) =>
+			Parameter(_) | PassedThrough(_) =>
 				Ok({ ..state, remaining_args: state.remaining_args.append(arg) })
 			}
 
@@ -203,7 +203,7 @@ Extract := [].{
 				ShortGroup({ names, complete: Partial }) => Err(CannotUsePartialShortGroupAsValue(option, names))
 				Long({ name, value: Ok(val) }) => Ok(Path.utf8("--${name}=${Path.display(val)}"))
 				Long({ name, value: Err(NoValue) }) => Ok(Path.utf8("--${name}"))
-				Parameter(p) => Ok(p)
+				Parameter(p) | PassedThrough(p) => Ok(p)
 			}?
 
 		Ok({ ..state, action: FindOption, values: state.values.append(Ok(value)) })

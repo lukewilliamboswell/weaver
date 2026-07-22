@@ -51,6 +51,7 @@ Cli := [].{
 						Long(long) => UnrecognizedLongArg(long.name)
 						Short(short) => UnrecognizedShortArg(short)
 						ShortGroup(short_group) => UnrecognizedShortArg(first_or_empty(short_group.names))
+						PassedThrough(param) => ExtraParamProvided(param)
 					}
 
 				Err(extra_arg_err)

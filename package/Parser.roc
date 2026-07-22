@@ -8,6 +8,7 @@ Parser := [].{
 		ShortGroup({ names : List(Str), complete : [Complete, Partial] }),
 		Long({ name : Str, value : ArgValue }),
 		Parameter(Path),
+		PassedThrough(Path),
 	]
 
 	parse_args : List(Path) -> List(ParsedArg)
@@ -38,7 +39,7 @@ Parser := [].{
 
 							PassThrough => {
 								pass_through: PassThrough,
-								parsed_args: state.parsed_args.append(Parameter(arg)),
+								parsed_args: state.parsed_args.append(PassedThrough(arg)),
 							}
 						},
 				)
@@ -113,7 +114,7 @@ expect {
 	delimiter = Path.from_raw(UnixBytes(Str.to_utf8("--")))
 	option_like_value = Path.from_raw(WindowsU16s([0x002D, 0x0078]))
 
-	Parser.parse_args([delimiter, option_like_value]) == [Parameter(option_like_value)]
+	Parser.parse_args([delimiter, option_like_value]) == [PassedThrough(option_like_value)]
 }
 
 ## Parsing preserves the first argument; callers own any executable-path removal.
@@ -178,6 +179,6 @@ expect {
 			Long({ name: "passed", value: Err(NoValue) }),
 			ShortGroup({ names: ["b", "c", "d"], complete: Complete }),
 			Parameter(Path.utf8("xyz")),
-			Parameter(Path.utf8("--subject=world")),
+			PassedThrough(Path.utf8("--subject=world")),
 		]
 }

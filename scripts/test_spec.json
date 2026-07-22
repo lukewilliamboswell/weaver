@@ -342,7 +342,7 @@
         {
           "name": "delimiter-before-subcommand-name",
           "args": ["--", "s1", "tail"],
-          "stdout_contains": ["file: Ok(\"tail\")", "sc: Ok(S1("]
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"s1\"), files: [\"tail\"], force: False, sc: Err(NoSubcommand) }\n"
         },
         {
           "name": "invalid-utf8-root-parameter",

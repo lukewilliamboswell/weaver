@@ -178,7 +178,7 @@ Builder(data, from_action, to_action) := {
 					Short(short) => short == option.short
 					ShortGroup(sg) => sg.names.any(|n| n == option.short)
 					Long(long) => long.name == option.long
-					Parameter(_) => False
+					Parameter(_) | PassedThrough(_) => False
 				},
 		)
 
