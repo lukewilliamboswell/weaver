@@ -107,6 +107,43 @@
       ]
     },
     {
+      "path": "examples/deploy.roc",
+      "cases": [
+        {
+          "name": "deployment-plan",
+          "args": ["ghcr.io/acme/api:v2", "--environment", "production", "--replicas", "4", "--label", "team=payments", "--label", "tier=api", "--dry-run"],
+          "stdout": "Deployment plan:\n{ dry_run: True, environment: \"production\", labels: [\"team=payments\", \"tier=api\"], region: \"us-east-1\", replicas: 4, target_image: \"ghcr.io/acme/api:v2\" }\n"
+        },
+        {
+          "name": "defaults",
+          "args": ["ghcr.io/acme/web:v1", "--environment", "staging"],
+          "stdout": "Deployment plan:\n{ dry_run: False, environment: \"staging\", labels: [], region: \"us-east-1\", replicas: 3, target_image: \"ghcr.io/acme/web:v1\" }\n"
+        },
+        {
+          "name": "missing-environment",
+          "args": ["ghcr.io/acme/api:v2"],
+          "exit_code": 1,
+          "stdout_contains": ["MISSING OPTION", "Required option -e/--environment is missing.", "Usage:\n  deploy -e/--environment STR [OPTIONS] <image>", "Tip: Provide `-e/--environment string` as shown in Usage."]
+        },
+        {
+          "name": "invalid-replicas",
+          "args": ["ghcr.io/acme/api:v2", "--environment", "production", "--replicas", "many"],
+          "exit_code": 1,
+          "stdout_contains": ["INVALID OPTION VALUE", "The value provided to -r/--replicas was not a valid number."]
+        },
+        {
+          "name": "help",
+          "args": ["--help"],
+          "stdout_contains": ["deploy v0.1.0", "Roll out a container image", "Usage:\n  deploy -e/--environment STR [OPTIONS] <image>", "--dry-run", "--label STR", "<image>"]
+        },
+        {
+          "name": "version",
+          "args": ["--version"],
+          "stdout": "v0.1.0\n"
+        }
+      ]
+    },
+    {
       "path": "examples/default-values.roc",
       "cases": [
         {

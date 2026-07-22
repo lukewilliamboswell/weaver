@@ -14,6 +14,12 @@ Without code generation at compile time, the closest we can get in Roc is the us
 [record builder syntax](https://www.roc-lang.org/examples/RecordBuilder/README.html).
 This allows us to build our config and parser at the same time, in a type-safe way.
 
+The deployment showcase below comes from the compiled
+[`examples/deploy.roc`](./examples/deploy.roc): the same record builder produces
+typed data, help text, usage, and actionable diagnostics.
+
+![Weaver record-builder source, a typed deployment parse, and a colored usage diagnostic](./assets/pretty-errors.svg)
+
 Read the documentation at <https://lukewilliamboswell.github.io/weaver/Cli/>.
 
 ## Status
@@ -139,7 +145,28 @@ Options:
   -f             Force the task to complete.
   -h, --help     Show this help page.
   -V, --version  Show the version.
+
+$ roc examples/basic.roc -- --wat
+┌───────────────────────┐
+│ UNRECOGNIZED ARGUMENT │
+└───────────────────────┘
+
+The argument --wat was not recognized.
+
+Usage:
+  basic -a NUM [OPTIONS] [<file>] [<files>...]
+
+Tip: Run `basic --help` to see the available arguments.
 ```
+
+Help prose and diagnostics wrap conservatively at 80 UTF-8 bytes. Weaver
+preserves explicit line breaks and never splits a token, so an unusually long
+Unicode token can extend beyond that boundary rather than being corrupted.
+
+`Cli.assert_valid` is convenient for static configurations. Applications that
+want to display configuration failures should handle the result from
+`Cli.finish` and pass the error to
+`ErrorFormatter.render_cli_validation_err(err, Color)` (or `Plain`).
 
 Weaver parses exactly the arguments passed to `Cli.parse_or_display_message`; it
 never implicitly drops the first element. The example platform supplies `List(Str)`
@@ -177,13 +204,19 @@ arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
 arguments on Unix. Every example must have a spec entry, so adding an example
 without test cases fails the suite.
 
+Regenerate the README's terminal capture from the compiled basic example with:
+
+```sh
+python3 scripts/capture_example.py
+```
+
 ## Roadmap
 
 Now that an initial release has happened, these are some ideas I have for future development:
 
 - [ ] Optionally set `group : Str` per option so they are visually grouped in the help page
 - [ ] Completion generation for popular shells (e.g. Bash, Zsh, Fish, etc.)
-- [X] Add terminal escape sequences to generated messages for prettier help/usage text formatting (currently working, but could be nicer/more configurable)
+- [x] Add terminal styling and structured diagnostics to generated help and error messages
 - [ ] add convenient CLI platform wrappers (e.g. parse, or print help and exit) for use with module params
-- [X] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
+- [x] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
 - [ ] Add more testing (always)

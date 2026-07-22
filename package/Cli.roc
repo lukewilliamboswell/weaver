@@ -118,12 +118,13 @@ Cli := [].{
 	}
 
 	## Assert that a CLI is properly configured, crashing your program if not.
+	## Handle `Cli.finish` directly to render its validation error.
 	assert_valid : Try(CliParser(data), CliValidationErr) -> CliParser(data)
 	assert_valid = |result|
 		match result {
 			Ok(cli) => cli
 			Err(_err) => {
-				crash "Invalid Weaver CLI configuration. Handle the result from Cli.finish to inspect the validation error."
+				crash "Invalid Weaver CLI configuration. Handle the result from Cli.finish with ErrorFormatter.render_cli_validation_err."
 			}
 		}
 
