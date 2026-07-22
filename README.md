@@ -1,3 +1,8 @@
+[![Roc-Lang][roc_badge]][roc_link]
+
+[roc_badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fpastebin.com%2Fraw%2FcFzuCCd7
+[roc_link]: https://github.com/roc-lang/roc
+
 Weaver
 ======
 
@@ -7,59 +12,112 @@ This library aims to provide a convenient interface for parsing CLI arguments
 into structured data, in the style of Rust's [clap](https://github.com/clap-rs/clap).
 Without code generation at compile time, the closest we can get in Roc is the use of the
 [record builder syntax](https://www.roc-lang.org/examples/RecordBuilder/README.html).
-This allows us to build our config and parser at the same time, in a type-safe way!
+This allows us to build our config and parser at the same time, in a type-safe way.
 
-Read the documentation at <https://smores56.github.io/weaver/Cli/>.
+The deployment showcase below comes from the compiled
+[`examples/deploy.roc`](./examples/deploy.roc): the same record builder produces
+typed data, help text, usage, and actionable diagnostics.
+
+![Weaver record-builder source, a typed deployment parse, and a colored usage diagnostic](./assets/pretty-errors.svg)
+
+Read the documentation at <https://lukewilliamboswell.github.io/weaver/Cli/>.
 
 ## Status
 
 This library is ready to parse your args today, but I'm always looking for more testing
 from the community! Feel free to open a GitHub issue if there's a feature you're missing
-from another CLI parsing library that you think would fit well in Weaver's nest.
+from another CLI parsing library that you think would fit well in Weaver.
 
 ## Example
 
 ```roc
 app [main!] {
-    pf: platform "<latest from https://github.com/roc-lang/basic-cli/releases>",
-    weaver: "<latest from https://github.com/smores56/weaver/releases>",
+    pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/1.0.0/AnZoxzoGPtSGQ15EQh6pBeeaHJ7aizP9MQhK81dES3Uq.tar.zst",
+    weaver: "<latest from https://github.com/lukewilliamboswell/weaver/releases>",
 }
 
-import pf.Arg
 import pf.Stdout
-import weaver.Opt
 import weaver.Cli
+import weaver.Opt
 import weaver.Param
 
-main! = |args|
-    data =
-        Cli.parse_or_display_message(cli_parser, args, Arg.to_os_raw)
-        |> Result.on_err!(|message|
+BasicConfig : {
+    alpha : U64,
+    force : Bool,
+    file : Try(Str, [NoValue]),
+    files : List(Str),
+}
+
+main! : List(Str) => Try({}, _)
+main! = |args| {
+    # This legacy platform includes the executable path in `args`.
+    match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
+        Err(Help(message)) => {
             Stdout.line!(message)?
-            Err(Exit(1, ""))
-        )
+            Ok({})
+        }
 
-    Stdout.line!("Successfully parsed! Here's what I got:")?
-    Stdout.line!("")?
-    Stdout.line!(Inspect.to_str(data))?
+        Err(Version(message)) => {
+            Stdout.line!(message)?
+            Ok({})
+        }
 
-    Ok({})
+        Err(InvalidUsage(message)) => {
+            Stdout.line!(message)?
+            Err(Exit(1))
+        }
 
-cli_parser =
-    { Cli.weave <-
-        alpha: Opt.u64({ short: "a", help: "Set the alpha level." }),
-        force: Opt.flag({ short: "f", help: "Force the task to complete." }),
-        file: Param.maybe_str({ name: "file", help: "The file to process." }),
-        files: Param.str_list({ name: "files", help: "The rest of the files." }),
+        Ok(data) => {
+            Stdout.line!("Successfully parsed! Here's what I got:")?
+            Stdout.line!("")?
+            Stdout.line!(Str.inspect(data))?
+
+            Ok({})
+        }
     }
-    |> Cli.finish({
-        name: "basic",
-        version: "v0.1.0",
-        authors: ["Some One <some.one@mail.com>"],
-        description: "This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!",
-    })
-    |> Cli.assert_valid
+}
+
+cli_parser : Cli.CliParser(BasicConfig)
+cli_parser =
+    Cli.assert_valid(
+        Cli.finish(
+            {
+                alpha: Opt.u64({
+                    short: "a",
+                    long: "",
+                    help: "Set the alpha level.",
+                    default: NoDefault,
+                }),
+                force: Opt.flag({
+                    short: "f",
+                    long: "",
+                    help: "Force the task to complete.",
+                }),
+                file: Param.maybe_str({
+                    name: "file",
+                    help: "The file to process.",
+                }),
+                files: Param.str_list({
+                    name: "files",
+                    help: "The rest of the files.",
+                }),
+            }.Cli,
+            {
+                name: "basic",
+                version: "v0.1.0",
+                authors: ["Some One <some.one@mail.com>"],
+                description: "This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!",
+                text_style: Color,
+            },
+        ),
+    )
+
+str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
+str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))
 ```
+
+Set `text_style` to `Color` for ANSI-styled terminal help and diagnostics, or
+choose `Plain` when output is redirected or your application honors `NO_COLOR`.
 
 And here's us calling the above example from the command line:
 
@@ -67,16 +125,16 @@ And here's us calling the above example from the command line:
 $ roc examples/basic.roc -- file1.txt file2.txt -f -a 123
 Successfully parsed! Here's what I got:
 
-{alpha: 123, file: (Ok "file1.txt"), files: ["file2.txt"], force: Bool.true}
+{ alpha: 123, file: Ok("file1.txt"), files: ["file2.txt"], force: True }
 
-$ roc readme.roc -- --help
-basic v0.0.1
+$ roc examples/basic.roc -- --help
+basic v0.1.0
 Some One <some.one@mail.com>
 
 This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!
 
 Usage:
-  basic -a NUM [options] <file> <files...>
+  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
 
 Arguments:
   <file>      The file to process.
@@ -87,18 +145,78 @@ Options:
   -f             Force the task to complete.
   -h, --help     Show this help page.
   -V, --version  Show the version.
+
+$ roc examples/basic.roc -- --wat
+┌───────────────────────┐
+│ UNRECOGNIZED ARGUMENT │
+└───────────────────────┘
+
+The argument --wat was not recognized.
+
+Usage:
+  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
+
+Tip: Run `basic --help` to see the available arguments.
 ```
+
+Help prose and diagnostics wrap conservatively at 80 UTF-8 bytes. Weaver
+preserves explicit line breaks and never splits a token, so an unusually long
+Unicode token can extend beyond that boundary rather than being corrupted.
+
+`Cli.assert_valid` is convenient for static configurations. Applications that
+want to display configuration failures should handle the result from
+`Cli.finish` and pass the error to
+`ErrorFormatter.render_cli_validation_err(err, Color)` (or `Plain`).
+
+Weaver parses exactly the arguments passed to `Cli.parse_or_display_message`; it
+never implicitly drops the first element. The example platform supplies `List(Str)`
+including the executable path, so the example drops that element explicitly and its
+legacy adapter preserves the underlying argument bytes. Modern platforms such as
+`basic-cli` supply `List(OsStr)`; pass `OsStr.to_raw` directly to preserve UTF-8,
+native Unix bytes, and Windows UTF-16 code units at Weaver's `Path` boundary. Only
+drop the first element when the platform documents that it is the executable path.
+
+Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
+[`path.Path`](https://github.com/roc-lang/path/releases/tag/3.0.0-rc1). String
+parsers such as `Opt.str` and `Param.str` intentionally decode at the parser
+boundary without losing path-specific semantics in the raw parsers.
+
+A separate token beginning with `-` is treated as another option, not as an option
+value. Pass an option-like value with `--name=value`, or place `--` before the value;
+for example, both `--beta=-2.5` and `--beta -- -2.5` are unambiguous.
 
 There are also some examples in the [examples](./examples) directory that are more
 feature-complete, with more to come as this library matures.
+
+## Testing
+
+Run the complete package and example suite with:
+
+```sh
+python3 scripts/test.py
+```
+
+The runner formats, checks, tests, documents, and bundles the package; then it
+formats, checks, tests, and builds every example against that bundle. Each built
+example is exercised with the cases in [`scripts/test_spec.json`](./scripts/test_spec.json),
+including successful parses, help and version output, malformed values, missing
+arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
+arguments on Unix. Every example must have a spec entry, so adding an example
+without test cases fails the suite.
+
+Regenerate the README's terminal capture from the compiled basic example with:
+
+```sh
+python3 scripts/capture_example.py
+```
 
 ## Roadmap
 
 Now that an initial release has happened, these are some ideas I have for future development:
 
-- [ ] Optionally set `{ group ?? Str }` per option so they are visually grouped in the help page
+- [ ] Optionally set `group : Str` per option so they are visually grouped in the help page
 - [ ] Completion generation for popular shells (e.g. Bash, Zsh, Fish, etc.)
-- [X] Add terminal escape sequences to generated messages for prettier help/usage text formatting (currently working, but could be nicer/more configurable)
+- [x] Add terminal styling and structured diagnostics to generated help and error messages
 - [ ] add convenient CLI platform wrappers (e.g. parse, or print help and exit) for use with module params
-- [X] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
+- [x] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
 - [ ] Add more testing (always)
