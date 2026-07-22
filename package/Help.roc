@@ -1,3 +1,5 @@
+import ansi.ANSI
+import ansi.Style
 import Base exposing [
 	CliConfig,
 	OptionConfig,
@@ -8,12 +10,21 @@ import Base exposing [
 ]
 import Utils exposing [to_upper_case]
 
-# TODO: use roc-ansi once package dependencies are settled.
-bold_ansi_code = "\u(001b)[1m"
+style_text : Str, List(Style), TextStyle -> Str
+style_text = |text, styles, text_style|
+	match text_style {
+		Color => ANSI.style(text, styles).concat(ANSI.style("", [Default]))
 
-bold_and_underline_ansi_code = "\u(001b)[1m\u(001b)[4m"
+		Plain => text
+	}
 
-reset_ansi_code = "\u(001b)[0m"
+## Colored text applies each requested roc-ansi style and resets afterward.
+expect
+	style_text("Heading", [Bold(On), Underline(On)], Color)
+		== "\u(001b)[1m\u(001b)[4mHeading\u(001b)[0m"
+
+## Plain text does not contain terminal control sequences.
+expect style_text("Heading", [Bold(On), Underline(On)], Plain) == "Heading"
 
 Help := [].{
 
@@ -110,13 +121,9 @@ Help := [].{
 		bottom_sections = 
 			join_lines_with(filter_non_empty([subcommands_text, parameters_text, options_text]), "\n\n")
 
-		(style, reset) = 
-			match text_style {
-				Color => (bold_and_underline_ansi_code, reset_ansi_code)
-				Plain => ("", "")
-			}
+		styled_top_line = style_text(top_line, [Bold(On), Underline(On)], text_style)
 
-		"${style}${top_line}${reset}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
+		"${styled_top_line}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
 	}
 
 	## Render just the usage text for a command at or under the root config.
@@ -137,16 +144,20 @@ Help := [].{
 				["[OPTIONS]"]
 			}
 
-		params_strings = 
+		params_strings =
 			parameters.map(
 				|param| {
-					ellipsis = 
+					value =
 						match param.plurality {
-							Optional | One => ""
-							Many => "..."
+							Optional | One => "<${param.name}>"
+							Many => "<${param.name}>..."
 						}
 
-					"<${param.name}${ellipsis}>"
+					if param.required {
+						value
+					} else {
+						"[${value}]"
+					}
 				},
 			)
 
@@ -159,13 +170,9 @@ Help := [].{
 				_other => ""
 			}
 
-		(style, reset) = 
-			match text_style {
-				Color => (bold_and_underline_ansi_code, reset_ansi_code)
-				Plain => ("", "")
-			}
+		styled_heading = style_text("Usage:", [Bold(On), Underline(On)], text_style)
 
-		"${style}Usage:${reset}\n  ${name} ${first_line}${subcommand_usage}"
+		"${styled_heading}\n  ${name} ${first_line}${subcommand_usage}"
 	}
 }
 
@@ -180,13 +187,9 @@ commands_help = |subcommands, text_style| {
 	aligned_commands = 
 		align_two_columns(commands.map(|(name, sub_config)| { label: name, help: sub_config.description }), text_style)
 
-	(style, reset) = 
-		match text_style {
-			Color => (bold_and_underline_ansi_code, reset_ansi_code)
-			Plain => ("", "")
-		}
+	styled_heading = style_text("Commands:", [Bold(On), Underline(On)], text_style)
 
-	"${style}Commands:${reset}\n${Str.join_with(aligned_commands, "\n")}"
+	"${styled_heading}\n${Str.join_with(aligned_commands, "\n")}"
 }
 
 parameters_help : List(ParameterConfig), TextStyle -> Str
@@ -207,13 +210,9 @@ parameters_help = |params, text_style| {
 			text_style,
 		)
 
-	(style, reset) = 
-		match text_style {
-			Color => (bold_and_underline_ansi_code, reset_ansi_code)
-			Plain => ("", "")
-		}
+	styled_heading = style_text("Arguments:", [Bold(On), Underline(On)], text_style)
 
-	"${style}Arguments:${reset}\n${Str.join_with(formatted_params, "\n")}"
+	"${styled_heading}\n${Str.join_with(formatted_params, "\n")}"
 }
 
 option_name_formatter : OptionConfig -> Str
@@ -271,13 +270,9 @@ options_help = |options, text_style| {
 	formatted_options = 
 		align_two_columns(options.map(|option| { label: option_name_formatter(option), help: option.help }), text_style)
 
-	(style, reset) = 
-		match text_style {
-			Color => (bold_and_underline_ansi_code, reset_ansi_code)
-			Plain => ("", "")
-		}
+	styled_heading = style_text("Options:", [Bold(On), Underline(On)], text_style)
 
-	"${style}Options:${reset}\n${Str.join_with(formatted_options, "\n")}"
+	"${styled_heading}\n${Str.join_with(formatted_options, "\n")}"
 }
 
 indent_multiline_string_by : Str, U64 -> Str
@@ -294,12 +289,6 @@ align_two_columns = |columns, text_style| {
 	max_first_column_len = 
 		max_or_zero(columns.map(|{ label, .. }| label.count_utf8_bytes()))
 
-	(style, reset) = 
-		match text_style {
-			Color => (bold_ansi_code, reset_ansi_code)
-			Plain => ("", "")
-		}
-
 	columns.map(
 		|{ label, help }| {
 			buffer = 
@@ -308,7 +297,9 @@ align_two_columns = |columns, text_style| {
 			second_shifted = 
 				indent_multiline_string_by(help, max_first_column_len + 4)
 
-			"  ${style}${label}${buffer}${reset}  ${second_shifted}"
+			styled_label = style_text("${label}${buffer}", [Bold(On)], text_style)
+
+			"  ${styled_label}  ${second_shifted}"
 		},
 	)
 }
@@ -331,14 +322,7 @@ join_lines_with = |values, separator|
 
 filter_required_options : List(OptionConfig) -> List(OptionConfig)
 filter_required_options = |options|
-	match options {
-		[] => []
-		[option, .. as rest] =>
-			match option.expected_value {
-				NothingExpected => filter_required_options(rest)
-				ExpectsValue(_) => [option].concat(filter_required_options(rest))
-			}
-		}
+	options.keep_if(|option| option.required)
 
 max_or_zero : List(U64) -> U64
 max_or_zero = |values|
