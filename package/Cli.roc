@@ -113,8 +113,8 @@ Cli := [].{
 			}
 		}
 
-	## Parse arguments using a CLI parser or return a useful message.
-	parse_or_display_message : CliParser(data), List(arg), (arg -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]) -> Try(data, Str)
+	## Parse arguments, or return a typed help, version, or usage message.
+	parse_or_display_message : CliParser(data), List(arg), (arg -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]) -> Try(data, [Help(Str), Version(Str), InvalidUsage(Str)])
 	parse_or_display_message = |{ config, parser, text_style }, external_args, to_raw_arg| {
 		args = 
 			external_args
@@ -123,13 +123,13 @@ Cli := [].{
 
 		match parser(args) {
 			SuccessfullyParsed(data) => Ok(data)
-			ShowHelp({ subcommand_path }) => Err(help_text(config, subcommand_path, text_style))
-			ShowVersion => Err(config.version)
+			ShowHelp({ subcommand_path }) => Err(Help(help_text(config, subcommand_path, text_style)))
+			ShowVersion => Err(Version(config.version))
 			IncorrectUsage(err, { subcommand_path }) => {
 				usage_str = usage_help(config, subcommand_path, text_style)
 				incorrect_usage_str = "Error: ${format_arg_extract_err(err)}\n\n${usage_str}"
 
-				Err(incorrect_usage_str)
+				Err(InvalidUsage(incorrect_usage_str))
 			}
 		}
 	}

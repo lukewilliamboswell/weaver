@@ -18,7 +18,17 @@ BasicConfig : {
 main! : List(Str) => Try({}, _)
 main! = |args| {
 	match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
-		Err(message) => {
+		Err(Help(message)) => {
+			Stdout.line!(message)?
+			Ok({})
+		}
+
+		Err(Version(message)) => {
+			Stdout.line!(message)?
+			Ok({})
+		}
+
+		Err(InvalidUsage(message)) => {
 			Stdout.line!(message)?
 			Err(Exit(1))
 		}

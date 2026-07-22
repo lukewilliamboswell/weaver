@@ -80,7 +80,6 @@
         {
           "name": "help",
           "args": ["--help"],
-          "exit_code": 1,
           "stdout_contains": [
             "basic v0.0.1",
             "Usage:\n  basic -a NUM [OPTIONS] [<file>] [<files>...]",
@@ -91,7 +90,6 @@
         {
           "name": "version",
           "args": ["--version"],
-          "exit_code": 1,
           "stdout": "v0.0.1\n"
         }
       ]
@@ -167,7 +165,6 @@
         {
           "name": "help",
           "args": ["--help"],
-          "exit_code": 1,
           "stdout_contains": [
             "default-values v0.0.1",
             "Usage:\n  default-values [OPTIONS] [<file>]",
@@ -179,7 +176,6 @@
         {
           "name": "version",
           "args": ["--version"],
-          "exit_code": 1,
           "stdout": "v0.0.1\n"
         }
       ]
@@ -259,7 +255,6 @@
         {
           "name": "help",
           "args": ["--help"],
-          "exit_code": 1,
           "stdout_contains": [
             "single-arg v0.0.1",
             "Usage:\n  single-arg -a/--alpha NUM [OPTIONS]",
@@ -269,7 +264,6 @@
         {
           "name": "version",
           "args": ["--version"],
-          "exit_code": 1,
           "stdout": "v0.0.1\n"
         }
       ]
@@ -376,7 +370,6 @@
         {
           "name": "root-help",
           "args": ["--help"],
-          "exit_code": 1,
           "stdout_contains": [
             "subcommands v0.0.1",
             "subcommands <COMMAND>",
@@ -386,7 +379,6 @@
         {
           "name": "subcommand-help",
           "args": ["s1", "--help"],
-          "exit_code": 1,
           "stdout_contains": [
             "subcommands s1 v0.0.1",
             "subcommands s1 <COMMAND>",
@@ -397,25 +389,21 @@
         {
           "name": "first-nested-help",
           "args": ["s1", "ss1", "--help"],
-          "exit_code": 1,
           "stdout_contains": ["subcommands s1 ss1 v0.0.1", "-a NUM", "-b NUM"]
         },
         {
           "name": "second-nested-help",
           "args": ["s1", "ss2", "--help"],
-          "exit_code": 1,
           "stdout_contains": ["subcommands s1 ss2 v0.0.1", "-c NUM, --create NUM", "<data>"]
         },
         {
           "name": "root-version",
           "args": ["--version"],
-          "exit_code": 1,
           "stdout": "v0.0.1\n"
         },
         {
           "name": "subcommand-version",
           "args": ["s1", "--version"],
-          "exit_code": 1,
           "stdout": "v0.0.1\n"
         }
       ]
