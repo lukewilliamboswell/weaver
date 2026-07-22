@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [
 	ArgExtractErr,
 	DefaultableOptionConfigBaseParams,
@@ -8,6 +8,7 @@ import Base exposing [
 	OptionConfigBaseParams,
 	OptionConfigParams,
 	ValueParser,
+	arg_to_bytes,
 	num_type_name,
 	str_type_name,
 ]
@@ -138,23 +139,23 @@ Opt := [].{
 		Opt.builder_with_option_parser(option, value_parser)
 	}
 
-	arg : DefaultableOptionConfigBaseParams(Arg) -> CliBuilder(Arg, GetOptionsAction, GetOptionsAction)
+	arg : DefaultableOptionConfigBaseParams(Path) -> CliBuilder(Path, GetOptionsAction, GetOptionsAction)
 	arg = |params| Opt.single(defaultable_option_params(params, str_type_name, |a| Ok(a)))
 
-	maybe_arg : OptionConfigBaseParams -> CliBuilder(Try(Arg, [NoValue]), GetOptionsAction, GetOptionsAction)
+	maybe_arg : OptionConfigBaseParams -> CliBuilder(Try(Path, [NoValue]), GetOptionsAction, GetOptionsAction)
 	maybe_arg = |params| Opt.maybe(option_params(params, str_type_name, |a| Ok(a)))
 
-	arg_list : OptionConfigBaseParams -> CliBuilder(List(Arg), GetOptionsAction, GetOptionsAction)
+	arg_list : OptionConfigBaseParams -> CliBuilder(List(Path), GetOptionsAction, GetOptionsAction)
 	arg_list = |params| Opt.list(option_params(params, str_type_name, |a| Ok(a)))
 
 	bytes : DefaultableOptionConfigBaseParams(List(U8)) -> CliBuilder(List(U8), GetOptionsAction, GetOptionsAction)
-	bytes = |params| Opt.single(defaultable_option_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	bytes = |params| Opt.single(defaultable_option_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	maybe_bytes : OptionConfigBaseParams -> CliBuilder(Try(List(U8), [NoValue]), GetOptionsAction, GetOptionsAction)
-	maybe_bytes = |params| Opt.maybe(option_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	maybe_bytes = |params| Opt.maybe(option_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	bytes_list : OptionConfigBaseParams -> CliBuilder(List(List(U8)), GetOptionsAction, GetOptionsAction)
-	bytes_list = |params| Opt.list(option_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	bytes_list = |params| Opt.list(option_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	str : DefaultableOptionConfigBaseParams(Str) -> CliBuilder(Str, GetOptionsAction, GetOptionsAction)
 	str = |params| Opt.single(defaultable_option_params(params, str_type_name, parse_str_arg))
@@ -314,14 +315,14 @@ option_params = |{ short, long, help }, type_name, parser| {
 	parser,
 }
 
-parse_str_arg : Arg -> Try(Str, InvalidValue)
+parse_str_arg : Path -> Try(Str, InvalidValue)
 parse_str_arg = |arg|
-	match Arg.to_str(arg) {
+	match Path.to_str(arg) {
 		Ok(str) => Ok(str)
-		Err(InvalidUtf8) => Err(InvalidUtf8)
+		Err(_) => Err(InvalidUtf8)
 	}
 
-parse_number_arg : Arg, (Str -> Try(a, _)) -> Try(a, InvalidValue)
+parse_number_arg : Path, (Str -> Try(a, _)) -> Try(a, InvalidValue)
 parse_number_arg = |arg, parser| {
 	str = parse_str_arg(arg)?
 

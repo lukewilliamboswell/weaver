@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [ArgExtractErr, OptionConfig, ParameterConfig]
 import Parser exposing [ArgValue, ParsedArg]
 
@@ -10,12 +10,12 @@ Extract := [].{
 
 	ExtractParamValuesState : {
 		action : [GetParam, StopParsing],
-		values : List(Arg),
+		values : List(Path),
 		remaining_args : List(ParsedArg),
 	}
 
 	ExtractParamValuesOutput : {
-		values : List(Arg),
+		values : List(Path),
 		remaining_args : List(ParsedArg),
 	}
 
@@ -205,11 +205,11 @@ Extract := [].{
 	get_value_for_extraction = |state, arg, option| {
 		value = 
 			match arg {
-				Short(s) => Ok(Arg.from_str("-${s}"))
-				ShortGroup({ names, complete: Complete }) => Ok(Arg.from_str("-${Str.join_with(names, "")}"))
+				Short(s) => Ok(Path.utf8("-${s}"))
+				ShortGroup({ names, complete: Complete }) => Ok(Path.utf8("-${Str.join_with(names, "")}"))
 				ShortGroup({ names, complete: Partial }) => Err(CannotUsePartialShortGroupAsValue(option, names))
-				Long({ name, value: Ok(val) }) => Ok(Arg.from_str("--${name}=${Arg.display(val)}"))
-				Long({ name, value: Err(NoValue) }) => Ok(Arg.from_str("--${name}"))
+				Long({ name, value: Ok(val) }) => Ok(Path.utf8("--${name}=${Path.display(val)}"))
+				Long({ name, value: Err(NoValue) }) => Ok(Path.utf8("--${name}"))
 				Parameter(p) => Ok(p)
 			}?
 

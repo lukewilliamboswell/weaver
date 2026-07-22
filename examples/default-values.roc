@@ -4,7 +4,6 @@ app [main!] {
 }
 
 import pf.Stdout
-import weaver.Arg
 import weaver.Cli
 import weaver.Opt
 import weaver.Param
@@ -71,5 +70,5 @@ maybe_file_default = |file|
 		Err(NoValue) => "NONE"
 	}
 
-str_to_raw_arg : Str -> [Unix(List(U8)), Windows(List(U16))]
-str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))
+str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
+str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))

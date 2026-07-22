@@ -1,6 +1,6 @@
-import Arg
 import Base exposing [ArgParserResult, CliConfig, SubcommandsConfig]
 import Cli
+import path.Path
 
 CliTest := [].{}
 
@@ -19,11 +19,11 @@ test_config = {
 expect {
 	parser = {
 		config: test_config,
-		parser: |args| ArgParserResult.SuccessfullyParsed(args.map(Arg.display)),
+		parser: |args| ArgParserResult.SuccessfullyParsed(args.map(Path.display)),
 		text_style: Plain,
 	}
 
-	actual = Cli.parse_or_display_message(parser, ["basic-cli", "ignored"], |arg| Unix(Str.to_utf8(arg)))?
+	actual = Cli.parse_or_display_message(parser, ["basic-cli", "ignored"], |arg| Utf8(arg))?
 
 	actual == ["basic-cli", "ignored"]
 }
@@ -36,7 +36,7 @@ expect {
 		text_style: Plain,
 	}
 
-	Cli.parse_or_display_message(parser, ["basic-cli", "-h"], |arg| Unix(Str.to_utf8(arg)))
+	Cli.parse_or_display_message(parser, ["basic-cli", "-h"], |arg| Utf8(arg))
 		== Err("basic-cli v1.0.0\n\nUsage:\n  basic-cli \n\n")
 }
 
@@ -48,6 +48,6 @@ expect {
 		text_style: Plain,
 	}
 
-	Cli.parse_or_display_message(parser, ["basic-cli", "-x"], |arg| Unix(Str.to_utf8(arg)))
+	Cli.parse_or_display_message(parser, ["basic-cli", "-x"], |arg| Utf8(arg))
 		== Err("Error: The argument -x was not recognized.\n\nUsage:\n  basic-cli ")
 }

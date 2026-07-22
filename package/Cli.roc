@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [
 	ArgExtractErr,
 	ArgParserResult,
@@ -19,7 +19,7 @@ Cli := [].{
 	## A parser that interprets command line arguments and returns typed data.
 	CliParser(state) : {
 		config : CliConfig,
-		parser : List(Arg) -> ArgParserResult(state),
+		parser : List(Path) -> ArgParserResult(state),
 		text_style : TextStyle,
 	}
 
@@ -113,12 +113,12 @@ Cli := [].{
 		}
 
 	## Parse arguments using a CLI parser or return a useful message.
-	parse_or_display_message : CliParser(data), List(arg), (arg -> [Unix(List(U8)), Windows(List(U16))]) -> Try(data, Str)
+	parse_or_display_message : CliParser(data), List(arg), (arg -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]) -> Try(data, Str)
 	parse_or_display_message = |{ config, parser, text_style }, external_args, to_raw_arg| {
 		args = 
 			external_args
 				.map(to_raw_arg)
-				.map(Arg.from_raw_arg)
+				.map(Path.from_raw)
 
 		match parser(args) {
 			SuccessfullyParsed(data) => Ok(data)

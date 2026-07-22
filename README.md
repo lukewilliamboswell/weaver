@@ -31,12 +31,18 @@ app [main!] {
 }
 
 import pf.Stdout
-import weaver.Arg
 import weaver.Cli
 import weaver.Opt
 import weaver.Param
 
-main! : List(Str) => Try({}, [Exit(I32), StdoutErr(Str), ..])
+BasicConfig : {
+    alpha : U64,
+    force : Bool,
+    file : Try(Str, [NoValue]),
+    files : List(Str),
+}
+
+main! : List(Str) => Try({}, _)
 main! = |args| {
     match Cli.parse_or_display_message(cli_parser, args, str_to_raw_arg) {
         Err(message) => {
@@ -54,6 +60,7 @@ main! = |args| {
     }
 }
 
+cli_parser : Cli.CliParser(BasicConfig)
 cli_parser =
     Cli.assert_valid(
         Cli.finish(
@@ -88,8 +95,8 @@ cli_parser =
         ),
     )
 
-str_to_raw_arg : Str -> [Unix(List(U8)), Windows(List(U16))]
-str_to_raw_arg = |arg| Arg.to_raw_arg(Arg.from_str(arg))
+str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
+str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))
 ```
 
 And here's us calling the above example from the command line:
@@ -120,14 +127,17 @@ Options:
   -V, --version  Show the version.
 ```
 
-The example platform currently supplies `List(Str)`, so the example wraps those
-strings back into Weaver's OS-aware `Arg` boundary. If your platform exposes raw
-arguments, pass its raw conversion function directly, for example
-`Cli.parse_or_display_message(cli_parser, args, Arg.to_os_raw)`.
+The example platform supplies `List(Str)`, so its legacy adapter preserves the
+underlying argument bytes. Modern platforms such as `basic-cli` supply
+`List(OsStr)`; pass `OsStr.to_raw` directly to preserve UTF-8, native Unix bytes,
+and Windows UTF-16 code units at Weaver's `Path` boundary. If the platform includes
+the executable path as the first argument, drop it before calling
+`Cli.parse_or_display_message`.
 
-Use `Opt.arg` or `Param.arg` when you want to keep the raw OS argument. String
+Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
+[`path.Path`](https://github.com/roc-lang/path/releases/tag/3.0.0-rc1). String
 parsers such as `Opt.str` and `Param.str` intentionally decode at the parser
-boundary, so future path parsers can preserve path-specific semantics.
+boundary without losing path-specific semantics in the raw parsers.
 
 There are also some examples in the [examples](./examples) directory that are more
 feature-complete, with more to come as this library matures.

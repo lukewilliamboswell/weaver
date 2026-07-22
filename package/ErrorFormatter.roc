@@ -1,6 +1,6 @@
-import Arg
 import Base exposing [ArgExtractErr, ExpectedValue, num_type_name, str_type_name]
 import Validate exposing [CliValidationErr]
+import path.Path
 
 ErrorFormatter := [].{
 
@@ -63,7 +63,7 @@ ErrorFormatter := [].{
 				"The argument --${long} was not recognized."
 
 			ExtraParamProvided(param) =>
-				"The parameter ${Str.inspect(Arg.display(param))} was not expected."
+				"The parameter ${Str.inspect(Path.display(param))} was not expected."
 			}
 
 	## Render `CliValidationErr` errors as readable messages.

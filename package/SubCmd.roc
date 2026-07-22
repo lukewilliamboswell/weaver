@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [
 	ArgParser,
 	ArgParserResult,
@@ -64,8 +64,8 @@ SubCmd := [].{
 			match param {
 				Err(NoValue) => Err(NotFound)
 				Ok(arg) =>
-					match Arg.to_str(arg) {
-						Err(InvalidUtf8) => Err(NotFound)
+					match Path.to_str(arg) {
+						Err(_) => Err(NotFound)
 						Ok(name) => find_subcommand_by_name(subcommand_parsers, name)
 					}
 				}

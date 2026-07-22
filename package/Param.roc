@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [
 	ArgExtractErr,
 	DefaultableParameterConfigBaseParams,
@@ -8,6 +8,7 @@ import Base exposing [
 	ParameterConfigBaseParams,
 	ParameterConfigParams,
 	ValueParser,
+	arg_to_bytes,
 	num_type_name,
 	str_type_name,
 ]
@@ -16,7 +17,7 @@ import Extract exposing [extract_param_values]
 import Parser exposing [ArgValue]
 
 Param := [].{
-	builder_with_parameter_parser : ParameterConfig, (List(Arg) -> Try(data, ArgExtractErr)) -> CliBuilder(data, from_action, to_action)
+	builder_with_parameter_parser : ParameterConfig, (List(Path) -> Try(data, ArgExtractErr)) -> CliBuilder(data, from_action, to_action)
 	builder_with_parameter_parser = |param, value_parser| {
 		arg_parser = |args| {
 			{ values, remaining_args } = extract_param_values({ args, param })?
@@ -82,23 +83,23 @@ Param := [].{
 		Param.builder_with_parameter_parser(param, value_parser)
 	}
 
-	arg : DefaultableParameterConfigBaseParams(Arg) -> CliBuilder(Arg, { ..action }, GetParamsAction)
+	arg : DefaultableParameterConfigBaseParams(Path) -> CliBuilder(Path, { ..action }, GetParamsAction)
 	arg = |params| Param.single(defaultable_parameter_params(params, str_type_name, |a| Ok(a)))
 
 	maybe_arg : ParameterConfigBaseParams -> CliBuilder(ArgValue, { ..action }, GetParamsAction)
 	maybe_arg = |params| Param.maybe(parameter_params(params, str_type_name, |a| Ok(a)))
 
-	arg_list : ParameterConfigBaseParams -> CliBuilder(List(Arg), { ..action }, StopCollectingAction)
+	arg_list : ParameterConfigBaseParams -> CliBuilder(List(Path), { ..action }, StopCollectingAction)
 	arg_list = |params| Param.list(parameter_params(params, str_type_name, |a| Ok(a)))
 
 	bytes : DefaultableParameterConfigBaseParams(List(U8)) -> CliBuilder(List(U8), { ..action }, GetParamsAction)
-	bytes = |params| Param.single(defaultable_parameter_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	bytes = |params| Param.single(defaultable_parameter_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	maybe_bytes : ParameterConfigBaseParams -> CliBuilder(Try(List(U8), [NoValue]), { ..action }, GetParamsAction)
-	maybe_bytes = |params| Param.maybe(parameter_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	maybe_bytes = |params| Param.maybe(parameter_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	bytes_list : ParameterConfigBaseParams -> CliBuilder(List(List(U8)), { ..action }, StopCollectingAction)
-	bytes_list = |params| Param.list(parameter_params(params, str_type_name, |a| Ok(Arg.to_bytes(a))))
+	bytes_list = |params| Param.list(parameter_params(params, str_type_name, |a| Ok(arg_to_bytes(a))))
 
 	str : DefaultableParameterConfigBaseParams(Str) -> CliBuilder(Str, { ..action }, GetParamsAction)
 	str = |params| Param.single(defaultable_parameter_params(params, str_type_name, parse_str_arg))
@@ -256,14 +257,14 @@ parameter_params = |{ name, help }, type_name, parser| {
 	parser,
 }
 
-parse_str_arg : Arg -> Try(Str, InvalidValue)
+parse_str_arg : Path -> Try(Str, InvalidValue)
 parse_str_arg = |arg|
-	match Arg.to_str(arg) {
+	match Path.to_str(arg) {
 		Ok(str) => Ok(str)
-		Err(InvalidUtf8) => Err(InvalidUtf8)
+		Err(_) => Err(InvalidUtf8)
 	}
 
-parse_number_arg : Arg, (Str -> Try(a, _)) -> Try(a, InvalidValue)
+parse_number_arg : Path, (Str -> Try(a, _)) -> Try(a, InvalidValue)
 parse_number_arg = |arg, parser| {
 	str = parse_str_arg(arg)?
 
@@ -273,7 +274,7 @@ parse_number_arg = |arg, parser| {
 	}
 }
 
-parse_param_value_list : List(Arg), ParameterConfig, ValueParser(a), List(a) -> Try(List(a), ArgExtractErr)
+parse_param_value_list : List(Path), ParameterConfig, ValueParser(a), List(a) -> Try(List(a), ArgExtractErr)
 parse_param_value_list = |values, param, parser, out|
 	match values {
 		[] => Ok(out)

@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Parser exposing [ParsedArg]
 
 Base := [].{
@@ -58,7 +58,7 @@ Base := [].{
 		MissingParam(ParameterConfig),
 		UnrecognizedShortArg(Str),
 		UnrecognizedLongArg(Str),
-		ExtraParamProvided(Arg),
+		ExtraParamProvided(Path),
 	]
 
 	str_type_name : Str
@@ -66,6 +66,24 @@ Base := [].{
 
 	num_type_name : Str
 	num_type_name = "num"
+
+	## Convert an OS-aware argument to bytes, using big-endian code units on Windows.
+	arg_to_bytes : Path -> List(U8)
+	arg_to_bytes = |arg|
+		match Path.to_raw(arg) {
+			Utf8(str) => Str.to_utf8(str)
+			UnixBytes(bytes) => bytes
+			WindowsU16s(code_units) =>
+				code_units.fold(
+					[],
+					|bytes, code_unit| {
+						upper = U64.to_u8_wrap(U16.to_u64(code_unit / 256))
+						lower = U64.to_u8_wrap(U16.to_u64(code_unit % 256))
+
+						bytes.append(upper).append(lower)
+					},
+				)
+			}
 
 	## Whether help text should have fancy styling.
 	TextStyle : [Color, Plain]
@@ -84,7 +102,7 @@ Base := [].{
 	DefaultValue(a) : [NoDefault, Value(a), Generate({} -> a)]
 
 	## A parser that extracts an argument value.
-	ValueParser(a) : Arg -> Try(a, InvalidValue)
+	ValueParser(a) : Path -> Try(a, InvalidValue)
 
 	OptionConfigBaseParams : { short : Str, long : Str, help : Str }
 

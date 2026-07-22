@@ -1,4 +1,4 @@
-import Arg exposing [Arg]
+import path.Path
 import Base exposing [
 	ArgExtractErr,
 	ArgParser,
@@ -217,7 +217,7 @@ expect {
 			),
 		)
 
-	out = parser({ args: [Parameter(Arg.from_str("123"))], subcommand_path: [] })
+	out = parser({ args: [Parameter(Path.utf8("123"))], subcommand_path: [] })
 
 	out
 		== ArgParserResult.SuccessfullyParsed({
@@ -229,7 +229,7 @@ expect {
 
 ## Raw parameter text does not trigger the built-in help flag.
 expect {
-	args = [Parameter(Arg.from_str("-h"))]
+	args = [Parameter(Path.utf8("-h"))]
 
 	!(Builder.flag_was_passed(help_option, args))
 }
@@ -250,7 +250,7 @@ expect {
 
 ## A value attached to the long help option still triggers help handling.
 expect {
-	args = [Long({ name: "help", value: Ok(Arg.from_str("123")) })]
+	args = [Long({ name: "help", value: Ok(Path.utf8("123")) })]
 
 	Builder.flag_was_passed(help_option, args)
 }
