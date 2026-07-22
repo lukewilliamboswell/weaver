@@ -4,6 +4,8 @@ import Base exposing [
 	OptionConfig,
 	ParameterConfig,
 	SubcommandsConfig,
+	help_option,
+	version_option,
 ]
 import Utils exposing [is_kebab_case]
 
@@ -144,10 +146,8 @@ Validate := [].{
 		}
 
 	check_if_there_are_overlapping_options : List(OptionAtSubcommand) -> Try({}, CliValidationErr)
-	check_if_there_are_overlapping_options = |_options|
-	# TODO: restore option-overlap validation once current Roc supports the
-	# needed comparison ergonomics without compiler issues.
-		Ok({})
+	check_if_there_are_overlapping_options = |options|
+		check_option_pairs(options)
 
 	check_if_there_are_overlapping_parameters : List(ParameterConfig), List(Str) -> Try({}, CliValidationErr)
 	check_if_there_are_overlapping_parameters = |parameters, subcommand_path|
@@ -220,3 +220,130 @@ check_parameter_against_rest = |first, rest, subcommand_path|
 				check_parameter_against_rest(first, remaining, subcommand_path)
 			}
 		}
+
+check_option_pairs : List(Validate.OptionAtSubcommand) -> Try({}, Validate.CliValidationErr)
+check_option_pairs = |options|
+	match options {
+		[] => Ok({})
+		[first, .. as rest] => {
+			check_option_against_rest(first, rest)?
+			check_option_pairs(rest)
+		}
+	}
+
+check_option_against_rest : Validate.OptionAtSubcommand, List(Validate.OptionAtSubcommand) -> Try({}, Validate.CliValidationErr)
+check_option_against_rest = |first, rest|
+	match rest {
+		[] => Ok({})
+		[second, .. as remaining] =>
+			if options_overlap(first.option, second.option) {
+				if repeated_builtin_at_nested_scope(first, second) {
+					check_option_against_rest(first, remaining)
+				} else if options_overlap(first.option, help_option) or options_overlap(second.option, help_option) {
+					Err(OverrodeSpecialHelpFlag(non_builtin_option(first, second, help_option)))
+				} else if options_overlap(first.option, version_option) or options_overlap(second.option, version_option) {
+					Err(OverrodeSpecialVersionFlag(non_builtin_option(first, second, version_option)))
+				} else {
+					Err(OverlappingOptionNames({ left: first, right: second }))
+				}
+			} else {
+				check_option_against_rest(first, remaining)
+			}
+		}
+
+options_overlap : OptionConfig, OptionConfig -> Bool
+options_overlap = |left, right| {
+	short_overlap = left.short != "" and left.short == right.short
+	long_overlap = left.long != "" and left.long == right.long
+
+	short_overlap or long_overlap
+}
+
+repeated_builtin_at_nested_scope : Validate.OptionAtSubcommand, Validate.OptionAtSubcommand -> Bool
+repeated_builtin_at_nested_scope = |left, right| {
+	different_scopes = left.subcommand_path != right.subcommand_path
+	both_help = left.option == help_option and right.option == help_option
+	both_version = left.option == version_option and right.option == version_option
+
+	different_scopes and (both_help or both_version)
+}
+
+non_builtin_option : Validate.OptionAtSubcommand, Validate.OptionAtSubcommand, OptionConfig -> Validate.OptionAtSubcommand
+non_builtin_option = |left, right, builtin|
+	if left.option == builtin {
+		right
+	} else {
+		left
+	}
+
+test_option : Str, Str -> OptionConfig
+test_option = |short, long| {
+	short,
+	long,
+	help: "test option",
+	expected_value: NothingExpected,
+	plurality: Optional,
+}
+
+## Options cannot reuse a short name in the same command.
+expect {
+	left = { option: test_option("a", "alpha"), subcommand_path: ["app"] }
+	right = { option: test_option("a", "another"), subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([left, right])
+		== Err(OverlappingOptionNames({ left, right }))
+}
+
+## Options cannot reuse a long name in the same command.
+expect {
+	left = { option: test_option("a", "value"), subcommand_path: ["app"] }
+	right = { option: test_option("b", "value"), subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([left, right])
+		== Err(OverlappingOptionNames({ left, right }))
+}
+
+## A short name may equal another option's long name because their syntax differs.
+expect {
+	left = { option: test_option("a", "alpha"), subcommand_path: ["app"] }
+	right = { option: test_option("b", "a"), subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([left, right]) == Ok({})
+}
+
+## A subcommand cannot shadow an ancestor option that remains in scope.
+expect {
+	child = { option: test_option("a", "child"), subcommand_path: ["app", "run"] }
+	parent = { option: test_option("a", "parent"), subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([child, parent])
+		== Err(OverlappingOptionNames({ left: child, right: parent }))
+}
+
+## User-defined options cannot override the built-in help aliases.
+expect {
+	custom = { option: test_option("h", "custom-help"), subcommand_path: ["app"] }
+	builtin = { option: help_option, subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([custom, builtin])
+		== Err(OverrodeSpecialHelpFlag(custom))
+}
+
+## User-defined options cannot override the built-in version aliases.
+expect {
+	custom = { option: test_option("x", "version"), subcommand_path: ["app"] }
+	builtin = { option: version_option, subcommand_path: ["app"] }
+
+	Validate.check_if_there_are_overlapping_options([custom, builtin])
+		== Err(OverrodeSpecialVersionFlag(custom))
+}
+
+## Nested commands may each include Weaver's same built-in help and version flags.
+expect {
+	root_help = { option: help_option, subcommand_path: ["app"] }
+	child_help = { option: help_option, subcommand_path: ["app", "run"] }
+	root_version = { option: version_option, subcommand_path: ["app"] }
+	child_version = { option: version_option, subcommand_path: ["app", "run"] }
+
+	Validate.check_if_there_are_overlapping_options([child_help, child_version, root_help, root_version]) == Ok({})
+}
