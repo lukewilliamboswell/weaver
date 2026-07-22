@@ -198,11 +198,10 @@ Extract := [].{
 	get_value_for_extraction = |state, arg, option| {
 		value = 
 			match arg {
-				Short(s) => Ok(Path.utf8("-${s}"))
-				ShortGroup({ names, complete: Complete }) => Ok(Path.utf8("-${Str.join_with(names, "")}"))
+				Short(_) => Err(NoValueProvidedForOption(option))
+				ShortGroup({ complete: Complete, .. }) => Err(NoValueProvidedForOption(option))
 				ShortGroup({ names, complete: Partial }) => Err(CannotUsePartialShortGroupAsValue(option, names))
-				Long({ name, value: Ok(val) }) => Ok(Path.utf8("--${name}=${Path.display(val)}"))
-				Long({ name, value: Err(NoValue) }) => Ok(Path.utf8("--${name}"))
+				Long(_) => Err(NoValueProvidedForOption(option))
 				Parameter(p) | PassedThrough(p) => Ok(p)
 			}?
 
@@ -291,4 +290,31 @@ expect {
 		args: [ShortGroup({ names: group, complete: Partial }), Parameter(Path.utf8("7"))],
 		option: test_value_option,
 	}) == Err(CannotUsePartialShortGroupAsValue(test_value_option, group))
+}
+
+## A short option following a value option is not swallowed as its value.
+expect {
+	Extract.extract_option_values({
+		args: [Short("a"), Short("v")],
+		option: test_value_option,
+	}) == Err(NoValueProvidedForOption(test_value_option))
+}
+
+## A long option following a value option is not swallowed as its value.
+expect {
+	Extract.extract_option_values({
+		args: [Long({ name: "alpha", value: Err(NoValue) }), Long({ name: "verbose", value: Err(NoValue) })],
+		option: test_value_option,
+	}) == Err(NoValueProvidedForOption(test_value_option))
+}
+
+## The delimiter explicitly permits an option-like value.
+expect {
+	value = Path.utf8("-7")
+	out = Extract.extract_option_values({
+		args: [Short("a"), PassedThrough(value)],
+		option: test_value_option,
+	})?
+
+	out.values == [Ok(value)] and out.remaining_args == []
 }

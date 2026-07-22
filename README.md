@@ -141,6 +141,10 @@ Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
 parsers such as `Opt.str` and `Param.str` intentionally decode at the parser
 boundary without losing path-specific semantics in the raw parsers.
 
+A separate token beginning with `-` is treated as another option, not as an option
+value. Pass an option-like value with `--name=value`, or place `--` before the value;
+for example, both `--beta=-2.5` and `--beta -- -2.5` are unambiguous.
+
 There are also some examples in the [examples](./examples) directory that are more
 feature-complete, with more to come as this library matures.
 

@@ -119,6 +119,17 @@
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
         },
         {
+          "name": "negative-decimal-after-delimiter",
+          "args": ["--beta", "--", "-2.5"],
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
+        },
+        {
+          "name": "option-is-not-consumed-as-value",
+          "args": ["--alpha", "--beta", "2.5"],
+          "exit_code": 1,
+          "stdout_contains": ["Error: Option -a/--alpha expects a number."]
+        },
+        {
           "name": "delimiter-preserves-option-like-file",
           "args": ["--", "-a"],
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"-a\" }\n"
