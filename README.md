@@ -177,7 +177,7 @@ native Unix bytes, and Windows UTF-16 code units at Weaver's `Path` boundary. On
 drop the first element when the platform documents that it is the executable path.
 
 Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
-[`path.Path`](https://github.com/roc-lang/path/releases/tag/3.0.0-rc1). String
+[`path.Path`](https://github.com/roc-lang/path/releases/tag/4.0.0). String
 parsers such as `Opt.str` and `Param.str` intentionally decode at the parser
 boundary without losing path-specific semantics in the raw parsers.
 
