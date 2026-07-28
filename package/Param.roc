@@ -311,31 +311,15 @@ expect {
 	literal_default = Param.str({ name: "value", help: "Value.", default: Value("literal") })
 	generated_default = Param.str({ name: "value", help: "Value.", default: Generate(|{}| "generated") })
 
-	{ parameters: [required_config], .. } = Builder.into_parts(required)
-	{ parameters: [literal_config], .. } = Builder.into_parts(literal_default)
-	{ parameters: [generated_config], .. } = Builder.into_parts(generated_default)
+	required_missing = match parse_test_param(required, []) {
+		Err(MissingParam(_)) => True
+		_ => False
+	}
 
-	actual = 
-		Str.join_with(
-			[
-				Str.inspect(required_config.required),
-				Str.inspect(literal_config.required),
-				Str.inspect(generated_config.required),
-				Str.inspect(parse_test_param(literal_default, [])),
-				Str.inspect(parse_test_param(generated_default, [])),
-				Str.inspect(parse_test_param(required, [Parameter(Path.utf8("provided"))])),
-			],
-			"\n",
-		)
-
-	actual
-		==
-		\\True
-		\\False
-		\\False
-		\\Ok("literal")
-		\\Ok("generated")
-		\\Ok("provided")
+	required_missing
+		and parse_test_param(literal_default, []) == Ok("literal")
+			and parse_test_param(generated_default, []) == Ok("generated")
+				and parse_test_param(required, [Parameter(Path.utf8("provided"))]) == Ok("provided")
 }
 
 ## Optional parameters consume at most one value and variadic parameters consume the rest.

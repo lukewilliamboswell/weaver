@@ -391,31 +391,15 @@ expect {
 	literal_default = Opt.str({ short: "v", long: "value", help: "Value.", default: Value("literal") })
 	generated_default = Opt.str({ short: "v", long: "value", help: "Value.", default: Generate(|{}| "generated") })
 
-	{ options: [required_config], .. } = Builder.into_parts(required)
-	{ options: [literal_config], .. } = Builder.into_parts(literal_default)
-	{ options: [generated_config], .. } = Builder.into_parts(generated_default)
+	required_missing = match parse_test_option(required, []) {
+		Err(MissingOption(_)) => True
+		_ => False
+	}
 
-	actual = 
-		Str.join_with(
-			[
-				Str.inspect(required_config.required),
-				Str.inspect(literal_config.required),
-				Str.inspect(generated_config.required),
-				Str.inspect(parse_test_option(literal_default, [])),
-				Str.inspect(parse_test_option(generated_default, [])),
-				Str.inspect(parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })])),
-			],
-			"\n",
-		)
-
-	actual
-		==
-		\\True
-		\\False
-		\\False
-		\\Ok("literal")
-		\\Ok("generated")
-		\\Ok("provided")
+	required_missing
+		and parse_test_option(literal_default, []) == Ok("literal")
+			and parse_test_option(generated_default, []) == Ok("generated")
+				and parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })]) == Ok("provided")
 }
 
 ## Optional and repeatable options parse absent, single, and repeated values.
