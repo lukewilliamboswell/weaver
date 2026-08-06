@@ -1,0 +1,26 @@
+name: Install the pinned Roc compiler
+description: Install the exact new-compiler nightly selected by this repository
+
+runs:
+  using: composite
+  steps:
+    - name: Read the pinned Roc version
+      id: roc-version
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        version_file="$GITHUB_WORKSPACE/.roc-version"
+        nightly_tag="$(sed 's/\r$//' "$version_file")"
+
+        if [[ ! "$nightly_tag" =~ ^nightly-[0-9]{4}-[A-Za-z]+-[0-9]{2}-[0-9a-f]{7}$ ]]; then
+          echo "Invalid Roc nightly tag in $version_file: $nightly_tag" >&2
+          exit 1
+        fi
+
+        printf 'nightly-tag=%s\n' "$nightly_tag" >> "$GITHUB_OUTPUT"
+
+    - uses: roc-lang/setup-roc@66d1ae2def87ec77b8670e9ac09c418df2f18c86
+      with:
+        version: nightly-new-compiler
+        nightly-tag: ${{ steps.roc-version.outputs.nightly-tag }}
