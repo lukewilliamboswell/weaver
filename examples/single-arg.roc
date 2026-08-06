@@ -38,7 +38,7 @@ main! = |args| {
 }
 
 cli_parser : Cli.CliParser(SingleArgConfig)
-cli_parser = 
+cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			Cli.map(

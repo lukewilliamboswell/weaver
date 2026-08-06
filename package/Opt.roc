@@ -42,7 +42,7 @@ Opt := [].{
 	## Add a required option that takes a custom type.
 	single : DefaultableOptionConfigParams(a) -> CliBuilder(a, GetOptionsAction, GetOptionsAction)
 	single = |{ parser, type, short, long, help, default }| {
-		required = 
+		required =
 			match default {
 				NoDefault => True
 				Value(_) | Generate(_) => False
@@ -356,7 +356,7 @@ parse_option_value_list = |values, option, parser, out|
 
 ## Count options include every occurrence inside one grouped token.
 expect {
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			Opt.count({ short: "v", long: "verbose", help: "Increase verbosity." }),
 		)
@@ -409,7 +409,7 @@ expect {
 	one = Long({ name: "value", value: Ok(Path.utf8("one")) })
 	two = Long({ name: "value", value: Ok(Path.utf8("two")) })
 
-	actual = 
+	actual =
 		Str.join_with(
 			[
 				Str.inspect(parse_test_option(optional, [])),
@@ -483,12 +483,12 @@ expect {
 	dec_builder = Opt.dec({ short: "n", long: "number", help: "Number.", default: NoDefault })
 	value_arg = |text| [Long({ name: "number", value: Ok(Path.utf8(text)) })]
 
-	overflow = 
+	overflow =
 		match parse_test_option(u8_builder, value_arg("256")) {
 			Err(InvalidOptionValue(InvalidNumStr, _)) => InvalidNumStr
 			_other => UnexpectedResult
 		}
-	actual = 
+	actual =
 		Str.join_with(
 			[
 				Str.inspect(parse_test_option(u8_builder, value_arg("255"))),
@@ -532,7 +532,7 @@ expect {
 ## Raw option parsers preserve an attached non-UTF-8 Unix value end to end.
 expect {
 	value = Path.from_raw(UnixBytes([0xFF, 0x80]))
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			Opt.arg({
 				short: "",

@@ -37,7 +37,7 @@ Extract := [].{
 		match args {
 			[] => Ok(state)
 			[arg, .. as rest] => {
-				next_state = 
+				next_state =
 					match state.action {
 						GetParam => Extract.extract_single_param(state, param, arg)
 						StopParsing => Ok({ ..state, remaining_args: state.remaining_args.append(arg) })
@@ -53,7 +53,7 @@ Extract := [].{
 			Short(short) => Err(UnrecognizedShortArg(short))
 
 			ShortGroup(group) => {
-				name = 
+				name =
 					match group.names {
 						[] => ""
 						[first, ..] => first
@@ -108,7 +108,7 @@ Extract := [].{
 		match args {
 			[] => Ok(state)
 			[arg, .. as rest] => {
-				next_state = 
+				next_state =
 					match state.action {
 						FindOption => Extract.find_option_for_extraction(state, arg, option)
 						GetValue => Extract.get_value_for_extraction(state, arg, option)
@@ -169,7 +169,7 @@ Extract := [].{
 					remaining = short_group.names.keep_if(|name| name != option.short)
 					values = append_flag_values(short_group.names, option.short, state.values)
 
-					next_remaining_args = 
+					next_remaining_args =
 						if remaining.is_empty() {
 							state.remaining_args
 						} else {
@@ -180,7 +180,7 @@ Extract := [].{
 				} else if short_group.complete == Partial {
 					Err(CannotUsePartialShortGroupAsValue(option, short_group.names))
 				} else if after.is_empty() {
-					next_remaining_args = 
+					next_remaining_args =
 						if before.is_empty() {
 							state.remaining_args
 						} else {
@@ -196,7 +196,7 @@ Extract := [].{
 
 	get_value_for_extraction : ExtractOptionValueWalkerState, ParsedArg, OptionConfig -> Try(ExtractOptionValueWalkerState, ArgExtractErr)
 	get_value_for_extraction = |state, arg, option| {
-		value = 
+		value =
 			match arg {
 				Short(_) => Err(NoValueProvidedForOption(option))
 				ShortGroup({ complete: Complete, .. }) => Err(NoValueProvidedForOption(option))

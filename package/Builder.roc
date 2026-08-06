@@ -88,7 +88,7 @@ Builder(data, from_action, to_action) := {
 
 	update_parser : CliBuilder(state, from_action, to_action), ({ data : state, remaining_args : List(ParsedArg) } -> Try({ data : next_state, remaining_args : List(ParsedArg) }, ArgExtractErr)) -> CliBuilder(next_state, from_action, to_action)
 	update_parser = |{ parser, options, parameters, subcommands }, updater| {
-		new_parser = 
+		new_parser =
 			on_successful_arg_parse(
 				parser,
 				|{ data, remaining_args, subcommand_path }|
@@ -105,7 +105,7 @@ Builder(data, from_action, to_action) := {
 	bind_parser : CliBuilder(state, from_action, to_action), (ArgParserState(state) -> ArgParserResult(ArgParserState(next_state))) -> CliBuilder(next_state, from_action, to_action)
 	bind_parser = |{ parser, options, parameters, subcommands }, updater| {
 		new_parser : ArgParser(next_state)
-		new_parser = 
+		new_parser =
 			on_successful_arg_parse(
 				parser,
 				|{ data, remaining_args, subcommand_path }|
@@ -222,7 +222,7 @@ merge_subcommands = |left, right|
 
 ## Mapping a builder transforms parsed data without consuming extra arguments.
 expect {
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			Builder.map(
 				Builder.from_arg_parser(|args| Ok({ data: args.len(), remaining_args: [] })),

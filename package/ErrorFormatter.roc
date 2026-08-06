@@ -93,7 +93,7 @@ ErrorFormatter := [].{
 	format_cli_validation_err : CliValidationErr -> Str
 	format_cli_validation_err = |err| {
 		value_at_subcommand_name = |{ name, subcommand_path }| {
-			subcommand_path_suffix = 
+			subcommand_path_suffix =
 				if subcommand_path.len() <= 1 {
 					""
 				} else {
@@ -146,7 +146,7 @@ ErrorFormatter := [].{
 				"An ${value_at_subcommand_name({ name: "option", subcommand_path })} has neither a short nor long name."
 
 			InvalidOptionValueType({ option, subcommand_path }) => {
-				value_type = 
+				value_type =
 					match option.expected_value {
 						ExpectsValue(type_name) => type_name
 						NothingExpected => ""
@@ -218,7 +218,7 @@ arg_error_metadata = |err, command| {
 			hint: "Move `${option_display_name(option)}` to the end of the group or pass it separately.",
 		}
 		InvalidOptionValue(value_err, option) => {
-			hint = 
+			hint =
 				match value_err {
 					InvalidNumStr => "Provide a valid number for `${option_display_name(option)}`."
 					InvalidValue(_) => "Provide a value accepted by `${option_display_name(option)}`."
@@ -228,7 +228,7 @@ arg_error_metadata = |err, command| {
 			{ title: "INVALID OPTION VALUE", hint }
 		}
 		InvalidParamValue(value_err, parameter) => {
-			hint = 
+			hint =
 				match value_err {
 					InvalidNumStr => "Provide a valid number for `<${parameter.name}>`."
 					InvalidValue(_) => "Provide a value accepted by `<${parameter.name}>`."
@@ -317,18 +317,18 @@ render_report : Str, Str, Str, Str, TextStyle -> Str
 render_report = |title, summary, usage, hint, text_style| {
 	rule = Str.repeat("─", title.count_utf8_bytes() + 2)
 	top = Terminal.render([Terminal.frame("┌${rule}┐")], text_style)
-	middle = 
+	middle =
 		Terminal.render(
 			[Terminal.frame("│ "), Terminal.heading(title), Terminal.frame(" │")],
 			text_style,
 		)
 	bottom = Terminal.render([Terminal.frame("└${rule}┘")], text_style)
-	wrapped_summary = 
+	wrapped_summary =
 		Terminal.wrap(
 			summary,
 			{ first_indent: "", continuation_indent: "", width: 80 },
 		)
-	plain_hint = 
+	plain_hint =
 		Terminal.wrap(
 			"Tip: ${hint}",
 			{ first_indent: "", continuation_indent: "     ", width: 80 },

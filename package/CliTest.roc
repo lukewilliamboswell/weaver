@@ -37,7 +37,7 @@ expect {
 		text_style: Plain,
 	}
 
-	expected = 
+	expected =
 		\\basic-cli v1.0.0
 		\\
 		\\Usage:
@@ -68,7 +68,7 @@ expect {
 		text_style: Plain,
 	}
 
-	expected = 
+	expected =
 		\\┌───────────────────────┐
 		\\│ UNRECOGNIZED ARGUMENT │
 		\\└───────────────────────┘
@@ -84,7 +84,7 @@ expect {
 }
 
 required_option_parser : Cli.CliParser({ alpha : U64 })
-required_option_parser = 
+required_option_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			Cli.map(

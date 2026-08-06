@@ -44,7 +44,7 @@ main! = |args|
 	}
 
 cli_parser : Cli.CliParser(DeployConfig)
-cli_parser = 
+cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			deploy_fields,

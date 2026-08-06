@@ -19,7 +19,7 @@ SubCmd := [].{
 	## Create an empty subcommand.
 	empty : { name : Str, description : Str, value : common_state } -> SubcommandParserConfig(common_state)
 	empty = |{ name, description, value }| {
-		{ options, parameters, subcommands, parser } = 
+		{ options, parameters, subcommands, parser } =
 			Builder.into_parts(
 				Builder.check_for_help_and_version(
 					Builder.from_arg_parser(|args| Ok({ data: value, remaining_args: args })),
@@ -39,7 +39,7 @@ SubCmd := [].{
 	## Bundle a CLI builder into a subcommand.
 	finish : CliBuilder(state, from_action, to_action), { name : Str, description : Str, mapper : state -> common_state } -> SubcommandParserConfig(common_state)
 	finish = |builder, { name, description, mapper }| {
-		{ options, parameters, subcommands, parser } = 
+		{ options, parameters, subcommands, parser } =
 			Builder.into_parts(
 				Builder.update_parser(
 					Builder.check_for_help_and_version(builder),
@@ -90,7 +90,7 @@ SubCmd := [].{
 	## Use previously defined subcommands as optional data in a parent CLI.
 	optional : List(SubcommandParserConfig(sub_state)) -> CliBuilder(Try(sub_state, [NoSubcommand]), GetOptionsAction, GetParamsAction)
 	optional = |subcommand_configs| {
-		subcommands = 
+		subcommands =
 			HasSubcommands({
 				commands: subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)),
 				required: False,
@@ -106,7 +106,7 @@ SubCmd := [].{
 							ArgParserResult.SuccessfullyParsed({ data: Err(NoSubcommand), remaining_args: args, subcommand_path })
 
 						Ok(subcommand) => {
-							sub_parser = 
+							sub_parser =
 								on_successful_arg_parse(
 									subcommand.parser,
 									|{ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }|
@@ -127,7 +127,7 @@ SubCmd := [].{
 	## Use previously defined subcommands as required data in a parent CLI.
 	required : List(SubcommandParserConfig(sub_data)) -> CliBuilder(sub_data, GetOptionsAction, GetParamsAction)
 	required = |subcommand_configs| {
-		subcommands = 
+		subcommands =
 			HasSubcommands({
 				commands: subcommand_configs.map(|subcommand| (subcommand.name, subcommand.config)),
 				required: True,
@@ -146,7 +146,7 @@ SubCmd := [].{
 							ArgParserResult.IncorrectUsage(UnrecognizedSubcommand(command), { subcommand_path: subcommand_path })
 
 						Ok(subcommand) => {
-							sub_parser = 
+							sub_parser =
 								on_successful_arg_parse(
 									subcommand.parser,
 									|{ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }|
@@ -187,7 +187,7 @@ first_or_empty = |values|
 ## The double-dash boundary prevents a following value from dispatching a subcommand.
 expect {
 	arg = Path.utf8("run")
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			SubCmd.optional([
 				SubCmd.empty({ name: "run", description: "Run the task.", value: Ran }),
@@ -204,7 +204,7 @@ expect {
 
 ## Optional subcommands retain their declaration order and optionality in metadata.
 expect {
-	{ subcommands, .. } = 
+	{ subcommands, .. } =
 		Builder.into_parts(
 			SubCmd.optional([
 				SubCmd.empty({ name: "z-last", description: "Last.", value: Selected("z") }),
@@ -224,7 +224,7 @@ expect {
 
 ## Required subcommands mark their usage metadata as required.
 expect {
-	{ subcommands, .. } = 
+	{ subcommands, .. } =
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
@@ -239,7 +239,7 @@ expect {
 
 ## Required subcommands distinguish a missing command from an unknown one.
 expect {
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),
@@ -267,7 +267,7 @@ expect {
 
 ## The delimiter cannot satisfy a required subcommand, even when its value matches.
 expect {
-	{ parser, .. } = 
+	{ parser, .. } =
 		Builder.into_parts(
 			SubCmd.required([
 				SubCmd.empty({ name: "run", description: "Run.", value: Ran }),

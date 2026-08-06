@@ -61,7 +61,7 @@ main! = |args| {
 }
 
 cli_parser : Cli.CliParser(RootConfig)
-cli_parser = 
+cli_parser =
 	Cli.assert_valid(
 		Cli.finish(
 			{
@@ -91,7 +91,7 @@ cli_parser =
 	)
 
 subcommand_parser1 : SubCmd.SubcommandParserConfig(SubcommandConfig)
-subcommand_parser1 = 
+subcommand_parser1 =
 	SubCmd.finish(
 		{
 			d: Opt.maybe_u64({
@@ -117,7 +117,7 @@ str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
 str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))
 
 subcommand_parser2 : SubCmd.SubcommandParserConfig(SubcommandConfig)
-subcommand_parser2 = 
+subcommand_parser2 =
 	SubCmd.finish(
 		Cli.map(
 			Opt.maybe_u64({
@@ -135,7 +135,7 @@ subcommand_parser2 =
 	)
 
 sub_subcommand_parser1 : SubCmd.SubcommandParserConfig(SubSubcommandConfig)
-sub_subcommand_parser1 = 
+sub_subcommand_parser1 =
 	SubCmd.finish(
 		{
 			a: Opt.u64({
@@ -159,7 +159,7 @@ sub_subcommand_parser1 =
 	)
 
 sub_subcommand_parser2 : SubCmd.SubcommandParserConfig(SubSubcommandConfig)
-sub_subcommand_parser2 = 
+sub_subcommand_parser2 =
 	SubCmd.finish(
 		{
 			a: Opt.u64({

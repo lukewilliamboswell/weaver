@@ -65,7 +65,7 @@ Help := [].{
 
 		name = Str.join_with(subcommand_path, " ")
 
-		styled_top_line = 
+		styled_top_line =
 			Terminal.render(
 				filter_non_empty_segments([
 					Terminal.heading(name),
@@ -74,7 +74,7 @@ Help := [].{
 				text_style,
 			)
 
-		authors_text = 
+		authors_text =
 			if authors.is_empty() {
 				""
 			} else {
@@ -82,11 +82,11 @@ Help := [].{
 				"\n${styled_authors}"
 			}
 
-		description_text = 
+		description_text =
 			if description.is_empty() {
 				""
 			} else {
-				wrapped_description = 
+				wrapped_description =
 					Terminal.wrap(
 						description,
 						{ first_indent: "", continuation_indent: "", width: terminal_width },
@@ -95,7 +95,7 @@ Help := [].{
 				"\n\n${wrapped_description}"
 			}
 
-		subcommands_text = 
+		subcommands_text =
 			match subcommands {
 				HasSubcommands({ commands, .. }) if !commands.is_empty() =>
 					commands_help(subcommands, text_style)
@@ -103,21 +103,21 @@ Help := [].{
 				_no_subcommands => ""
 			}
 
-		parameters_text = 
+		parameters_text =
 			if parameters.is_empty() {
 				""
 			} else {
 				parameters_help(parameters, text_style)
 			}
 
-		options_text = 
+		options_text =
 			if options.is_empty() {
 				""
 			} else {
 				options_help(options, text_style)
 			}
 
-		bottom_sections = 
+		bottom_sections =
 			join_lines_with(filter_non_empty([subcommands_text, parameters_text, options_text]), "\n\n")
 
 		"${styled_top_line}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
@@ -131,16 +131,16 @@ Help := [].{
 
 		name = Str.join_with(subcommand_path, " ")
 
-		required_options = 
+		required_options =
 			filter_required_options(options).map(option_usage_formatter)
 
-		optional_options = 
+		optional_options =
 			options.keep_if(|option| !option.required).map(option_usage_formatter)
 
-		params_strings = 
+		params_strings =
 			parameters.map(
 				|param| {
-					value = 
+					value =
 						match param.plurality {
 							Optional | One => "<${param.name}>"
 							Many => "<${param.name}>..."
@@ -154,7 +154,7 @@ Help := [].{
 				},
 			)
 
-		subcommand_strings = 
+		subcommand_strings =
 			match subcommands {
 				HasSubcommands({ commands, required }) if !commands.is_empty() =>
 					if required {
@@ -166,11 +166,11 @@ Help := [].{
 				_other => []
 			}
 
-		usage_parts = 
+		usage_parts =
 			join_lines_with(required_options.concat(optional_options).concat(params_strings).concat(subcommand_strings), " ")
 
 		styled_heading = Terminal.render([Terminal.section("Usage:")], text_style)
-		plain_usage = 
+		plain_usage =
 			Terminal.wrap(
 				if usage_parts.is_empty() {
 					name
@@ -187,13 +187,13 @@ Help := [].{
 
 commands_help : SubcommandsConfig, TextStyle -> Str
 commands_help = |subcommands, text_style| {
-	commands = 
+	commands =
 		match subcommands {
 			NoSubcommands => []
 			HasSubcommands({ commands: declared_commands, .. }) => declared_commands
 		}
 
-	aligned_commands = 
+	aligned_commands =
 		align_two_columns(commands.map(|(name, sub_config)| { label: name, help: sub_config.description }), text_style)
 
 	styled_heading = Terminal.render([Terminal.section("Commands:")], text_style)
@@ -215,11 +215,11 @@ find_command = |commands, target|
 
 parameters_help : List(ParameterConfig), TextStyle -> Str
 parameters_help = |params, text_style| {
-	formatted_params = 
+	formatted_params =
 		align_two_columns(
 			params.map(
 				|param| {
-					ellipsis = 
+					ellipsis =
 						match param.plurality {
 							Optional | One => ""
 							Many => "..."
@@ -238,21 +238,21 @@ parameters_help = |params, text_style| {
 
 option_name_formatter : OptionConfig -> Str
 option_name_formatter = |{ short, long, expected_value, .. }| {
-	short_name = 
+	short_name =
 		if short != "" {
 			"-${short}"
 		} else {
 			""
 		}
 
-	long_name = 
+	long_name =
 		if long != "" {
 			"--${long}"
 		} else {
 			""
 		}
 
-	type_name = 
+	type_name =
 		match expected_value {
 			NothingExpected => ""
 			ExpectsValue(name) => " ${to_upper_case(name)}"
@@ -263,21 +263,21 @@ option_name_formatter = |{ short, long, expected_value, .. }| {
 
 option_simple_name_formatter : OptionConfig -> Str
 option_simple_name_formatter = |{ short, long, expected_value, .. }| {
-	short_name = 
+	short_name =
 		if short != "" {
 			"-${short}"
 		} else {
 			""
 		}
 
-	long_name = 
+	long_name =
 		if long != "" {
 			"--${long}"
 		} else {
 			""
 		}
 
-	type_name = 
+	type_name =
 		match expected_value {
 			NothingExpected => ""
 			ExpectsValue(name) => " ${to_upper_case(name)}"
@@ -289,7 +289,7 @@ option_simple_name_formatter = |{ short, long, expected_value, .. }| {
 option_usage_formatter : OptionConfig -> Str
 option_usage_formatter = |option| {
 	name = option_simple_name_formatter(option)
-	suffix = 
+	suffix =
 		match option.plurality {
 			Many => "..."
 			Optional | One => ""
@@ -304,7 +304,7 @@ option_usage_formatter = |option| {
 
 options_help : List(OptionConfig), TextStyle -> Str
 options_help = |options, text_style| {
-	formatted_options = 
+	formatted_options =
 		align_two_columns(options.map(|option| { label: option_name_formatter(option), help: option.help }), text_style)
 
 	styled_heading = Terminal.render([Terminal.section("Options:")], text_style)
@@ -323,16 +323,16 @@ HelpColumn : { label : Str, help : Str }
 
 align_two_columns : List(HelpColumn), TextStyle -> List(Str)
 align_two_columns = |columns, text_style| {
-	max_first_column_len = 
+	max_first_column_len =
 		max_or_zero(columns.map(|{ label, .. }| label.count_utf8_bytes()))
 
 	columns.map(
 		|{ label, help }| {
-			buffer = 
+			buffer =
 				Str.repeat(" ", max_first_column_len - label.count_utf8_bytes())
 
 			available_width = terminal_width - (max_first_column_len + 4).min(terminal_width - 1)
-			wrapped_help = 
+			wrapped_help =
 				Terminal.wrap(
 					help,
 					{ first_indent: "", continuation_indent: "", width: available_width },
@@ -396,7 +396,7 @@ indent_lines = |lines, indentation, is_first, out|
 	match lines {
 		[] => Str.join_with(out, "\n")
 		[line, .. as rest] => {
-			rendered = 
+			rendered =
 				if is_first {
 					line
 				} else {
