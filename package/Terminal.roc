@@ -61,7 +61,7 @@ Terminal := [].{
 	## Byte length is deliberately conservative for non-ASCII terminal text.
 	wrap : Str, Terminal.WrapConfig -> Str
 	wrap = |text, config| {
-		wrapped_state = 
+		wrapped_state =
 			text.split_on("\n").fold(
 				{ first: True, lines: [] },
 				|acc, line| {
@@ -83,7 +83,7 @@ Terminal := [].{
 render_segment : Terminal.Segment, TextStyle -> Str
 render_segment = |{ text, style }, text_style| {
 	styles : List(Style)
-	styles = 
+	styles =
 		match style {
 			PlainText => []
 			Strong => [Bold(On)]
@@ -111,7 +111,7 @@ wrap_logical_line = |line, first_indent, continuation_indent, width| {
 		lines: [],
 		width: first_indent.count_utf8_bytes(),
 	}
-	line_state = 
+	line_state =
 		line
 			.split_on(" ")
 			.keep_if(|word| !word.is_empty())

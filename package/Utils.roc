@@ -13,13 +13,13 @@ Utils := [].{
 				first_is_kebab = is_lower_case(first)
 				last_is_kebab = is_lower_case(last) or is_digit(last)
 
-				middle_is_kebab = 
+				middle_is_kebab =
 					middle.all(
 						|char|
 							is_lower_case(char) or is_digit(char) or char == dash_ascii_code,
 					)
 
-				no_double_dashes = 
+				no_double_dashes =
 					middle
 						.map2(middle.drop_first(1), |left, right| (left, right))
 						.all(
@@ -34,7 +34,7 @@ Utils := [].{
 
 	to_upper_case : Str -> Str
 	to_upper_case = |str| {
-		bytes = 
+		bytes =
 			str
 				.to_utf8()
 				.map(

@@ -26,9 +26,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Roc
-        uses: roc-lang/setup-roc@66d1ae2def87ec77b8670e9ac09c418df2f18c86
-        with:
-          version: nightly-new-compiler
+        uses: ./.github/actions/setup-roc
 
       - name: Generate docs
         run: roc docs package/main.roc --output=generated-docs

@@ -15,7 +15,7 @@ Parser := [].{
 	parse_args = |args| {
 		starting_state = { parsed_args: [], pass_through: KeepParsing }
 
-		state_after = 
+		state_after =
 			args
 				.fold(
 					starting_state,
@@ -100,7 +100,7 @@ Parser := [].{
 
 	construct_set_of_options : Str -> ParsedArg
 	construct_set_of_options = |combined| {
-		options = 
+		options =
 			combined
 				.to_utf8()
 				.fold(
@@ -124,7 +124,7 @@ parse_raw_unix_long_arg = |bytes|
 	match bytes {
 		[45, 45, .. as rest] => {
 			{ name_units, value_units } = split_u8_at_equals(rest, [])?
-			name = 
+			name =
 				match Str.from_utf8(name_units) {
 					Ok(value) => value
 					Err(_) => return Err(NotRawLong)
@@ -145,7 +145,7 @@ parse_raw_windows_long_arg = |code_units|
 	match code_units {
 		[45, 45, .. as rest] => {
 			{ name_units, value_units } = split_u16_at_equals(rest, [])?
-			name = 
+			name =
 				match Path.to_str(Path.from_raw(WindowsU16s(name_units))) {
 					Ok(value) => value
 					Err(_) => return Err(NotRawLong)
@@ -263,7 +263,7 @@ expect {
 
 ## Parsing stops interpreting options after the double-dash delimiter.
 expect {
-	parsed = 
+	parsed =
 		Parser.parse_args(["-a", "123", "--passed", "-bcd", "xyz", "--", "--subject=world"].map(Path.utf8))
 
 	parsed

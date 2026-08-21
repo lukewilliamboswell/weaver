@@ -48,7 +48,7 @@ Cli := [].{
 		match remaining_args {
 			[] => Ok({})
 			[first, ..] => {
-				extra_arg_err = 
+				extra_arg_err =
 					match first {
 						Parameter(param) => ExtraParamProvided(param)
 						Long(long) => UnrecognizedLongArg(long.name)
@@ -73,7 +73,7 @@ Cli := [].{
 	## Bundle a CLI builder into a parser without validating its configuration.
 	finish_without_validating : CliBuilder(data, from_action, to_action), CliConfigParams -> CliParser(data)
 	finish_without_validating = |builder, { name, authors, version, description, text_style }| {
-		{ options, parameters, subcommands, parser } = 
+		{ options, parameters, subcommands, parser } =
 			Builder.into_parts(
 				Builder.update_parser(
 					Builder.check_for_help_and_version(builder),
@@ -101,7 +101,7 @@ Cli := [].{
 			parser: |args| {
 				parsed_args = parse_args(args)
 				raw_result = parser({ args: parsed_args, subcommand_path: [name] })
-				parser_result = 
+				parser_result =
 					match raw_result {
 						IncorrectUsage(MissingOption(_), { subcommand_path }) =>
 							match find_unrecognized_option(config, parsed_args) {
@@ -131,7 +131,7 @@ Cli := [].{
 	## Parse arguments, or return a typed help, version, or usage message.
 	parse_or_display_message : CliParser(data), List(arg), (arg -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]) -> Try(data, [Help(Str), Version(Str), InvalidUsage(Str)])
 	parse_or_display_message = |{ config, parser, text_style }, external_args, to_raw_arg| {
-		args = 
+		args =
 			external_args
 				.map(to_raw_arg)
 				.map(Path.from_raw)
