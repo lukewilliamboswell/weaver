@@ -5,12 +5,11 @@ import argparse
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
-try:
-    from scripts.github_output import write_output
-except ModuleNotFoundError:
-    from github_output import write_output
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from github_output import write_output
 
 
 ROOT = Path(__file__).resolve().parents[1]
