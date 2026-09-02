@@ -217,9 +217,10 @@ them locally:
 python3 scripts/serve_www.py
 ```
 
-The preview opens [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Pass
-`--no-open` to avoid opening a browser or `--no-serve` to only assemble
-`target/www-preview`. Press `Ctrl-C` to stop the server.
+The preview uses an available random local port and prints its URL. Pass
+`--port PORT` to choose a fixed port, `--no-open` to avoid opening a browser,
+or `--no-serve` to only assemble `target/www-preview`. Press `Ctrl-C` to stop
+the server.
 
 The assembled site includes fresh API docs, vendored client-side Roc syntax
 highlighting, and a page for every example with representative terminal output

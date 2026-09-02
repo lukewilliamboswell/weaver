@@ -28,7 +28,7 @@ def main() -> None:
     parser.add_argument("--roc", default=os.environ.get("ROC", "roc"))
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=0, help="port to use; defaults to an available random port")
     parser.add_argument("--no-open", action="store_true")
     parser.add_argument("--no-serve", action="store_true")
     args = parser.parse_args()
