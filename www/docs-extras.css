@@ -1,0 +1,16 @@
+/* Small additions to Roc's generated documentation styles. */
+.pkg-and-logo {
+  flex-wrap: wrap;
+}
+.pkg-site-link {
+  flex-basis: 100%;
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+.pkg-intro {
+  max-width: 46rem;
+  margin-bottom: 2rem;
+}
+.pkg-intro h2 {
+  margin-top: 0;
+}
