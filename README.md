@@ -210,21 +210,16 @@ Regenerate the README's terminal capture from the compiled basic example with:
 python3 scripts/capture_example.py
 ```
 
-Generate versioned API documentation under `www/` with:
+Generate the complete landing site and fresh main-branch API docs, then preview
+them locally:
 
 ```sh
-python3 scripts/generate_docs.py 0.8.0
+python3 scripts/serve_www.py
 ```
 
-Preview the generated site locally with the same `/weaver/` base path used by
-GitHub Pages:
-
-```sh
-python3 scripts/serve_docs.py
-```
-
-Then open [http://127.0.0.1:8000/weaver/](http://127.0.0.1:8000/weaver/).
-Press `Ctrl-C` to stop the server.
+The preview opens [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Pass
+`--no-open` to avoid opening a browser or `--no-serve` to only assemble
+`target/www-preview`. Press `Ctrl-C` to stop the server.
 
 Published documentation is available at
 [lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).

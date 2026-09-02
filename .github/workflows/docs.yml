@@ -1,27 +1,33 @@
-name: Docs
+name: Deploy site and docs to Pages
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/docs.yml"
+      - ".roc-version"
+      - "package/**"
+      - "scripts/build_docs_site.py"
+      - "www/**"
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Documentation version, e.g. 0.8.0"
-        required: true
-        type: string
+
+permissions: {}
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    name: Prepare versioned docs
+  deploy:
+    name: Deploy site and docs
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,18 +35,12 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
-      - name: Generate versioned docs
+      - name: Assemble Pages site
         env:
-          DOCS_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+          DOCS_OUTPUT: pages-site
+          ROC_DOCS_URL_ROOT: /${{ github.event.repository.name }}/main
         shell: python
-        run: import runpy; runpy.run_path("scripts/generate_docs.py", run_name="__main__")
-
-      - name: Preserve docs in a follow-up PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DOCS_VERSION: ${{ github.event.release.tag_name || inputs.version }}
-        shell: python
-        run: import os, runpy, sys; sys.argv += [os.environ["DOCS_VERSION"]]; runpy.run_path("scripts/publish_docs_branch.py", run_name="__main__")
+        run: import runpy; runpy.run_path("scripts/build_docs_site.py", run_name="__main__")
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -48,19 +48,7 @@ jobs:
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: www
-
-  deploy:
-    name: Deploy versioned docs
-    needs: prepare
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
+          path: pages-site
 
       - name: Deploy docs
         id: deployment
