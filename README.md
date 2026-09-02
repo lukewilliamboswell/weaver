@@ -210,6 +210,25 @@ Regenerate the README's terminal capture from the compiled basic example with:
 python3 scripts/capture_example.py
 ```
 
+Generate the complete landing site and fresh main-branch API docs, then preview
+them locally:
+
+```sh
+python3 scripts/serve_www.py
+```
+
+The preview uses an available random local port and prints its URL. Pass
+`--port PORT` to choose a fixed port, `--no-open` to avoid opening a browser,
+or `--no-serve` to only assemble `target/www-preview`. Press `Ctrl-C` to stop
+the server.
+
+The assembled site includes fresh API docs, vendored client-side Roc syntax
+highlighting, and a page for every example with representative terminal output
+and its complete source.
+
+Published documentation is available at
+[lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).
+
 ## Roadmap
 
 Now that an initial release has happened, these are some ideas I have for future development:

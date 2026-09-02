@@ -1,0 +1,80 @@
+:root {
+  --background: #0e1726;
+  --surface: #172235;
+  --border: #334155;
+  --text: #dbe7f3;
+  --muted: #a9bacb;
+  --accent: #67e8f9;
+  --accent-strong: #22d3ee;
+  --accent-text: #083344;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  /* The vendored simple.css picks its palette from prefers-color-scheme.
+     This site is always dark, so pin its tokens to the palette above. */
+  color-scheme: dark;
+  --bg: #0e1726;
+  --accent-bg: #172235;
+  --text-light: #a9bacb;
+  --accent-hover: #22d3ee;
+  --code: #d7f9ff;
+  --preformatted: #d7f9ff;
+  --marked: #fbbf24;
+  --disabled: #1f2937;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--background); color: var(--text); grid-template-columns: 1fr min(58rem, 92%) 1fr; }
+a { color: var(--accent); }
+a:hover { text-decoration: none; }
+.site-header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: 1.5rem max(2rem, calc((100% - 58rem) / 2)); }
+.brand { color: #fff; font-size: 1.35rem; font-weight: 800; text-decoration: none; }
+nav { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+nav a { color: var(--text); text-decoration: none; }
+nav a:hover { color: var(--accent); }
+main section { margin: 0; padding-block: 3.5rem; border: 0; border-top: 1px solid var(--border); background: none; }
+.hero { padding-block: 6rem; border-top: 0; }
+.eyebrow { margin: 0; color: var(--accent); font-size: .82rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+h1 { max-width: 12ch; margin: .7rem 0 1.25rem; color: #fff; font-size: clamp(3.25rem, 9vw, 6.5rem); line-height: .93; letter-spacing: -.04em; }
+h2 { margin-top: 0; color: #fff; font-size: 2rem; }
+h3 { margin-top: 0; color: #fff; }
+.lede { max-width: 45rem; color: var(--muted); font-size: 1.25rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
+a.button { display: inline-block; padding: .7rem 1rem; border: 1px solid var(--border); border-radius: .45rem; background: transparent; color: #fff; font-weight: 700; text-decoration: none; }
+a.button.primary { border-color: var(--accent-strong); background: var(--accent-strong); color: var(--accent-text); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.cards article { padding: 1.25rem; border: 1px solid var(--border); border-radius: .6rem; background: var(--surface); }
+.cards p { margin-bottom: 0; color: var(--muted); }
+pre { overflow-x: auto; tab-size: 4; padding: 1.25rem; border: 1px solid var(--border); border-radius: .6rem; background: #09111d; color: #d7f9ff; font-size: .9rem; }
+li { margin-bottom: .65rem; }
+body > footer { padding-block: 2rem 3rem; color: var(--muted); text-align: left; }
+.example-cards { grid-template-columns: repeat(2, 1fr); }
+.example-cards article { display: flex; flex-direction: column; }
+.example-cards article > a { margin-top: auto; }
+.example-hero { padding-bottom: 2rem; }
+.example-hero h1 { font-size: clamp(2.5rem, 7vw, 4.5rem); }
+.terminal-window { overflow: hidden; border: 1px solid var(--border); border-radius: .6rem; background: #09111d; }
+.terminal-window pre { margin: 0; border: 0; border-radius: 0; }
+.terminal-title { display: flex; gap: .4rem; padding: .75rem; border-bottom: 1px solid var(--border); }
+.terminal-title i { width: .7rem; height: .7rem; border-radius: 50%; background: #fb7185; }
+.terminal-title i:nth-child(2) { background: #fbbf24; }
+.terminal-title i:nth-child(3) { background: #4ade80; }
+.prompt { color: var(--accent); user-select: none; }
+.source { max-height: 50rem; }
+
+@media (max-width: 700px) {
+  .hero { padding-block: 3.5rem; }
+  .cards, .example-cards { grid-template-columns: 1fr; }
+}
+
+/* Authored pages are always dark, so pin the highlighter to its dark palette
+   instead of following prefers-color-scheme. */
+.source .syntax-comment { color: #98a2b3; }
+.source .syntax-constant,
+.source .syntax-string { color: #fda29b; }
+.source .syntax-keyword,
+.source .syntax-special { color: #d6bbfb; }
+.source .syntax-operator,
+.source .syntax-punctuation { color: #fec84b; }
+.source .syntax-function { color: #84adff; }
+.source .syntax-namespace,
+.source .syntax-type { color: #75e0a7; }

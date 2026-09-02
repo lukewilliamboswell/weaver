@@ -1,0 +1,82 @@
+name: Update Roc nightly
+
+on:
+  schedule:
+    # Roc nightlies are normally published around 10:30 UTC.
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+    inputs:
+      nightly_tag:
+        description: "Nightly tag to use instead of the latest published tag"
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: update-roc-nightly
+  cancel-in-progress: false
+
+env:
+  UPDATE_BRANCH: update-roc-nightly
+
+jobs:
+  bump:
+    name: Update nightly pin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.bump.outputs.changed }}
+      nightly_tag: ${{ steps.latest.outputs.nightly_tag }}
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+
+      - name: Resolve Roc nightly
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TAG: ${{ inputs.nightly_tag || '' }}
+        shell: python
+        run: import runpy, sys; sys.argv += ["resolve"]; runpy.run_path("scripts/update_roc_nightly.py", run_name="__main__")
+
+      - name: Update pin and push branch
+        id: bump
+        env:
+          NIGHTLY_TAG: ${{ steps.latest.outputs.nightly_tag }}
+        shell: python
+        run: import runpy, sys; sys.argv += ["bump"]; runpy.run_path("scripts/update_roc_nightly.py", run_name="__main__")
+
+  test:
+    name: Test nightly update
+    needs: bump
+    if: needs.bump.outputs.changed == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: update-roc-nightly
+
+  pull-request:
+    name: Open nightly update PR
+    needs: [bump, test]
+    if: always() && needs.bump.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Open or refresh update PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NIGHTLY_TAG: ${{ needs.bump.outputs.nightly_tag }}
+          TEST_RESULT: ${{ needs.test.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: python
+        run: import runpy, sys; sys.argv += ["pull-request"]; runpy.run_path("scripts/update_roc_nightly.py", run_name="__main__")

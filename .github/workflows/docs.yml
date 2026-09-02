@@ -1,15 +1,21 @@
-name: Docs
+name: Deploy site and docs to Pages
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/docs.yml"
+      - ".roc-version"
+      - "examples/**"
+      - "package/**"
+      - "scripts/build_docs_site.py"
+      - "scripts/enhance_docs_site.py"
+      - "scripts/generate_example_pages.py"
+      - "scripts/test_spec.json"
+      - "www/**"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 
 concurrency:
   group: pages
@@ -17,10 +23,15 @@ concurrency:
 
 jobs:
   deploy:
+    name: Deploy site and docs
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,17 +39,20 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
-      - name: Generate docs
-        run: roc docs package/main.roc --output=generated-docs
+      - name: Assemble Pages site
+        env:
+          DOCS_OUTPUT: pages-site
+          ROC_DOCS_URL_ROOT: /${{ github.event.repository.name }}/main
+        shell: python
+        run: import runpy; runpy.run_path("scripts/build_docs_site.py", run_name="__main__")
 
-      - name: Fix absolute paths
-        run: |
-          find generated-docs/ -type f -name '*.html' -exec sed -i "s/\(href\|src\)=\"\//\1=\"\/${{ github.event.repository.name }}\//g" {} +
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: generated-docs
+          path: pages-site
 
       - name: Deploy docs
         id: deployment

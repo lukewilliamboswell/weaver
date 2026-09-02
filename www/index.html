@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Weaver is a type-safe toolkit for building command-line interfaces in Roc.">
+  <title>Weaver · command-line interfaces for Roc</title>
+  <link rel="stylesheet" href="./vendor/simple-css/simple.min.css">
+  <link rel="stylesheet" href="./site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./">Weaver</a>
+    <nav aria-label="Primary navigation">
+      <a href="#features">Features</a>
+      <a href="#examples">Examples</a>
+      <a href="./main/">Latest docs</a>
+      <a href="https://github.com/lukewilliamboswell/weaver">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">A Roc package for command-line applications</p>
+      <h1>Weave a CLI from a type.</h1>
+      <p class="lede">Define options, parameters, and nested subcommands with composable builders. Weaver handles parsing, validation, diagnostics, help, and version output.</p>
+      <p class="actions">
+        <a class="button primary" href="./main/">Read the latest API docs</a>
+        <a class="button" href="https://github.com/lukewilliamboswell/weaver/tree/main/examples">Explore examples</a>
+      </p>
+    </section>
+
+    <section id="features">
+      <h2>Built for expressive CLIs</h2>
+      <div class="cards">
+        <article>
+          <h3>Typed results</h3>
+          <p>Your CLI definition produces the Roc type your application consumes, including validated values and structured subcommands.</p>
+        </article>
+        <article>
+          <h3>Useful diagnostics</h3>
+          <p>Missing options, malformed values, duplicates, and unknown arguments produce focused errors with usage guidance.</p>
+        </article>
+        <article>
+          <h3>Generated help</h3>
+          <p>Descriptions, defaults, aliases, parameters, and versions stay synchronized with the parser that users actually run.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="examples">
+      <h2>Examples</h2>
+      <p>See each program run in a terminal, then explore the complete highlighted Roc source.</p>
+      <div class="cards example-cards">
+        <article><h3>Basic</h3><p>Options, flags, and positional values.</p><a href="./examples/basic/">Run and read →</a></article>
+        <article><h3>Deploy</h3><p>A realistic command with validation and repeatable labels.</p><a href="./examples/deploy/">Run and read →</a></article>
+        <article><h3>Subcommands</h3><p>Nested commands with their own arguments.</p><a href="./examples/subcommands/">Run and read →</a></article>
+        <article><h3>Default values</h3><p>Typed defaults with explicit overrides.</p><a href="./examples/default-values/">Run and read →</a></article>
+        <article><h3>Single argument</h3><p>A minimal required numeric option.</p><a href="./examples/single-arg/">Run and read →</a></article>
+      </div>
+    </section>
+
+    <section id="reference">
+      <h2>Reference</h2>
+      <ul>
+        <li><a href="./main/">Latest API documentation</a> — generated from the current main branch on every deployment.</li>
+        <li><a href="https://github.com/lukewilliamboswell/weaver#readme">README guide</a> — concepts, behavior, testing, and package usage.</li>
+        <li><a href="https://github.com/lukewilliamboswell/weaver/releases/latest">Latest release</a> — download the current package bundle.</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    <p>Weaver is open source under the UPL-1.0 license. <a href="https://github.com/lukewilliamboswell/weaver">Source on GitHub</a></p>
+  </footer>
+</body>
+</html>

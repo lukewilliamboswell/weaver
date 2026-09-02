@@ -126,7 +126,7 @@ def validate_case(path: str, case: dict[str, object]) -> None:
 
 
 def bundle_package(bundle_dir: Path) -> Path:
-    result = captured_command(ROOT / "scripts" / "bundle.sh", "--output-dir", bundle_dir)
+    result = captured_command(sys.executable, ROOT / "scripts" / "bundle.py", "--output-dir", bundle_dir)
     print(result.stdout, end="")
     match = re.search(r"^Created:\s+(.+\.tar\.zst)\s*$", result.stdout, re.MULTILINE)
     if match is None:
