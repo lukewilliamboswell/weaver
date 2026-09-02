@@ -216,6 +216,16 @@ Generate versioned API documentation under `www/` with:
 python3 scripts/generate_docs.py 0.8.0
 ```
 
+Preview the generated site locally with the same `/weaver/` base path used by
+GitHub Pages:
+
+```sh
+python3 scripts/serve_docs.py
+```
+
+Then open [http://127.0.0.1:8000/weaver/](http://127.0.0.1:8000/weaver/).
+Press `Ctrl-C` to stop the server.
+
 Published documentation is available at
 [lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).
 
