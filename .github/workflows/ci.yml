@@ -2,6 +2,12 @@ name: CI
 
 on:
   pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to test
+        required: false
+        type: string
   schedule:
     - cron: "0 10 * * *"
   workflow_dispatch:
@@ -28,6 +34,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Install Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # 2.2.1
