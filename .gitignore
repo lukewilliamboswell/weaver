@@ -2,6 +2,7 @@
 *
 !*.*
 !*/
+!www/vendor/**/LICENSE*
 
 .direnv/
 .weaver-tmp/
