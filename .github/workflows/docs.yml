@@ -6,8 +6,12 @@ on:
     paths:
       - ".github/workflows/docs.yml"
       - ".roc-version"
+      - "examples/**"
       - "package/**"
       - "scripts/build_docs_site.py"
+      - "scripts/enhance_docs_site.py"
+      - "scripts/generate_example_pages.py"
+      - "scripts/test_spec.json"
       - "www/**"
   workflow_dispatch:
 

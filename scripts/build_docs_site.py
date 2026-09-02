@@ -7,6 +7,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -42,6 +43,16 @@ def assemble(output: Path, roc: str, url_root: str) -> None:
     command = [roc, "docs", "package/main.roc", f"--output={output / 'main'}"]
     print(f"+ {subprocess.list2cmdline(command)}", flush=True)
     subprocess.run(command, cwd=ROOT, env=environment, check=True)
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "generate_example_pages.py"), str(output), "--roc", roc],
+        cwd=ROOT,
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "enhance_docs_site.py"), str(output)],
+        cwd=ROOT,
+        check=True,
+    )
     print(f"Assembled documentation site in {output}")
 
 

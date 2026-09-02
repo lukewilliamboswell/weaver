@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Weaver is a type-safe toolkit for building command-line interfaces in Roc.">
   <title>Weaver · command-line interfaces for Roc</title>
+  <link rel="stylesheet" href="./vendor/simple-css/simple.min.css">
   <link rel="stylesheet" href="./site.css">
 </head>
 <body>
@@ -12,7 +13,7 @@
     <a class="brand" href="./">Weaver</a>
     <nav aria-label="Primary navigation">
       <a href="#features">Features</a>
-      <a href="#example">Example</a>
+      <a href="#examples">Examples</a>
       <a href="./main/">Latest docs</a>
       <a href="https://github.com/lukewilliamboswell/weaver">GitHub</a>
     </nav>
@@ -46,16 +47,16 @@
       </div>
     </section>
 
-    <section id="example">
-      <h2>Start with a builder</h2>
-      <p>Compose a record parser from reusable option and parameter definitions, then ask Weaver to parse the process arguments.</p>
-      <pre><code>cli =
-    Weaver.cli({ name: "deploy", version: "0.1.0" })
-    |&gt; Weaver.option(environment)
-    |&gt; Weaver.option(replicas)
-    |&gt; Weaver.flag(dry_run)
-    |&gt; Weaver.parameter(image)</code></pre>
-      <p><a href="https://github.com/lukewilliamboswell/weaver/blob/main/examples/deploy.roc">View the complete deployment example →</a></p>
+    <section id="examples">
+      <h2>Examples</h2>
+      <p>See each program run in a terminal, then explore the complete highlighted Roc source.</p>
+      <div class="cards example-cards">
+        <article><h3>Basic</h3><p>Options, flags, and positional values.</p><a href="./examples/basic/">Run and read →</a></article>
+        <article><h3>Deploy</h3><p>A realistic command with validation and repeatable labels.</p><a href="./examples/deploy/">Run and read →</a></article>
+        <article><h3>Subcommands</h3><p>Nested commands with their own arguments.</p><a href="./examples/subcommands/">Run and read →</a></article>
+        <article><h3>Default values</h3><p>Typed defaults with explicit overrides.</p><a href="./examples/default-values/">Run and read →</a></article>
+        <article><h3>Single argument</h3><p>A minimal required numeric option.</p><a href="./examples/single-arg/">Run and read →</a></article>
+      </div>
     </section>
 
     <section id="reference">
