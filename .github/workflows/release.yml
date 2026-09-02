@@ -18,10 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       bundle_filename: ${{ steps.bundle.outputs.bundle_filename }}
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,26 +32,13 @@ jobs:
         uses: ./.github/actions/setup-roc
 
       - name: Check format and package
-        run: |
-          roc fmt --check package examples
-          roc check package/main.roc
-          roc test package/main.roc
+        shell: python
+        run: import runpy; runpy.run_path("scripts/check_package.py", run_name="__main__")
 
       - name: Bundle package
         id: bundle
-        run: |
-          BUNDLE_OUTPUT=$(scripts/bundle.sh --output-dir dist 2>&1)
-          echo "$BUNDLE_OUTPUT"
-
-          BUNDLE_PATH=$(echo "$BUNDLE_OUTPUT" | grep "^Created:" | awk '{print $2}')
-          BUNDLE_FILENAME=$(basename "$BUNDLE_PATH")
-
-          if [ -z "$BUNDLE_FILENAME" ]; then
-            echo "Error: could not extract bundle filename from roc bundle output"
-            exit 1
-          fi
-
-          echo "bundle_filename=$BUNDLE_FILENAME" >> "$GITHUB_OUTPUT"
+        shell: python
+        run: import runpy; runpy.run_path("scripts/build_release_bundle.py", run_name="__main__")
 
       - name: Upload package bundle artifact
         uses: actions/upload-artifact@v4
@@ -75,10 +58,6 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,7 +78,8 @@ jobs:
           path: dist
 
       - name: Test examples against downloaded bundle
-        run: python3 scripts/test.py --bundle-path "dist/${{ needs.build-bundle.outputs.bundle_filename }}" --examples-only
+        shell: python
+        run: import runpy, sys; sys.argv += ["--bundle-path", "dist/${{ needs.build-bundle.outputs.bundle_filename }}", "--examples-only"]; runpy.run_path("scripts/test.py", run_name="__main__")
 
   create-release:
     name: Create GitHub release
@@ -109,10 +89,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -129,12 +105,7 @@ jobs:
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          BUNDLE_FILE="dist/${{ needs.build-bundle.outputs.bundle_filename }}"
-          ROC_VERSION=$(roc version)
-
-          gh release create "${{ github.event.inputs.release_tag }}" \
-            "$BUNDLE_FILE" \
-            --title "${{ github.event.inputs.release_tag }}" \
-            --generate-notes \
-            --notes "Weaver package bundle built with Roc $ROC_VERSION."
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+          BUNDLE_FILE: dist/${{ needs.build-bundle.outputs.bundle_filename }}
+        shell: python
+        run: import runpy; runpy.run_path("scripts/create_release.py", run_name="__main__")

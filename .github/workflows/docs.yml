@@ -5,22 +5,23 @@ on:
     types:
       - published
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    inputs:
+      version:
+        description: "Documentation version, e.g. 0.8.0"
+        required: true
+        type: string
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  prepare:
+    name: Prepare versioned docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,17 +29,38 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
-      - name: Generate docs
-        run: roc docs package/main.roc --output=generated-docs
+      - name: Generate versioned docs
+        env:
+          DOCS_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+        shell: python
+        run: import runpy; runpy.run_path("scripts/generate_docs.py", run_name="__main__")
 
-      - name: Fix absolute paths
-        run: |
-          find generated-docs/ -type f -name '*.html' -exec sed -i "s/\(href\|src\)=\"\//\1=\"\/${{ github.event.repository.name }}\//g" {} +
+      - name: Preserve docs in a follow-up PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DOCS_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+        shell: python
+        run: import os, runpy, sys; sys.argv += [os.environ["DOCS_VERSION"]]; runpy.run_path("scripts/publish_docs_branch.py", run_name="__main__")
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: generated-docs
+          path: www
+
+  deploy:
+    name: Deploy versioned docs
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
 
       - name: Deploy docs
         id: deployment

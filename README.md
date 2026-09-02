@@ -210,6 +210,15 @@ Regenerate the README's terminal capture from the compiled basic example with:
 python3 scripts/capture_example.py
 ```
 
+Generate versioned API documentation under `www/` with:
+
+```sh
+python3 scripts/generate_docs.py 0.8.0
+```
+
+Published documentation is available at
+[lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).
+
 ## Roadmap
 
 Now that an initial release has happened, these are some ideas I have for future development:
