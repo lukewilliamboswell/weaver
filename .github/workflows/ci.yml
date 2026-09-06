@@ -11,10 +11,19 @@ on:
   schedule:
     - cron: "0 10 * * *"
   workflow_dispatch:
+    inputs:
+      nightly_validation:
+        description: "Validate a nightly candidate without publishing or deploying"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -29,7 +38,7 @@ jobs:
           - windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.ref || github.ref }}
 

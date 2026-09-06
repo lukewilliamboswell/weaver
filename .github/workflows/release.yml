@@ -3,14 +3,22 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      nightly_validation:
+        description: "Validate a nightly candidate without publishing or deploying"
+        type: boolean
+        required: false
+        default: false
       release_tag:
         description: "Release tag, e.g. v0.1.0"
-        required: true
+        required: false
         type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-bundle:
@@ -19,8 +27,15 @@ jobs:
     outputs:
       bundle_filename: ${{ steps.bundle.outputs.bundle_filename }}
     steps:
+      - name: Require a version for publication
+        if: github.event_name == 'workflow_dispatch' && !inputs.nightly_validation
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_tag }}
+        run: test -n "$RELEASE_VERSION" || { echo "A release version is required for publication" >&2; exit 1; }
+
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # 2.2.1
@@ -41,7 +56,7 @@ jobs:
         run: import runpy; runpy.run_path("scripts/build_release_bundle.py", run_name="__main__")
 
       - name: Upload package bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: package-bundle
           path: dist/${{ steps.bundle.outputs.bundle_filename }}
@@ -60,7 +75,7 @@ jobs:
           - windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # 2.2.1
@@ -72,7 +87,7 @@ jobs:
         uses: ./.github/actions/setup-roc
 
       - name: Download package bundle artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: package-bundle
           path: dist
@@ -82,6 +97,7 @@ jobs:
         run: import runpy, sys; sys.argv += ["--bundle-path", "dist/${{ needs.build-bundle.outputs.bundle_filename }}", "--examples-only"]; runpy.run_path("scripts/test.py", run_name="__main__")
 
   create-release:
+    if: github.event_name == 'workflow_dispatch' && !inputs.nightly_validation
     name: Create GitHub release
     needs:
       - build-bundle
@@ -91,10 +107,10 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Download package bundle artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: package-bundle
           path: dist
