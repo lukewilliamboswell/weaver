@@ -223,8 +223,8 @@ or `--no-serve` to only assemble `target/www-preview`. Press `Ctrl-C` to stop
 the server.
 
 The assembled site includes fresh API docs, vendored client-side Roc syntax
-highlighting, and a page for every example with representative terminal output
-and its complete source.
+highlighting, and a landing page showing every example's real terminal output,
+captured by building and running it during assembly.
 
 Published documentation is available at
 [lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).
