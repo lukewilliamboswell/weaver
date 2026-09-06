@@ -1,61 +1,51 @@
-:root {
-  --background: #0e1726;
-  --surface: #172235;
-  --border: #334155;
-  --text: #dbe7f3;
-  --muted: #a9bacb;
-  --accent: #67e8f9;
-  --accent-strong: #22d3ee;
-  --accent-text: #083344;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  /* The vendored simple.css picks its palette from prefers-color-scheme.
-     This site is always dark, so pin its tokens to the palette above. */
-  color-scheme: dark;
-  --bg: #0e1726;
-  --accent-bg: #172235;
-  --text-light: #a9bacb;
-  --accent-hover: #22d3ee;
-  --code: #d7f9ff;
-  --preformatted: #d7f9ff;
-  --marked: #fbbf24;
-  --disabled: #1f2937;
-}
+:root { --accent: #0e7490; }
+/* site.css loads after simple.css, so its bare :root accent would also win in
+   dark mode, where a dark teal is unreadable. Brighten it back up. */
+@media (prefers-color-scheme: dark) { :root { --accent: #22d3ee; } }
 
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { background: var(--background); color: var(--text); grid-template-columns: 1fr min(58rem, 92%) 1fr; }
-a { color: var(--accent); }
-a:hover { text-decoration: none; }
-.site-header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: 1.5rem max(2rem, calc((100% - 58rem) / 2)); }
-.brand { color: #fff; font-size: 1.35rem; font-weight: 800; text-decoration: none; }
-nav { display: flex; flex-wrap: wrap; gap: 1.25rem; }
-nav a { color: var(--text); text-decoration: none; }
-nav a:hover { color: var(--accent); }
-main section { margin: 0; padding-block: 2.5rem; border: 0; border-top: 1px solid var(--border); background: none; }
-main section:first-child { padding-top: .5rem; border-top: 0; }
-h2 { margin-top: 0; color: #fff; font-size: 1.5rem; }
-.tagline { max-width: 55rem; margin-top: 0; color: var(--muted); font-size: 1.1rem; }
-pre { overflow-x: auto; tab-size: 4; padding: 1.25rem; border: 1px solid var(--border); border-radius: .6rem; background: #09111d; color: #d7f9ff; font-size: .9rem; }
-li { margin-bottom: .65rem; }
-body > footer { padding-block: 2rem 3rem; color: var(--muted); text-align: left; }
-/* One tile per example: its real terminal output, linking to the source. */
-.example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr)); gap: 1.25rem; }
-.example-grid a.example { display: block; color: var(--text); text-decoration: none; }
-.example-name { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .5rem; color: #fff; font-weight: 700; }
-.example-file { color: var(--muted); font-size: .85rem; font-weight: 400; font-family: ui-monospace, monospace; }
-.example-grid a.example:hover .example-name { color: var(--accent); }
-.example-grid a.example:hover .terminal-window { border-color: var(--accent-strong); }
-.terminal-window { display: block; overflow: hidden; border: 1px solid var(--border); border-radius: .6rem; background: #09111d; }
-.terminal-window pre { margin: 0; border: 0; border-radius: 0; }
-.terminal-title { display: flex; gap: .4rem; padding: .75rem; border-bottom: 1px solid var(--border); }
-.terminal-window pre code { color: var(--text); }
-/* Tiles must not scroll sideways inside the link; wrap long command lines. */
-.example-grid .terminal-window pre { white-space: pre-wrap; overflow-wrap: anywhere; }
-.terminal-title i { width: .7rem; height: .7rem; border-radius: 50%; background: #fb7185; }
+/* simple.css centres a narrow reading column; the example grid needs room. */
+body { grid-template-columns: 1fr min(64rem, 90%) 1fr; }
+/* simple.css lets the header span the full width; keep it on the content grid. */
+body > header > * { max-width: 64rem; margin-inline: auto; }
+body > main { padding-block: 1.5rem; }
+main > section:first-child, main > section:first-child > :first-child { margin-top: 0; }
+main > section { margin-top: 2.5rem; }
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.4rem; margin-bottom: .5rem; }
+
+/* Nav */
+body > header { padding-block: 1rem; text-align: left; }
+body > header > p { max-width: 64rem; margin: 0 auto; }
+header nav { margin-bottom: .5rem; justify-content: flex-start; }
+header nav a.brand { font-size: 1.25rem; font-weight: 750; }
+header nav a.brand,
+header nav a.brand:visited {
+  margin-left: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+}
+header nav a.brand:hover { border: 0; color: var(--accent); }
+
+/* Example grid: one example's real terminal output per tile, linking to its source. */
+.example-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 1rem; align-items: start; }
+.example-grid a.example { display: block; padding: .5rem; border: 1px solid var(--border); border-radius: .5rem; text-decoration: none; color: var(--text); }
+.example-grid a.example:hover { border-color: var(--accent); }
+.example-name { display: flex; align-items: baseline; gap: .5rem; padding: .5rem .25rem; font-weight: 600; }
+.example-file { color: var(--text-light); font-size: .85rem; font-weight: 400; font-family: monospace; }
+
+/* Terminal output stays dark on any theme, the way a terminal screenshot would. */
+.terminal-window { display: block; overflow: hidden; border-radius: .35rem; background: #111; }
+.terminal-title { display: flex; gap: .4rem; padding: .6rem; background: #1c1c1c; }
+.terminal-title i { width: .65rem; height: .65rem; border-radius: 50%; background: #fb7185; }
 .terminal-title i:nth-child(2) { background: #fbbf24; }
 .terminal-title i:nth-child(3) { background: #4ade80; }
-.prompt { color: var(--accent); user-select: none; }
+.terminal-window pre, .terminal-window pre code { background: #111; color: #e6e6e6; }
+.terminal-window pre { margin: 0; border: 0; border-radius: 0; font-size: .85rem; }
+.terminal-window .prompt { color: #67e8f9; user-select: none; }
+/* Tiles must not scroll sideways inside the link; wrap long command lines. */
+.terminal-window pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 
-@media (max-width: 700px) {
-  .example-grid { grid-template-columns: 1fr; }
-}
+pre { overflow-x: auto; tab-size: 4; }
