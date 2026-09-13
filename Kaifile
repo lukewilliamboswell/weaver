@@ -1,0 +1,31 @@
+environment weaver {
+  packages: [
+    "rocpkgs.nightly-2026-09-01-db83307",
+    "zig_0_16",
+    "python3",
+    "zstd",
+    "sqlite",
+    "llvmPackages.bintools"
+  ]
+  overlays: ["github:roc-lang/roc-overlay"]
+}
+
+task check {
+  environment: "weaver"
+  run: ["python3", "scripts/check_package.py"]
+}
+
+task test {
+  environment: "weaver"
+  run: ["python3", "scripts/test.py"]
+}
+
+task docs {
+  environment: "weaver"
+  run: ["python3", "scripts/serve_www.py"]
+}
+
+task capture {
+  environment: "weaver"
+  run: ["python3", "scripts/capture_example.py"]
+}
