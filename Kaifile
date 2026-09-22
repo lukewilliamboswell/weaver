@@ -1,6 +1,6 @@
 environment weaver {
   packages: [
-    "rocpkgs.nightly-2026-09-01-db83307",
+    "rocpkgs.nightly",
     "zig_0_16",
     "python3",
     "zstd",
