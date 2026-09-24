@@ -7,10 +7,11 @@ after the upstream 09:00 UTC build. Late publication can wait until the next day
 repository's validation workflows, including their validation-only release paths.
 The controller, its tests, and job permissions are maintained in
 [roc-automation](https://github.com/lukewilliamboswell/roc-automation).
-The caller workflows pin shared code to `3937ff6a0fff8926ca0b8449d2555274cfccff0a`.
+The nightly updater pins shared code to `2af4ba5decfc7cae11d432f9ac82194d6401b782`;
+the PR configuration check retains its reviewed pin `3937ff6a0fff8926ca0b8449d2555274cfccff0a`.
 Dependabot proposes reviewed updates to Actions/workflow references.
 
-Follow the shared [integration and permissions guide](https://github.com/lukewilliamboswell/roc-automation/blob/3937ff6a0fff8926ca0b8449d2555274cfccff0a/docs/integration.md)
+Follow the shared [integration and permissions guide](https://github.com/lukewilliamboswell/roc-automation/blob/2af4ba5decfc7cae11d432f9ac82194d6401b782/docs/integration.md)
 for the PR-creation setting, action allowlists, required checks, and first live
 GITHUB_TOKEN run. Keep default token permissions read-only. Automatic merging is
 enabled only for the updater's verified, pin-only commits after both configured
@@ -22,7 +23,7 @@ all CI and release-validation jobs on Linux, macOS, and Windows. The Release
 workflow therefore runs its non-publishing bundle validation on every pull
 request. Its publication job remains restricted to an explicit release dispatch.
 For bot-created nightly PRs, the controller mirrors successful dispatched jobs to
-these required contexts before requesting an immediate squash merge. It does not
+these required contexts before requesting an immediate merge commit. It does not
 enable GitHub's repository-wide queued auto-merge setting.
 
 `automation/roc-nightly` is reserved for the bot's pin-only commits. Put manual
