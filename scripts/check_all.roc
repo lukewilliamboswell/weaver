@@ -32,8 +32,13 @@ main! = |_args| {
 check_tooling! = |roc_stable| {
 	Script.section!("TOOLING")?
 	roc_stable.run!(["fmt", "--check", "scripts", "Blueprint.roc"])?
-	roc_stable.run!(["test", "scripts/src/Text.roc"])?
-	roc_stable.run!(["test", "scripts/src/StaticChecks.roc"])?
+	for name in ["Text", "StaticChecks", "Site", "Capture"] {
+		roc_stable.run!(["test", OsStr.from_str("scripts/src/${name}.roc")])?
+	}
+	python = Files.all_files_with_ext!("scripts", "py")?
+	if !python.is_empty() {
+		return Script.fail!("automation is written in Roc, but found: ${Str.join_with(python.map(Path.display), ", ")}")
+	}
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?
 	}

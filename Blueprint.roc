@@ -17,6 +17,7 @@ config = [
 	Task("bundle", [Use("dev"), Run(["scripts/build_bundle.roc"])]),
 	Task("package-examples", [Use("dev"), Run(["scripts/package_examples.roc"])]),
 	Task("release", [Use("dev"), Run(["scripts/create_release.roc"])]),
-	Task("docs", [Use("dev"), Run(["python3", "scripts/serve_www.py"])]),
-	Task("capture", [Use("dev"), Run(["python3", "scripts/capture_example.py"])]),
+	Task("build-docs", [Use("dev"), Run(["scripts/build_docs.roc"])]),
+	Task("docs", [Use("dev"), Run(["scripts/serve_docs.roc"])]),
+	Task("capture", [Use("dev"), Run(["scripts/capture_example.roc"])]),
 ]
