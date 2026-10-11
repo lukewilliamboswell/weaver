@@ -1,8 +1,9 @@
 app [main!] {
-	pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/1.0.0/AnZoxzoGPtSGQ15EQh6pBeeaHJ7aizP9MQhK81dES3Uq.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
 	weaver: "../package/main.roc",
 }
 
+import pf.OsStr
 import pf.Stdout
 import weaver.Cli
 import weaver.Opt
@@ -10,9 +11,9 @@ import weaver.Param
 
 DefaultValuesConfig : { alpha : U64, beta : Dec, file : Str }
 
-main! : List(Str) => Try({}, _)
+main! : List(OsStr) => Try({}, _)
 main! = |args| {
-	match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
+	match Cli.parse_or_display_message(cli_parser, args, OsStr.to_raw) {
 		Err(Help(message)) => {
 			Stdout.line!(message)?
 			Ok({})
@@ -79,6 +80,3 @@ maybe_file_default = |file|
 		Ok(path) => path
 		Err(NoValue) => "NONE"
 	}
-
-str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
-str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))

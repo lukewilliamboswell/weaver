@@ -229,7 +229,7 @@ check_duplicate_subcommand_names = |subcommands, subcommand_path|
 			} else {
 				check_duplicate_subcommand_names(rest, subcommand_path)
 			}
-		}
+	}
 
 check_parameter_against_rest : ParameterConfig, List(ParameterConfig), List(Str) -> Try({}, Validate.CliValidationErr)
 check_parameter_against_rest = |first, rest, subcommand_path|
@@ -241,7 +241,7 @@ check_parameter_against_rest = |first, rest, subcommand_path|
 			} else {
 				check_parameter_against_rest(first, remaining, subcommand_path)
 			}
-		}
+	}
 
 check_option_pairs : List(Validate.OptionAtSubcommand) -> Try({}, Validate.CliValidationErr)
 check_option_pairs = |options|
@@ -271,7 +271,7 @@ check_option_against_rest = |first, rest|
 			} else {
 				check_option_against_rest(first, remaining)
 			}
-		}
+	}
 
 options_overlap : OptionConfig, OptionConfig -> Bool
 options_overlap = |left, right| {

@@ -22,15 +22,6 @@ def roc_executable(command: str) -> str:
     return candidate
 
 
-def require_pinned_roc(roc: str) -> None:
-    expected = (ROOT / ".roc-version").read_text(encoding="utf-8").strip()
-    output = subprocess.run(
-        [roc, "version"], cwd=ROOT, text=True, stdout=subprocess.PIPE, check=True
-    ).stdout.strip()
-    if expected not in output:
-        raise SystemExit(f"Expected Roc {expected}, but {roc} reported: {output}")
-
-
 def assemble(output: Path, roc: str, url_root: str) -> None:
     if output.exists():
         if not (output / MARKER).is_file():
@@ -63,7 +54,6 @@ def main() -> None:
     parser.add_argument("--url-root", default=os.environ.get("ROC_DOCS_URL_ROOT", "/weaver/main"))
     args = parser.parse_args()
     roc = roc_executable(args.roc)
-    require_pinned_roc(roc)
     output = args.output if args.output.is_absolute() else ROOT / args.output
     assemble(output.resolve(), roc, args.url_root)
 

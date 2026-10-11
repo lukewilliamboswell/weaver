@@ -55,7 +55,7 @@ Help := [].{
 						Help.find_subcommand(subcommand, rest)
 					}
 				}
-			}
+		}
 
 	## Render the help text for a command at or under the root config.
 	help_text : CliConfig, List(Str), TextStyle -> Str
@@ -211,7 +211,7 @@ find_command = |commands, target|
 			} else {
 				find_command(rest, target)
 			}
-		}
+	}
 
 parameters_help : List(ParameterConfig), TextStyle -> Str
 parameters_help = |params, text_style| {
@@ -354,7 +354,7 @@ filter_non_empty_segments = |segments| {
 		[] => []
 		[first, .. as rest] =>
 			rest.fold([first], |out, segment| out.append(Terminal.plain(" ")).append(segment))
-		}
+	}
 }
 
 filter_non_empty : List(Str) -> List(Str)
@@ -367,7 +367,7 @@ filter_non_empty = |values|
 			} else {
 				[first].concat(filter_non_empty(rest))
 			}
-		}
+	}
 
 join_lines_with : List(Str), Str -> Str
 join_lines_with = |values, separator|

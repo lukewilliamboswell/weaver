@@ -32,7 +32,7 @@ Base := [].{
 				IncorrectUsage(arg_extract_err, { subcommand_path }) => ArgParserResult.IncorrectUsage(arg_extract_err, { subcommand_path: subcommand_path })
 				SuccessfullyParsed({ data, remaining_args, subcommand_path }) =>
 					mapper({ data, remaining_args, subcommand_path })
-				}
+			}
 	}
 
 	## Maps successfully parsed data in an `ArgParserResult`.
@@ -85,7 +85,7 @@ Base := [].{
 						bytes.append(upper).append(lower)
 					},
 				)
-			}
+		}
 
 	## Whether help text should have fancy styling.
 	TextStyle : [Color, Plain]

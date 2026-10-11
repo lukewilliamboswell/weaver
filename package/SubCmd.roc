@@ -71,8 +71,8 @@ SubCmd := [].{
 								Ok(subcommand) => Ok(subcommand)
 								Err(NotFound) => Err(UnknownCommand(arg))
 							}
-						}
-				}
+					}
+			}
 
 		match remaining_args.first() {
 			Err(ListWasEmpty) => callback(find_subcommand(Err(NoValue)))
@@ -84,7 +84,7 @@ SubCmd := [].{
 					Parameter(p) => callback(find_subcommand(Ok(p)))
 					PassedThrough(_) => callback(Err(AfterDelimiter))
 				}
-			}
+		}
 	}
 
 	## Use previously defined subcommands as optional data in a parent CLI.
@@ -175,7 +175,7 @@ find_subcommand_by_name = |subcommands, target|
 			} else {
 				find_subcommand_by_name(rest, target)
 			}
-		}
+	}
 
 first_or_empty : List(Str) -> Str
 first_or_empty = |values|
