@@ -12,8 +12,9 @@ config = [
 		],
 	),
 	Shell("default", [Use("dev")]),
-	Task("check", [Use("dev"), Run(["python3", "scripts/check_package.py"])]),
-	Task("test", [Use("dev"), Run(["python3", "scripts/test.py"])]),
+	Task("check", [Use("dev"), Run(["scripts/check_all.roc"])]),
+	Task("test", [Use("dev"), Run(["scripts/test_examples.roc"])]),
+	Task("bundle", [Use("dev"), Run(["scripts/build_bundle.roc"])]),
 	Task("docs", [Use("dev"), Run(["python3", "scripts/serve_www.py"])]),
 	Task("capture", [Use("dev"), Run(["python3", "scripts/capture_example.py"])]),
 ]

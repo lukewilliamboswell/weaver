@@ -189,12 +189,19 @@ feature-complete, with more to come as this library matures.
 Run the complete package and example suite with:
 
 ```sh
-python3 scripts/test.py
+blueprint run check
 ```
+
+This needs [Nix](https://nixos.org/download), the
+[`blueprint`](https://github.com/lukewilliamboswell/roc-blueprint/releases) CLI, and a
+current nightly `roc` on `PATH`. The repository uses two compilers. `Blueprint.roc`
+pins one nightly release as `roc-stable`, which runs the scripts under `scripts/`.
+The package and examples are always checked with your own `roc`, or the compiler
+named by `ROC_NIGHTLY`, because the package is not pinned to a compiler.
 
 The runner formats, checks, tests, documents, and bundles the package; then it
 formats, checks, tests, and builds every example against that bundle. Each built
-example is exercised with the cases in [`scripts/test_spec.json`](./scripts/test_spec.json),
+example is exercised with the cases in [`tests/spec.json`](./tests/spec.json),
 including successful parses, help and version output, malformed values, missing
 arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
 arguments on Unix. Every example must have a spec entry, so adding an example
