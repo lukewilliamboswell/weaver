@@ -207,23 +207,22 @@ arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
 arguments on Unix. Every example must have a spec entry, so adding an example
 without test cases fails the suite.
 
-Regenerate the README's terminal capture from the compiled basic example with:
+Regenerate the README's terminal capture from the compiled deploy example with:
 
 ```sh
-python3 scripts/capture_example.py
+blueprint run capture
 ```
 
 Generate the complete landing site and fresh main-branch API docs, then preview
 them locally:
 
 ```sh
-python3 scripts/serve_www.py
+blueprint run docs
 ```
 
-The preview uses an available random local port and prints its URL. Pass
-`--port PORT` to choose a fixed port, `--no-open` to avoid opening a browser,
-or `--no-serve` to only assemble `target/www-preview`. Press `Ctrl-C` to stop
-the server.
+The preview is served at `http://127.0.0.1:8000/`. Set `PORT` to choose another
+port, or `NO_SERVE=1` to only assemble `target/www-preview`. Press `Ctrl-C` to
+stop the server.
 
 The assembled site includes fresh API docs, vendored client-side Roc syntax
 highlighting, and a landing page showing every example's real terminal output,

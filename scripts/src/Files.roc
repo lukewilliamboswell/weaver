@@ -12,7 +12,12 @@ Files := [].{
 
 	## Recursively list the `.roc` files under `directory`, sorted by path.
 	all_roc_files! : Path => Try(List(Path), _)
-	all_roc_files! = |directory| Ok(sort_paths(walk!(Path.list!(directory)?, [])?))
+	all_roc_files! = |directory| all_files_with_ext!(directory, "roc")
+
+	## Recursively list the files under `directory` with the extension `ext`,
+	## sorted by path.
+	all_files_with_ext! : Path, Str => Try(List(Path), _)
+	all_files_with_ext! = |directory, ext| Ok(sort_paths(walk!(Path.list!(directory)?, ext, [])?))
 
 	## The final component of a path, for display and for building sibling names.
 	name : Path -> Str
@@ -39,14 +44,14 @@ Files := [].{
 			.map(|(_, path)| path)
 }
 
-walk! = |entries, found|
+walk! = |entries, ext, found|
 	match entries {
 		[] => Ok(found)
 		[path, .. as rest] =>
 			match Path.type!(path)? {
-				IsDir => walk!(rest, walk!(Path.list!(path)?, found)?)
-				IsFile if Path.ext(path).map_ok(Path.display) == Ok("roc") => walk!(rest, found.append(path))
-				_ => walk!(rest, found)
+				IsDir => walk!(rest, ext, walk!(Path.list!(path)?, ext, found)?)
+				IsFile if Path.ext(path).map_ok(Path.display) == Ok(ext) => walk!(rest, ext, found.append(path))
+				_ => walk!(rest, ext, found)
 			}
 	}
 
