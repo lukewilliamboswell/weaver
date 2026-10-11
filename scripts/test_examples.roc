@@ -25,32 +25,46 @@ Case : {
 App : { path : Str, cases : List(Case) }
 
 main! = |_args| {
-	# Build every example against a package bundle and run the cases in
-	# tests/spec.json against the binaries. BUNDLE_PATH names an existing bundle
-	# to test, as the release workflow does; otherwise one is built from the
-	# working tree. Everything here that touches the package uses ROC_NIGHTLY.
+	# Build every example against a package bundle and run the spec cases
+	# against the binaries. Everything that touches the package uses ROC_NIGHTLY.
+	#
+	# By default the working tree's examples are tested against a bundle built
+	# from the working tree. BUNDLE_PATH names an existing bundle to test instead.
+	# EXAMPLES_ARCHIVE_DIR names an unpacked examples archive, which is tested
+	# unchanged with its own spec: against BUNDLE_PATH when that is set, and
+	# otherwise against the published bundle its headers name.
 	roc_nightly = Script.roc_nightly!()?
-	apps = load_spec!()?
 	windows = Env.platform!().os == WINDOWS
 
 	Env.with_temp_dir!(
 		|temporary| {
 			build_dir = Path.join(temporary, "build")
 			Path.create_all!(build_dir)?
-			match Script.env_str!("BUNDLE_PATH") {
-				Ok(bundle) => test_bundle!(roc_nightly, apps, Path.utf8(bundle), temporary, build_dir, windows)
-				Err(NotSet) if windows => {
-					# roc bundle is unavailable on Windows, so exercise the working tree.
-					Script.info!("NOTE", "using the local package source because bundling is unavailable on Windows")?
-					binaries = build_examples!(roc_nightly, apps, "examples", build_dir, windows, NoServer)?
-					run_cases!(apps, binaries, windows)
-				}
+			bundle = match Script.env_str!("BUNDLE_PATH") {
+				Ok(value) => Given(Path.utf8(value))
+				Err(NotSet) => NotGiven
+				Err(err) => return Err(err)
+			}
+			match Script.env_str!("EXAMPLES_ARCHIVE_DIR") {
+				Ok(archive) => test_archive!(roc_nightly, Path.utf8(archive), bundle, build_dir, windows)
 				Err(NotSet) => {
-					bundle_dir = Path.join(temporary, "bundle")
-					Script.roc_stable!()?.cmd(["scripts/build_bundle.roc"]).env("OUTPUT_DIR", Path.to_os_str(bundle_dir)).exec_cmd!()?
-					match Path.list!(bundle_dir)? {
-						[bundle] => test_bundle!(roc_nightly, apps, bundle, temporary, build_dir, windows)
-						_ => Script.fail!("expected exactly one bundle in ${Path.display(bundle_dir)}")
+					apps = load_spec!("tests/spec.json", "examples")?
+					match bundle {
+						Given(path) => test_bundle!(roc_nightly, apps, path, temporary, build_dir, windows)
+						NotGiven if windows => {
+							# roc bundle is unavailable on Windows, so exercise the working tree.
+							Script.info!("NOTE", "using the local package source because bundling is unavailable on Windows")?
+							binaries = build_examples!(roc_nightly, apps, "examples", build_dir, windows, NoServer, WorkingTree)?
+							run_cases!(apps, binaries, windows)
+						}
+						NotGiven => {
+							bundle_dir = Path.join(temporary, "bundle")
+							Script.roc_stable!()?.cmd(["scripts/build_bundle.roc"]).env("OUTPUT_DIR", Path.to_os_str(bundle_dir)).exec_cmd!()?
+							match Path.list!(bundle_dir)? {
+								[path] => test_bundle!(roc_nightly, apps, path, temporary, build_dir, windows)
+								_ => Script.fail!("expected exactly one bundle in ${Path.display(bundle_dir)}")
+							}
+						}
 					}
 				}
 				Err(err) => Err(err)
@@ -59,17 +73,48 @@ main! = |_args| {
 	)
 }
 
-load_spec! = || {
+test_archive! = |roc_nightly, archive, bundle, build_dir, windows| {
+	# A published archive is immutable, so its sources are never rewritten or
+	# reformatted here. Its own spec describes the release it was built from.
+	examples = Path.join(archive, "examples")
+	apps = load_spec!(Path.join(archive, "spec.json"), examples)?
+	urls = Files.direct_roc_files!(examples)?.map_try!(|source| Ok(Text.dependency_values(Path.read_utf8!(source)?, "weaver")))?
+	declared = match urls {
+		[[url], .. as rest] if rest.all(|other| other == [url]) => url
+		_ => return Script.fail!("every archived example must name the same single weaver bundle URL")
+	}
+	Script.info!("ARCHIVE", "examples declare ${declared}")?
+	match bundle {
+		NotGiven => {
+			binaries = build_examples!(roc_nightly, apps, examples, build_dir, windows, NoServer, Archive([]))?
+			run_cases!(apps, binaries, windows)
+		}
+		Given(path) => {
+			# The declared URL is not published yet, so serve the candidate bundle
+			# on loopback and tell the compiler to load it in place of that URL.
+			bundle_bytes = Path.read_bytes!(path)?
+			listener = Tcp.listen!("127.0.0.1", 0, 5_000)?
+			url = "http://127.0.0.1:${listener.local_port!()?.to_str()}/${Files.name(path)}"
+			Script.info!("BUNDLE", url)?
+			replace = ["--replace-dep", OsStr.from_str(declared), OsStr.from_str(url)]
+			binaries = build_examples!(roc_nightly, apps, examples, build_dir, windows, Server({ listener, bundle_bytes }), Archive(replace))?
+			listener.close!()?
+			run_cases!(apps, binaries, windows)
+		}
+	}
+}
+
+load_spec! = |spec_path, examples| {
 	spec : { apps : List(App) }
-	spec = Json.parse(Path.read_utf8!("tests/spec.json")?).map_err(|err| InvalidSpec(err))?
+	spec = Json.parse(Path.read_utf8!(spec_path)?).map_err(|err| InvalidSpec(err))?
 
 	# Every example needs cases, so adding an example without them fails here.
-	discovered = Files.direct_roc_files!("examples")?.map(|path| "examples/${Files.name(path)}")
+	discovered = Files.direct_roc_files!(examples)?.map(|path| "examples/${Files.name(path)}")
 	specified = spec.apps.map(|example| example.path)
 	missing = discovered.keep_if(|path| !specified.contains(path))
 	extra = specified.keep_if(|path| !discovered.contains(path))
 	if !missing.is_empty() or !extra.is_empty() or specified.len() != discovered.len() {
-		return Script.fail!("tests/spec.json does not match examples/: missing=${Str.inspect(missing)}, extra=${Str.inspect(extra)}")
+		return Script.fail!("${Path.display(spec_path)} does not match ${Path.display(examples)}: missing=${Str.inspect(missing)}, extra=${Str.inspect(extra)}")
 	}
 
 	for example in spec.apps {
@@ -107,22 +152,30 @@ test_bundle! = |roc_nightly, apps, bundle, temporary, build_dir, windows| {
 		Path.write_utf8!(source, rewritten)?
 	}
 
-	binaries = build_examples!(roc_nightly, apps, examples, build_dir, windows, Server({ listener, bundle_bytes }))?
+	binaries = build_examples!(roc_nightly, apps, examples, build_dir, windows, Server({ listener, bundle_bytes }), WorkingTree)?
 	listener.close!()?
 	run_cases!(apps, binaries, windows)
 }
 
-build_examples! = |roc_nightly, apps, examples, build_dir, windows, server| {
+build_examples! = |roc_nightly, apps, examples, build_dir, windows, server, kind| {
 	Script.section!("EXAMPLES")?
+	extra = match kind {
+		WorkingTree => []
+		Archive(args) => args
+	}
 	var $binaries = []
 	for example in apps {
 		filename = Str.drop_prefix(example.path, "examples/")
 		source = Path.to_os_str(Path.join(examples, filename))
 		binary = Path.join(build_dir, if windows "${Files.stem(filename)}.exe" else Files.stem(filename))
-		run_step!(roc_nightly, ["fmt", "--check", source], server)?
-		run_step!(roc_nightly, ["check", source, "--no-cache"], server)?
-		run_step!(roc_nightly, ["test", source, "--no-cache"], server)?
-		run_step!(roc_nightly, ["build", source, OsStr.from_str("--output=${Path.display(binary)}"), "--no-cache"], server)?
+		match kind {
+			WorkingTree => run_step!(roc_nightly, ["fmt", "--check", source], server)?
+			# A later formatter must not fail an archive that cannot change.
+			Archive(_) => {}
+		}
+		run_step!(roc_nightly, ["check", source, "--no-cache"].concat(extra), server)?
+		run_step!(roc_nightly, ["test", source, "--no-cache"].concat(extra), server)?
+		run_step!(roc_nightly, ["build", source, OsStr.from_str("--output=${Path.display(binary)}"), "--no-cache"].concat(extra), server)?
 		$binaries = $binaries.append((example.path, binary))
 	}
 	Ok($binaries)

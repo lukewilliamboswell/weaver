@@ -35,6 +35,15 @@ Text := [].{
 		}
 	}
 
+	## Whether `value` is a release version such as `0.10.0` or `1.2.3-rc.1`:
+	## it starts with a digit and holds only ASCII letters, digits, `.` and `-`.
+	valid_version : Str -> Bool
+	valid_version = |value|
+		match Str.to_utf8(value) {
+			[first, .. as rest] => (first >= '0' and first <= '9') and rest.all(version_byte)
+			[] => Bool.False
+		}
+
 	## The quoted value of each `name: "..."` dependency line in a Roc source file.
 	dependency_values : Str, Str -> List(Str)
 	dependency_values = |source, name|
@@ -93,6 +102,9 @@ hex_digit = |byte|
 		Err(NotHex)
 	}
 
+version_byte = |byte|
+	(byte >= '0' and byte <= '9') or (byte >= 'a' and byte <= 'z') or (byte >= 'A' and byte <= 'Z') or byte == '.' or byte == '-'
+
 is_dependency = |line, name| Str.trim_start(line).starts_with("${name}: \"")
 
 indentation = |line| {
@@ -110,3 +122,8 @@ expect Text.rewrite_dependency("app [main!] {\n\tpf: platform \"p\",\n\tweaver: 
 expect Text.rewrite_dependency("app [main!] {}\n", "weaver", "u") == Err(ExpectedOneDependency("weaver", 0))
 expect Text.dependency_values("\tweaver: \"../package/main.roc\",\n", "weaver") == ["../package/main.roc"]
 expect Text.dependency_values("\troc: \"nightly-1\",\n", "weaver") == []
+expect Text.valid_version("0.10.0")
+expect Text.valid_version("1.2.3-rc.1")
+expect !Text.valid_version("")
+expect !Text.valid_version("v1.0.0")
+expect !Text.valid_version("1.0.0/../x")

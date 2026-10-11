@@ -1,0 +1,132 @@
+name: Nightly compatibility
+
+# Does the release users download today still work with today's compiler?
+# This tests the latest release's examples archive, unchanged, against the
+# latest Roc nightly. It never opens a pull request, commits, merges or
+# publishes. A failure means the release needs a patch release.
+
+on:
+  schedule:
+    # Once daily, about four hours after the upstream 09:00 UTC build.
+    - cron: "22 13 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-compatibility
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  resolve:
+    name: Resolve nightly and release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      nightly_tag: ${{ steps.resolve.outputs.nightly_tag }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      archive: ${{ steps.resolve.outputs.archive }}
+    steps:
+      - name: Resolve both once for every job
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          nightly_tag="$(gh api repos/roc-lang/nightlies/releases/latest --jq .tag_name)"
+          release_tag="$(gh api "repos/$REPOSITORY/releases/latest" --jq .tag_name)"
+          archive="$(gh api "repos/$REPOSITORY/releases/latest" \
+            --jq "[.assets[].name | select(. == \"weaver-examples-$release_tag.zip\")] | first // \"\"")"
+          if [ -z "$archive" ]; then
+            echo "::notice::Release $release_tag has no examples archive, so there is nothing to test."
+          fi
+          {
+            echo "nightly_tag=$nightly_tag"
+            echo "release_tag=$release_tag"
+            echo "archive=$archive"
+          } >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Latest release on latest nightly (${{ matrix.os }})
+    needs: resolve
+    if: needs.resolve.outputs.archive != ''
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      # The default branch's scripts drive the test; the examples come from
+      # the release, never from this checkout.
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install Roc
+        uses: ./.github/actions/setup-roc
+        with:
+          nightly-tag: ${{ needs.resolve.outputs.nightly_tag }}
+
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
+      - name: Download the release's examples archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+          ARCHIVE: ${{ needs.resolve.outputs.archive }}
+        run: |
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ARCHIVE" --dir "$RUNNER_TEMP"
+          unzip -q "$RUNNER_TEMP/$ARCHIVE" -d "$RUNNER_TEMP/examples-archive"
+          echo "ARCHIVE_DIR=$RUNNER_TEMP/examples-archive/${ARCHIVE%.zip}" >> "$GITHUB_ENV"
+
+      - name: Test the published examples
+        if: runner.os != 'Windows'
+        run: EXAMPLES_ARCHIVE_DIR="$ARCHIVE_DIR" blueprint run test
+
+      - name: Test the published examples without Blueprint
+        if: runner.os == 'Windows'
+        shell: bash
+        run: EXAMPLES_ARCHIVE_DIR="$(cygpath -m "$ARCHIVE_DIR")" roc-stable scripts/test_examples.roc
+
+  report:
+    name: Report
+    needs: [resolve, test]
+    if: always() && needs.resolve.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      # This job runs no repository or archive code. It keeps one tracking
+      # issue: opened on the first failure, updated on later failures, and
+      # closed on the next pass.
+      - name: Keep one tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RESULT: ${{ needs.test.result }}
+          NIGHTLY_TAG: ${{ needs.resolve.outputs.nightly_tag }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.release_tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITLE: The latest release fails on the latest Roc nightly
+        run: |
+          issue="$(gh issue list --state open --search "in:title \"$TITLE\"" --json number,title \
+            --jq "[.[] | select(.title == \"$TITLE\")] | first | .number // \"\"")"
+          if [ "$RESULT" = failure ]; then
+            body="Release \`$RELEASE_TAG\` and its examples archive failed with \`$NIGHTLY_TAG\`: $RUN_URL
+
+          The archive is immutable, so the fix is a patch release."
+            if [ -n "$issue" ]; then
+              gh issue comment "$issue" --body "$body"
+            else
+              gh issue create --title "$TITLE" --body "$body"
+            fi
+          elif [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "Release \`$RELEASE_TAG\` passes with \`$NIGHTLY_TAG\`: $RUN_URL"
+          fi

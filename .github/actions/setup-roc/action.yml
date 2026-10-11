@@ -1,5 +1,14 @@
 name: Install the latest Roc nightly
-description: Install the latest published new-compiler nightly; this repository does not pin the package compiler
+description: >-
+  Install a new-compiler nightly as roc. The package compiler is not pinned, so
+  this is the latest published nightly unless a workflow resolved one tag for
+  all of its jobs and passes it in.
+
+inputs:
+  nightly-tag:
+    description: A roc-lang/nightlies release tag. Empty installs the latest.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -7,6 +16,7 @@ runs:
     - uses: roc-lang/setup-roc@66d1ae2def87ec77b8670e9ac09c418df2f18c86
       with:
         version: nightly-new-compiler
+        nightly-tag: ${{ inputs.nightly-tag }}
 
     - name: Print the Roc version
       shell: bash

@@ -1,0 +1,84 @@
+name: Update Blueprint.lock
+
+# Proposes a lock update for a maintainer to review. It proves nothing by
+# itself: ci.yml validates the pull request, and nothing merges automatically.
+# A lock update moves the overlay revision and tool versions. It never changes
+# which release is roc-stable, because that tag is written in Blueprint.roc.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: update-blueprint
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  update:
+    name: Propose a lock update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: automation/update-blueprint
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
+      - name: Update the lock
+        id: update
+        run: |
+          blueprint update
+          if git diff --quiet -- Blueprint.lock; then
+            echo "Blueprint.lock is already current."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or refresh the pull request
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          base="$(git rev-parse HEAD)"
+          # Start the branch from the default branch each time, so the pull
+          # request only ever holds one commit that changes one file.
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" -f sha="$base" -F force=true >/dev/null
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$base" >/dev/null
+          fi
+
+          # Commit through the API so GitHub signs the commit.
+          jq -n \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg branch "$BRANCH" \
+            --arg base "$base" \
+            --arg contents "$(base64 -w0 Blueprint.lock)" \
+            '{
+              query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
+              variables: { input: {
+                branch: { repositoryNameWithOwner: $repository, branchName: $branch },
+                expectedHeadOid: $base,
+                message: { headline: "Update Blueprint.lock" },
+                fileChanges: { additions: [{ path: "Blueprint.lock", contents: $contents }] }
+              } }
+            }' | gh api graphql --input - >/dev/null
+
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" \
+              --title "Update Blueprint.lock" \
+              --body "Updates the pinned inputs in \`Blueprint.lock\` with \`blueprint update\`. The tooling compiler does not change: \`roc-stable\` is named in \`Blueprint.roc\`.
+
+          Merge after CI passes. Pull requests opened by this workflow do not start CI by themselves; close and reopen this one to run it."
+          fi
