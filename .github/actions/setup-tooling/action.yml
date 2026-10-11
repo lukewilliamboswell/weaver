@@ -50,7 +50,7 @@ runs:
         gh release download "$tag" --repo roc-lang/nightlies --pattern "$asset" --dir "$work"
         expected="$(gh release view "$tag" --repo roc-lang/nightlies --json assets \
           --jq ".assets[] | select(.name == \"$asset\") | .digest")"
-        actual="sha256:$(sha256sum "$work/$asset" | cut -d' ' -f1)"
+        actual="sha256:$(sha256sum < "$work/$asset" | cut -d' ' -f1)"
         if [ "$expected" != "$actual" ]; then
           echo "Digest mismatch for $asset: expected $expected, got $actual" >&2
           exit 1
