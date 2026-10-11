@@ -32,10 +32,11 @@ from another CLI parsing library that you think would fit well in Weaver.
 
 ```roc
 app [main!] {
-    pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/1.0.0/AnZoxzoGPtSGQ15EQh6pBeeaHJ7aizP9MQhK81dES3Uq.tar.zst",
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
     weaver: "<latest from https://github.com/lukewilliamboswell/weaver/releases>",
 }
 
+import pf.OsStr
 import pf.Stdout
 import weaver.Cli
 import weaver.Opt
@@ -48,10 +49,9 @@ BasicConfig : {
     files : List(Str),
 }
 
-main! : List(Str) => Try({}, _)
+main! : List(OsStr) => Try({}, _)
 main! = |args| {
-    # This legacy platform includes the executable path in `args`.
-    match Cli.parse_or_display_message(cli_parser, args.drop_first(1), str_to_raw_arg) {
+    match Cli.parse_or_display_message(cli_parser, args, OsStr.to_raw) {
         Err(Help(message)) => {
             Stdout.line!(message)?
             Ok({})
@@ -111,9 +111,6 @@ cli_parser =
             },
         ),
     )
-
-str_to_raw_arg : Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]
-str_to_raw_arg = |arg| UnixBytes(Str.to_utf8(arg))
 ```
 
 Set `text_style` to `Color` for ANSI-styled terminal help and diagnostics, or
@@ -169,12 +166,11 @@ want to display configuration failures should handle the result from
 `ErrorFormatter.render_cli_validation_err(err, Color)` (or `Plain`).
 
 Weaver parses exactly the arguments passed to `Cli.parse_or_display_message`; it
-never implicitly drops the first element. The example platform supplies `List(Str)`
-including the executable path, so the example drops that element explicitly and its
-legacy adapter preserves the underlying argument bytes. Modern platforms such as
-`basic-cli` supply `List(OsStr)`; pass `OsStr.to_raw` directly to preserve UTF-8,
-native Unix bytes, and Windows UTF-16 code units at Weaver's `Path` boundary. Only
-drop the first element when the platform documents that it is the executable path.
+never implicitly drops the first element. The example uses `basic-cli`, which
+supplies `List(OsStr)` without the executable path; passing `OsStr.to_raw` directly
+preserves UTF-8, native Unix bytes, and Windows UTF-16 code units at Weaver's `Path`
+boundary. Only drop the first element when the platform documents that it is the
+executable path.
 
 Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
 [`path.Path`](https://github.com/roc-lang/path/releases/tag/4.0.0). String

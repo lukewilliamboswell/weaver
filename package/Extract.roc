@@ -69,7 +69,7 @@ Extract := [].{
 					Optional | One => Ok({ ..state, action: StopParsing, values: state.values.append(p) })
 					Many => Ok({ ..state, values: state.values.append(p) })
 				}
-			}
+		}
 
 	ExtractOptionValuesParams : {
 		args : List(ParsedArg),
@@ -154,7 +154,7 @@ Extract := [].{
 
 			Parameter(_) | PassedThrough(_) =>
 				Ok({ ..state, remaining_args: state.remaining_args.append(arg) })
-			}
+		}
 
 	find_options_in_short_group : ExtractOptionValueWalkerState, OptionConfig, { names : List(Str), complete : [Partial, Complete] } -> Try(ExtractOptionValueWalkerState, ArgExtractErr)
 	find_options_in_short_group = |state, option, short_group| {
@@ -191,7 +191,7 @@ Extract := [].{
 				} else {
 					Err(ValueOptionMustBeLastInShortGroup(option, short_group.names))
 				}
-			}
+		}
 	}
 
 	get_value_for_extraction : ExtractOptionValueWalkerState, ParsedArg, OptionConfig -> Try(ExtractOptionValueWalkerState, ArgExtractErr)
@@ -219,7 +219,7 @@ split_short_group = |names, target, before|
 			} else {
 				split_short_group(rest, target, before.append(name))
 			}
-		}
+	}
 
 append_flag_values : List(Str), Str, List(ArgValue) -> List(ArgValue)
 append_flag_values = |names, target, values|
@@ -231,7 +231,7 @@ append_flag_values = |names, target, values|
 			} else {
 				append_flag_values(rest, target, values)
 			}
-		}
+	}
 
 test_flag : OptionConfig
 test_flag = {

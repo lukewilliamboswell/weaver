@@ -68,7 +68,7 @@ Opt := [].{
 						Ok(parsed) => Ok(parsed)
 						Err(err) => Err(InvalidOptionValue(err, option))
 					}
-				}
+			}
 		}
 
 		Opt.builder_with_option_parser(option, value_parser)
@@ -90,7 +90,7 @@ Opt := [].{
 						Ok(parsed) => Ok(Ok(parsed))
 						Err(err) => Err(InvalidOptionValue(err, option))
 					}
-				}
+			}
 		}
 
 		Opt.builder_with_option_parser(option, value_parser)
@@ -351,8 +351,8 @@ parse_option_value_list = |values, option, parser, out|
 						Ok(parsed) => parse_option_value_list(rest, option, parser, out.append(parsed))
 						Err(err) => Err(InvalidOptionValue(err, option))
 					}
-				}
-		}
+			}
+	}
 
 ## Count options include every occurrence inside one grouped token.
 expect {

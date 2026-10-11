@@ -36,7 +36,7 @@ Builder(data, from_action, to_action) := {
 
 				Err(err) =>
 					ArgParserResult.IncorrectUsage(err, { subcommand_path: subcommand_path })
-				}
+			}
 
 		{
 			parser: new_parser,
@@ -96,7 +96,7 @@ Builder(data, from_action, to_action) := {
 						Err(err) => ArgParserResult.IncorrectUsage(err, { subcommand_path: subcommand_path })
 						Ok({ data: updated_data, remaining_args: rest_of_args }) =>
 							ArgParserResult.SuccessfullyParsed({ data: updated_data, remaining_args: rest_of_args, subcommand_path })
-						},
+					},
 			)
 
 		Builder.set_parser({ parser, options, parameters, subcommands }, new_parser)
@@ -160,8 +160,8 @@ Builder(data, from_action, to_action) := {
 						IncorrectUsage(arg_extract_err, sp) => ArgParserResult.IncorrectUsage(arg_extract_err, sp)
 						SuccessfullyParsed({ data: data2, remaining_args: rest_of_args, subcommand_path: next_sp }) =>
 							ArgParserResult.SuccessfullyParsed({ data: combiner(data, data2), remaining_args: rest_of_args, subcommand_path: next_sp })
-						}
-				}
+					}
+			}
 
 		{
 			parser: combined_parser,
@@ -197,7 +197,7 @@ Builder(data, from_action, to_action) := {
 					} else {
 						other
 					}
-				}
+			}
 
 		{
 			options: options.concat([help_option, version_option]),
@@ -218,7 +218,7 @@ merge_subcommands = |left, right|
 				commands: left_group.commands.concat(right_group.commands),
 				required: left_group.required or right_group.required,
 			})
-		}
+	}
 
 ## Mapping a builder transforms parsed data without consuming extra arguments.
 expect {

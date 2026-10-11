@@ -56,7 +56,7 @@ Param := [].{
 						Ok(parsed) => Ok(parsed)
 						Err(err) => Err(InvalidParamValue(err, param))
 					}
-				}
+			}
 
 		Param.builder_with_parameter_parser(param, value_parser)
 	}
@@ -74,7 +74,7 @@ Param := [].{
 						Ok(parsed) => Ok(Ok(parsed))
 						Err(err) => Err(InvalidParamValue(err, param))
 					}
-				}
+			}
 
 		Param.builder_with_parameter_parser(param, value_parser)
 	}
@@ -290,7 +290,7 @@ parse_param_value_list = |values, param, parser, out|
 				Ok(parsed) => parse_param_value_list(rest, param, parser, out.append(parsed))
 				Err(err) => Err(InvalidParamValue(err, param))
 			}
-		}
+	}
 
 parse_test_param : CliBuilder(data, from_action, to_action), List(Parser.ParsedArg) -> Try(data, ArgExtractErr)
 parse_test_param = |builder, args| {

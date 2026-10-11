@@ -171,7 +171,7 @@ commands_contain_option = |commands, predicate|
 			command.options.any(predicate)
 				or subcommands_contain_option(command.subcommands, predicate)
 					or commands_contain_option(rest, predicate)
-		}
+	}
 
 option_is_known : List(OptionConfig), SubcommandsConfig, (OptionConfig -> Bool) -> Bool
 option_is_known = |options, subcommands, predicate|
@@ -204,7 +204,7 @@ find_unrecognized_option_in_args = |args, options, subcommands|
 
 				Parameter(_) | PassedThrough(_) =>
 					find_unrecognized_option_in_args(rest, options, subcommands)
-				}
+			}
 		}
 	}
 
@@ -218,7 +218,7 @@ find_unrecognized_short_name = |names, options, subcommands|
 			} else {
 				Err(UnrecognizedShortArg(name))
 			}
-		}
+	}
 
 first_or_empty : List(Str) -> Str
 first_or_empty = |values|

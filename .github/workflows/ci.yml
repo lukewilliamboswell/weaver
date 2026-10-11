@@ -42,12 +42,6 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.ref }}
 
-      - name: Install Zig
-        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # 2.2.1
-        with:
-          version: 0.16.0
-          use-cache: false
-
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 

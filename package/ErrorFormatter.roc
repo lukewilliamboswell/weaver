@@ -46,7 +46,7 @@ ErrorFormatter := [].{
 
 					InvalidUtf8 =>
 						"The value provided to ${option_display_name(option)} was not valid UTF-8."
-					}
+				}
 
 			InvalidParamValue(value_err, param) =>
 				match value_err {
@@ -58,7 +58,7 @@ ErrorFormatter := [].{
 
 					InvalidUtf8 =>
 						"The value provided to the '${param.name}' parameter was not valid UTF-8."
-					}
+				}
 
 			MissingParam(parameter) =>
 				"The '${parameter.name}' parameter did not receive a value."
@@ -74,7 +74,7 @@ ErrorFormatter := [].{
 
 			ExtraParamProvided(param) =>
 				"The parameter ${Str.inspect(Path.display(param))} was not expected."
-			}
+		}
 
 	## Render an argument extraction failure as a complete terminal report.
 	render_arg_extract_err : ArgExtractErr, { command : Str, usage : Str }, TextStyle -> Str
@@ -165,7 +165,7 @@ ErrorFormatter := [].{
 
 			OverrodeSpecialVersionFlag({ option, subcommand_path }) =>
 				"The ${option_at_subcommand_name({ option, subcommand_path })} tried to overwrite the built-in -V/--version flag."
-			}
+		}
 	}
 
 	## Render a CLI configuration failure as a complete terminal report.

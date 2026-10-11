@@ -67,7 +67,7 @@ Parser := [].{
 
 					Utf8(_) => Parameter(arg)
 				}
-			}
+		}
 	}
 
 	parse_decoded_arg : Path, Str -> ParsedArg
@@ -96,7 +96,7 @@ Parser := [].{
 			[option] => Long({ name: option, value: Err(NoValue) })
 			[option, .. as value_parts] =>
 				Long({ name: option, value: Ok(Path.utf8(Str.join_with(value_parts, "="))) })
-			}
+		}
 
 	construct_set_of_options : Str -> ParsedArg
 	construct_set_of_options = |combined| {
