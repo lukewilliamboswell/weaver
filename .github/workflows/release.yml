@@ -4,13 +4,8 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      nightly_validation:
-        description: "Validate a nightly candidate without publishing or deploying"
-        type: boolean
-        required: false
-        default: false
       release_tag:
-        description: "Release tag, e.g. v0.1.0"
+        description: "Release version, e.g. 0.10.0. Leave empty for a dry run."
         required: false
         type: string
 
@@ -21,20 +16,19 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # A pull request or an empty dispatch builds and tests everything a release
+  # would publish, under a version that is never published.
+  VERSION: ${{ inputs.release_tag || '0.0.1-dry-run' }}
+
 jobs:
   build-bundle:
     name: Build package bundle
     runs-on: ubuntu-latest
     outputs:
       bundle_filename: ${{ steps.bundle.outputs.bundle_filename }}
+      archive_filename: ${{ steps.archive.outputs.archive_filename }}
     steps:
-      - name: Require a version for publication
-        if: github.event_name == 'workflow_dispatch' && !inputs.nightly_validation
-        shell: bash
-        env:
-          RELEASE_VERSION: ${{ inputs.release_tag }}
-        run: test -n "$RELEASE_VERSION" || { echo "A release version is required for publication" >&2; exit 1; }
-
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -55,11 +49,22 @@ jobs:
           test "${#bundles[@]}" = 1 || { echo "Expected exactly one bundle in dist/" >&2; exit 1; }
           echo "bundle_filename=$(basename "${bundles[0]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Upload package bundle artifact
+      - name: Package examples archive
+        id: archive
+        env:
+          BUNDLE_URL: https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/${{ steps.bundle.outputs.bundle_filename }}
+        run: |
+          blueprint run package-examples
+          echo "archive_filename=weaver-examples-$VERSION.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: package-bundle
-          path: dist/${{ steps.bundle.outputs.bundle_filename }}
+          name: release-artifacts
+          path: |
+            dist/${{ steps.bundle.outputs.bundle_filename }}
+            dist/${{ steps.archive.outputs.archive_filename }}
+          if-no-files-found: error
           retention-days: 30
 
   test-bundle:
@@ -73,6 +78,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
+    env:
+      BUNDLE_PATH: dist/${{ needs.build-bundle.outputs.bundle_filename }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -83,51 +90,68 @@ jobs:
       - name: Install tooling
         uses: ./.github/actions/setup-tooling
 
-      - name: Download package bundle artifact
+      - name: Download release artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: package-bundle
+          name: release-artifacts
           path: dist
 
-      - name: Test examples against downloaded bundle
-        if: runner.os != 'Windows'
-        env:
-          BUNDLE_PATH: dist/${{ needs.build-bundle.outputs.bundle_filename }}
-        run: blueprint run test
-
-      - name: Test examples against downloaded bundle without Blueprint
-        if: runner.os == 'Windows'
+      - name: Unpack examples archive
         shell: bash
         env:
-          BUNDLE_PATH: dist/${{ needs.build-bundle.outputs.bundle_filename }}
+          ARCHIVE: dist/${{ needs.build-bundle.outputs.archive_filename }}
+        run: |
+          unzip -q "$ARCHIVE" -d "$RUNNER_TEMP/examples-archive"
+          echo "ARCHIVE_DIR=$RUNNER_TEMP/examples-archive/weaver-examples-$VERSION" >> "$GITHUB_ENV"
+
+      - name: Test working-tree examples against the bundle
+        if: runner.os != 'Windows'
+        run: blueprint run test
+
+      - name: Test the examples archive against the bundle
+        if: runner.os != 'Windows'
+        run: EXAMPLES_ARCHIVE_DIR="$ARCHIVE_DIR" blueprint run test
+
+      - name: Test working-tree examples against the bundle without Blueprint
+        if: runner.os == 'Windows'
+        shell: bash
         run: roc-stable scripts/test_examples.roc
 
+      - name: Test the examples archive against the bundle without Blueprint
+        if: runner.os == 'Windows'
+        shell: bash
+        run: EXAMPLES_ARCHIVE_DIR="$(cygpath -m "$ARCHIVE_DIR")" roc-stable scripts/test_examples.roc
+
   create-release:
-    if: github.event_name == 'workflow_dispatch' && !inputs.nightly_validation
+    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
     name: Create GitHub release
     needs:
       - build-bundle
       - test-bundle
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Download package bundle artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: package-bundle
-          path: dist
-
       - name: Install Roc
         uses: ./.github/actions/setup-roc
+
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-artifacts
+          path: dist
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
           BUNDLE_FILE: dist/${{ needs.build-bundle.outputs.bundle_filename }}
-        shell: python
-        run: import runpy; runpy.run_path("scripts/create_release.py", run_name="__main__")
+          EXAMPLES_ARCHIVE: dist/${{ needs.build-bundle.outputs.archive_filename }}
+        run: blueprint run release
