@@ -53,7 +53,7 @@ def main() -> None:
     parser.add_argument("--roc", default="roc")
     args = parser.parse_args()
     site = args.site.resolve()
-    spec = json.loads((ROOT / "scripts" / "test_spec.json").read_text(encoding="utf-8"))
+    spec = json.loads((ROOT / "tests" / "spec.json").read_text(encoding="utf-8"))
 
     cards: list[str] = []
     with tempfile.TemporaryDirectory(prefix="weaver-doc-examples-") as temporary:

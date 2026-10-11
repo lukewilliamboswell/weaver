@@ -45,6 +45,14 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
       - name: Run checks
-        shell: python
-        run: import runpy; runpy.run_path("scripts/test.py", run_name="__main__")
+        if: runner.os != 'Windows'
+        run: blueprint run check
+
+      - name: Run checks without Blueprint
+        if: runner.os == 'Windows'
+        shell: bash
+        run: roc-stable scripts/check_all.roc

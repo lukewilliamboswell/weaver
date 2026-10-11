@@ -41,14 +41,19 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
-      - name: Check format and package
-        shell: python
-        run: import runpy; runpy.run_path("scripts/check_package.py", run_name="__main__")
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
+      - name: Run checks
+        run: blueprint run check
 
       - name: Bundle package
         id: bundle
-        shell: python
-        run: import runpy; runpy.run_path("scripts/build_release_bundle.py", run_name="__main__")
+        run: |
+          blueprint run bundle
+          bundles=(dist/*.tar.zst)
+          test "${#bundles[@]}" = 1 || { echo "Expected exactly one bundle in dist/" >&2; exit 1; }
+          echo "bundle_filename=$(basename "${bundles[0]}")" >> "$GITHUB_OUTPUT"
 
       - name: Upload package bundle artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -75,6 +80,9 @@ jobs:
       - name: Install Roc
         uses: ./.github/actions/setup-roc
 
+      - name: Install tooling
+        uses: ./.github/actions/setup-tooling
+
       - name: Download package bundle artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -82,8 +90,17 @@ jobs:
           path: dist
 
       - name: Test examples against downloaded bundle
-        shell: python
-        run: import runpy, sys; sys.argv += ["--bundle-path", "dist/${{ needs.build-bundle.outputs.bundle_filename }}", "--examples-only"]; runpy.run_path("scripts/test.py", run_name="__main__")
+        if: runner.os != 'Windows'
+        env:
+          BUNDLE_PATH: dist/${{ needs.build-bundle.outputs.bundle_filename }}
+        run: blueprint run test
+
+      - name: Test examples against downloaded bundle without Blueprint
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          BUNDLE_PATH: dist/${{ needs.build-bundle.outputs.bundle_filename }}
+        run: roc-stable scripts/test_examples.roc
 
   create-release:
     if: github.event_name == 'workflow_dispatch' && !inputs.nightly_validation

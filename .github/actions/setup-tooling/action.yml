@@ -1,0 +1,60 @@
+name: Install the tooling environment
+description: >-
+  Provide roc-stable for repository scripts. On Linux and macOS this installs
+  Nix and the blueprint CLI, which realise the environment in Blueprint.roc.
+  Blueprint cannot run on Windows, so there the release named in Blueprint.roc
+  is downloaded as roc-stable directly.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      if: runner.os != 'Windows'
+      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+
+    - name: Install blueprint
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        BLUEPRINT_VERSION: 0.4.0
+      run: |
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64)   asset=blueprint-x86_64-linux;   sha256=3fe15840aa1ae884a943e1973fbf07d67ae53d7a295edd32916f25c962df6480 ;;
+          Linux-ARM64) asset=blueprint-aarch64-linux;  sha256=008e44c522ece7263d0871817e3b98693a57f8025878931423479638bba0e5bf ;;
+          macOS-ARM64) asset=blueprint-aarch64-darwin; sha256=614f58813b91c344c90659cd161fd9afde309a5eab40b85e88ceb0ef4da21743 ;;
+          *) echo "No blueprint binary is published for $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+        bin="$RUNNER_TEMP/blueprint-bin"
+        mkdir -p "$bin"
+        curl -fsSL -o "$bin/blueprint" \
+          "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/$BLUEPRINT_VERSION/$asset"
+        echo "$sha256  $bin/blueprint" | shasum -a 256 -c -
+        chmod +x "$bin/blueprint"
+        echo "$bin" >> "$GITHUB_PATH"
+
+    - name: Install roc-stable without Blueprint
+      if: runner.os == 'Windows'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Blueprint.roc stays the only place that names the tooling compiler.
+        tag="$(grep -oE 'rocpkgs\.nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9a-f]{7}' Blueprint.roc | sed 's/^rocpkgs\.//' | sort -u)"
+        if [ "$(printf '%s\n' "$tag" | grep -c .)" != 1 ]; then
+          echo "Expected exactly one roc-stable release in Blueprint.roc, found: $tag" >&2
+          exit 1
+        fi
+        asset="roc_${tag/nightly-/nightly-windows_x86_64-}.zip"
+        work="$RUNNER_TEMP/roc-stable"
+        mkdir -p "$work/bin"
+        gh release download "$tag" --repo roc-lang/nightlies --pattern "$asset" --dir "$work"
+        expected="$(gh release view "$tag" --repo roc-lang/nightlies --json assets \
+          --jq ".assets[] | select(.name == \"$asset\") | .digest")"
+        actual="sha256:$(sha256sum < "$work/$asset" | cut -d' ' -f1)"
+        if [ "$expected" != "$actual" ]; then
+          echo "Digest mismatch for $asset: expected $expected, got $actual" >&2
+          exit 1
+        fi
+        unzip -q "$work/$asset" -d "$work/unpacked"
+        cp "$(find "$work/unpacked" -name roc.exe | head -n 1)" "$work/bin/roc-stable.exe"
+        cygpath -w "$work/bin" >> "$GITHUB_PATH"
