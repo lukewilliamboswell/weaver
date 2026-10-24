@@ -12,8 +12,9 @@ import weaver.Param
 # reach the same outcome as `Plain`, its help and usage reports must contain
 # nothing but complete SGR sequences beyond the plain text, and removing those
 # sequences must give exactly the `Plain` text, which itself contains no
-# escape characters. Arguments that themselves contain an escape character are
-# echoed into reports verbatim, so for those only the outcomes are compared.
+# control characters but line breaks. That holds for every command line,
+# including arguments that themselves contain escape sequences or other
+# control characters, because reports quote and escape the text they echo.
 #
 #     roc build --fuzz fuzz/render-styles/main.roc --output=render-styles
 #     ./render-styles run fuzz/render-styles/corpus --time=60
@@ -126,6 +127,24 @@ strip_sgr_help = |bytes, out|
 		[byte, .. as rest] => strip_sgr_help(rest, out.append(byte))
 	}
 
+## Whether UTF-8 text holds a C0 control other than a line break, DEL, a C1
+## control such as the single-byte CSI, or a mark that reorders displayed
+## text (U+200E, U+200F, U+2028 to U+202E and U+2066 to U+2069).
+has_raw_control : List(U8) -> Bool
+has_raw_control = |bytes|
+	match bytes {
+		[] => False
+		[0xC2, second, ..] if second >= 0x80 and second <= 0x9F => True
+		[0xE2, 0x80, third, ..] if third == 0x8E or third == 0x8F or (third >= 0xA8 and third <= 0xAE) => True
+		[0xE2, 0x81, third, ..] if third >= 0xA6 and third <= 0xA9 => True
+		[byte, .. as rest] =>
+			if (byte < 0x20 and byte != '\n') or byte == 0x7F {
+				True
+			} else {
+				has_raw_control(rest)
+			}
+	}
+
 message_of : Outcome -> Try(Str, [NoMessage])
 message_of = |outcome|
 	match outcome {
@@ -152,23 +171,25 @@ test = |args| {
 		crash "the Color and Plain styles reached different outcomes"
 	}
 
-	if !args.any(|arg| arg.contains(escape)) {
-		match (message_of(plain), message_of(color)) {
-			(Ok(plain_message), Ok(color_message)) => {
-				plain_bytes = Str.to_utf8(plain_message)
-				if plain_bytes.contains(escape) {
-					crash "Plain output contains an escape character"
-				}
-
-				match strip_sgr(Str.to_utf8(color_message)) {
-					Ok(stripped) if stripped == plain_bytes => {}
-					Ok(_) => crash "Color output without its SGR sequences differs from Plain output"
-					Err(Malformed) => crash "Color output contains an escape that is not a complete SGR sequence"
-				}
+	match (message_of(plain), message_of(color)) {
+		(Ok(plain_message), Ok(color_message)) => {
+			plain_bytes = Str.to_utf8(plain_message)
+			if plain_bytes.contains(escape) {
+				crash "Plain output contains an escape character"
 			}
 
-			_ => {}
+			if has_raw_control(plain_bytes) {
+				crash "Plain output contains a control character other than a line break"
+			}
+
+			match strip_sgr(Str.to_utf8(color_message)) {
+				Ok(stripped) if stripped == plain_bytes => {}
+				Ok(_) => crash "Color output without its SGR sequences differs from Plain output"
+				Err(Malformed) => crash "Color output contains an escape that is not a complete SGR sequence"
+			}
 		}
+
+		_ => {}
 	}
 
 	Fuzz.keep

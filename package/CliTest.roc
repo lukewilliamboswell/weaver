@@ -74,7 +74,7 @@ expect {
 		\\│ UNRECOGNIZED ARGUMENT │
 		\\└───────────────────────┘
 		\\
-		\\The argument -x was not recognized.
+		\\The argument "-x" was not recognized.
 		\\
 		\\Usage:
 		\\  basic-cli
@@ -110,7 +110,7 @@ required_option_parser =
 ## An unknown long option is reported before an unrelated missing requirement.
 expect {
 	match Cli.parse_or_display_message(required_option_parser, ["--wat"], |arg| Utf8(arg)) {
-		Err(InvalidUsage(message)) => message.contains("The argument --wat was not recognized.")
+		Err(InvalidUsage(message)) => message.contains("The argument \"--wat\" was not recognized.")
 		_other => False
 	}
 }
@@ -118,7 +118,7 @@ expect {
 ## An unknown member of a short group is reported before missing requirements.
 expect {
 	match Cli.parse_or_display_message(required_option_parser, ["-xz"], |arg| Utf8(arg)) {
-		Err(InvalidUsage(message)) => message.contains("The argument -x was not recognized.")
+		Err(InvalidUsage(message)) => message.contains("The argument \"-x\" was not recognized.")
 		_other => False
 	}
 }
@@ -171,6 +171,38 @@ expect {
 	args = [UnixBytes([255])]
 	match Cli.parse_or_display_message(file_parameter_parser, args, |arg| arg) {
 		Err(InvalidUsage(message)) => message.contains("The value provided to the 'file' parameter was not valid UTF-8.")
+		_other => False
+	}
+}
+
+## Arguments that contain escape sequences are never echoed raw, in either style.
+expect {
+	escape = "\u(001b)"
+	color_parser = { ..required_option_parser, text_style: Color }
+	cases = [["--${escape}[2Jpwned"], ["-${escape}"], ["-a${escape}", "1"], ["-a", "1", "x${escape}[31m"]]
+
+	cases.all(
+		|args| {
+			plain = Cli.parse_or_display_message(required_option_parser, args, |arg| Utf8(arg))
+			color = Cli.parse_or_display_message(color_parser, args, |arg| Utf8(arg))
+
+			match (plain, color) {
+				(Err(InvalidUsage(plain_message)), Err(InvalidUsage(color_message))) =>
+					!(plain_message.contains(escape))
+						and plain_message.contains("\\u(1b)")
+						and !(color_message.contains("${escape}[2J"))
+						and !(color_message.contains("${escape}[31m"))
+						and !(color_message.contains("${escape}\""))
+				_other => False
+			}
+		},
+	)
+}
+
+## An unrecognized escape-laden long option is shown quoted and escaped.
+expect {
+	match Cli.parse_or_display_message(required_option_parser, ["--\u(001b)[2Jpwned"], |arg| Utf8(arg)) {
+		Err(InvalidUsage(message)) => message.contains("The argument \"--\\u(1b)[2Jpwned\" was not recognized.")
 		_other => False
 	}
 }

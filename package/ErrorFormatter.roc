@@ -1,6 +1,7 @@
 import Base exposing [ArgExtractErr, ExpectedValue, TextStyle, num_type_name, str_type_name]
 import Terminal
 import Validate exposing [CliValidationErr]
+import Utils exposing [escape_controls, quote]
 import path.Path
 
 ErrorFormatter := [].{
@@ -25,15 +26,11 @@ ErrorFormatter := [].{
 				"Option ${option_display_name(option)} does not expect a value."
 
 			CannotUsePartialShortGroupAsValue(option, partial_group) => {
-				rendered_group = "-${Str.join_with(partial_group, "")}"
-
-				"The short option group ${rendered_group} was partially consumed and cannot be used as a value for ${option_display_name(option)}."
+				"The short option group ${short_group_display(partial_group)} was partially consumed and cannot be used as a value for ${option_display_name(option)}."
 			}
 
 			ValueOptionMustBeLastInShortGroup(option, group) => {
-				rendered_group = "-${Str.join_with(group, "")}"
-
-				"Option ${option_display_name(option)} must be last in the short option group ${rendered_group}."
+				"Option ${option_display_name(option)} must be last in the short option group ${short_group_display(group)}."
 			}
 
 			InvalidOptionValue(value_err, option) =>
@@ -42,7 +39,7 @@ ErrorFormatter := [].{
 						"The value provided to ${option_display_name(option)} was not a valid number."
 
 					InvalidValue(reason) =>
-						"The value provided to ${option_display_name(option)} was not a valid ${option_type_name(option)}: ${reason}"
+						"The value provided to ${option_display_name(option)} was not a valid ${option_type_name(option)}: ${escape_controls(reason)}"
 
 					InvalidUtf8 =>
 						"The value provided to ${option_display_name(option)} was not valid UTF-8."
@@ -54,7 +51,7 @@ ErrorFormatter := [].{
 						"The value provided to the '${param.name}' parameter was not a valid number."
 
 					InvalidValue(reason) =>
-						"The value provided to the '${param.name}' parameter was not a valid ${full_type_name(param.type)}: ${reason}."
+						"The value provided to the '${param.name}' parameter was not a valid ${full_type_name(param.type)}: ${escape_controls(reason)}."
 
 					InvalidUtf8 =>
 						"The value provided to the '${param.name}' parameter was not valid UTF-8."
@@ -64,16 +61,16 @@ ErrorFormatter := [].{
 				"The '${parameter.name}' parameter did not receive a value."
 
 			UnrecognizedSubcommand(command) =>
-				"The subcommand ${Str.inspect(Path.display(command))} was not recognized."
+				"The subcommand ${quote(Path.display(command))} was not recognized."
 
 			UnrecognizedShortArg(short) =>
-				"The argument -${short} was not recognized."
+				"The argument ${quote("-${short}")} was not recognized."
 
 			UnrecognizedLongArg(long) =>
-				"The argument --${long} was not recognized."
+				"The argument ${quote("--${long}")} was not recognized."
 
 			ExtraParamProvided(param) =>
-				"The parameter ${Str.inspect(Path.display(param))} was not expected."
+				"The parameter ${quote(Path.display(param))} was not expected."
 		}
 
 	## Render an argument extraction failure as a complete terminal report.
@@ -339,6 +336,12 @@ render_report = |title, summary, usage, hint, text_style| {
 	"${top}\n${middle}\n${bottom}\n\n${Str.join_with(body, "\n\n")}"
 }
 
+## Everything that echoes command line text quotes it, so that text can never
+## emit control characters or escape sequences into a report.
+short_group_display : List(Str) -> Str
+short_group_display = |names|
+	quote("-${Str.join_with(names, "")}")
+
 option_display_name : { short : Str, long : Str, .. } -> Str
 option_display_name = |option|
 	match (option.short, option.long) {
@@ -476,7 +479,7 @@ expect {
 		\\│ UNRECOGNIZED ARGUMENT │
 		\\└───────────────────────┘
 		\\
-		\\The argument --wat was not recognized.
+		\\The argument "--wat" was not recognized.
 		\\
 		\\Usage:
 		\\  app [OPTIONS]
@@ -498,7 +501,7 @@ expect {
 		\\\u(001b)[90m│ \u(001b)[0m\u(001b)[1m\u(001b)[36mUNRECOGNIZED ARGUMENT\u(001b)[0m\u(001b)[90m │\u(001b)[0m
 		\\\u(001b)[90m└───────────────────────┘\u(001b)[0m
 		\\
-		\\The argument --wat was not recognized.
+		\\The argument "--wat" was not recognized.
 		\\
 		\\Usage:
 		\\  app [OPTIONS]
@@ -522,4 +525,43 @@ expect {
 		\\The option '--A' is not kebab-case and at least two characters.
 		\\
 		\\Tip: Use a kebab-case long name containing at least two characters.
+}
+
+## Command line text in a report is quoted, with control characters escaped.
+expect {
+	escape = "\u(001b)"
+	errors : List(ArgExtractErr)
+	errors = [
+		UnrecognizedShortArg(escape),
+		UnrecognizedLongArg("${escape}[2Jpwned"),
+		UnrecognizedSubcommand(Path.utf8("run${escape}[31m")),
+		ExtraParamProvided(Path.from_raw(UnixBytes([0x74, 0x0A, 0xFF]))),
+		ValueOptionMustBeLastInShortGroup(error_test_option, ["a", escape]),
+		CannotUsePartialShortGroupAsValue(error_test_option, [escape]),
+		InvalidOptionValue(InvalidValue("bad ${escape}[2J"), error_test_option),
+		InvalidParamValue(InvalidValue("bad ${escape}[2J"), error_test_parameter),
+	]
+	messages = errors.map(ErrorFormatter.format_arg_extract_err)
+
+	Str.join_with(messages, "\n")
+		==
+		\\The argument "-\\u(1b)" was not recognized.
+		\\The argument "--\\u(1b)[2Jpwned" was not recognized.
+		\\The subcommand "run\\u(1b)[31m" was not recognized.
+		\\The parameter "t\\n�" was not expected.
+		\\Option -a/--alpha must be last in the short option group "-a\\u(1b)".
+		\\The short option group "-\\u(1b)" was partially consumed and cannot be used as a value for -a/--alpha.
+		\\The value provided to -a/--alpha was not a valid number: bad \\u(1b)[2J
+		\\The value provided to the 'input' parameter was not a valid string: bad \\u(1b)[2J.
+}
+
+## Colored reports never carry control characters from the command line.
+expect {
+	actual = ErrorFormatter.render_arg_extract_err(
+		UnrecognizedLongArg("\u(001b)[2J"),
+		{ command: "app", usage: "Usage:\n  app [OPTIONS]" },
+		Color,
+	)
+
+	!(actual.contains("\u(001b)[2J")) and actual.contains("The argument \"--\\u(1b)[2J\" was not recognized.")
 }

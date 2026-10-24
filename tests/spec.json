@@ -100,7 +100,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-short-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument -x was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -108,7 +108,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-short-before-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument -x was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -118,7 +118,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-long-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --alpha was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--alpha\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -126,7 +126,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-long-before-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -403,7 +403,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-option-precedes-missing-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --beta was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `single-arg --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--beta\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `single-arg --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -422,7 +422,7 @@
           ],
           "exit_code": 1,
           "name": "partial-short-group",
-          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a/--alpha must be last in the short option group -a1.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a/--alpha` to the end of the group or pass it separately.\u001b[0m\n"
+          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a/--alpha must be last in the short option group \"-a1\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a/--alpha` to the end of the group or pass it separately.\u001b[0m\n"
         },
         {
           "args": [
@@ -502,7 +502,7 @@
           ],
           "exit_code": 1,
           "name": "nested-grouped-options",
-          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a must be last in the short option group -ab.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a` to the end of the group or pass it separately.\u001b[0m\n"
+          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a must be last in the short option group \"-ab\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a` to the end of the group or pass it separately.\u001b[0m\n"
         },
         {
           "args": [
@@ -596,7 +596,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-root-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -605,7 +605,7 @@
           ],
           "exit_code": 1,
           "name": "unknown-subcommand-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
