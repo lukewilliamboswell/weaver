@@ -14,8 +14,9 @@ import weaver.SubCmd
 # command path that really exists and that the arguments really named, in
 # order, and parsed subcommand data must come from the arguments given. The
 # outcome must not depend on whether valid UTF-8 arrives as a `Str` or as
-# Unix bytes. An empty long name such as `--=5` never names an option, so a
-# command line containing one never parses.
+# Unix bytes. Nothing parses unless every option it spells is declared
+# somewhere on the command path: an empty long name such as `--=5` never
+# names an option, and no member of a short option group is dropped.
 #
 #     roc build --fuzz fuzz/subcommands/main.roc --output=subcommands
 #     ./subcommands run fuzz/subcommands/corpus --time=60
@@ -185,6 +186,20 @@ option_args = |args|
 			}
 	}
 
+## Every short name declared anywhere in `cli_parser`, apart from help and
+## version, which never parse.
+declared_shorts : List(U8)
+declared_shorts = Str.to_utf8("fdvabc")
+
+## Whether an argument read as a short option group, a single dash followed
+## by anything but a second dash, consists only of declared short names.
+short_group_is_declared : List(U8) -> Bool
+short_group_is_declared = |arg|
+	match arg {
+		['-', second, .. as rest] if second != '-' => rest.prepend(second).all(|byte| declared_shorts.contains(byte))
+		_ => True
+	}
+
 check_outcome : List(List(U8)), Outcome -> {}
 check_outcome = |args, outcome|
 	match outcome {
@@ -209,6 +224,8 @@ check_outcome = |args, outcome|
 
 			if before_delimiter.any(|arg| arg.starts_with(['-', '-', '='])) {
 				crash "parsed a command line with an empty long option name"
+			} else if !before_delimiter.all(short_group_is_declared) {
+				crash "parsed a short option group with a member that is not a declared short option"
 			} else if !named_in_order(args, path) {
 				crash "parsed a subcommand the arguments did not name"
 			} else if !config.files.all(came_from_args) {

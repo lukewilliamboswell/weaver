@@ -1,4 +1,5 @@
 import path.Path
+import Utils
 
 Parser := [].{
 	ArgValue : Try(Path, [NoValue])
@@ -52,19 +53,17 @@ Parser := [].{
 		match Path.to_str(arg) {
 			Ok(str_arg) => Parser.parse_decoded_arg(arg, str_arg)
 			Err(_) => {
-				# Whether an argument is a long option depends only on its
-				# leading dashes, never on whether the rest of it is valid text.
-				# Its name is read lossily, so an invalid sequence becomes U+FFFD
-				# and is reported rather than read as a parameter; an attached
-				# value stays raw.
+				# Whether an argument is an option depends only on its leading
+				# dashes, never on whether the rest of it is valid text. Names
+				# are read lossily, so an invalid sequence becomes U+FFFD and is
+				# reported rather than dropped; an attached value stays raw.
 				lossy = Parser.parse_decoded_arg(arg, Path.display(arg))
 
 				match lossy {
 					Long({ name, value: Ok(lossy_value) }) =>
 						Long({ name, value: Ok(raw_long_value(arg) ?? lossy_value) })
 
-					Long(long) => Long(long)
-					_other => Parameter(arg)
+					other => other
 				}
 			}
 		}
@@ -107,24 +106,11 @@ Parser := [].{
 		}
 
 	construct_set_of_options : Str -> ParsedArg
-	construct_set_of_options = |combined| {
-		options =
-			combined
-				.to_utf8()
-				.fold(
-					[],
-					|out, byte|
-						match Str.from_utf8([byte]) {
-							Ok(option) => out.append(option)
-							Err(_) => out
-						},
-				)
-
-		match options {
+	construct_set_of_options = |combined|
+		match Utils.scalars(combined) {
 			[alone] => Short(alone)
 			other => ShortGroup({ names: other, complete: Complete })
 		}
-	}
 }
 
 ## The raw value attached after the first `=` of a long option that is not
@@ -278,6 +264,22 @@ expect {
 
 ## No option is named by an empty name, even one that declares no such name.
 expect !(Parser.names_option("", "")) and !(Parser.names_option("a", "")) and Parser.names_option("a", "a")
+
+## Short groups keep multibyte characters whole.
+expect {
+	Parser.parse_arg(Path.utf8("-fé")) == ShortGroup({ names: ["f", "é"], complete: Complete })
+		and Parser.parse_arg(Path.utf8("-é")) == Short("é")
+		and Parser.parse_arg(Path.utf8("-a😀b")) == ShortGroup({ names: ["a", "😀", "b"], complete: Complete })
+}
+
+## Invalid text in a short group becomes a replacement character instead of disappearing.
+expect {
+	unix = Path.from_raw(UnixBytes([0x2D, 0x66, 0xFF]))
+	windows = Path.from_raw(WindowsU16s([0x002D, 0x0066, 0xD800]))
+	expected = ShortGroup({ names: ["f", "\u(FFFD)"], complete: Complete })
+
+	Parser.parse_arg(unix) == expected and Parser.parse_arg(windows) == expected
+}
 
 ## A long name that is not valid text is still a long option, so it is reported.
 expect {

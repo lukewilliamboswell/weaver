@@ -12,8 +12,10 @@ import weaver.Param
 # positional parameters must end in exactly one well-formed outcome: parsed
 # data, the help page, the version, or a usage report naming the problem. The
 # outcome must also not depend on whether a valid UTF-8 argument arrives as a
-# `Str`, as Unix bytes or as Windows UTF-16. No empty long name such as `--=5`
-# ever names an option, so a command line containing one never parses.
+# `Str`, as Unix bytes or as Windows UTF-16. A command line only parses when
+# every option it spells is declared: no empty long name such as `--=5` ever
+# names an option, and no part of a short option group, such as a multibyte
+# or invalid UTF-8 character, is silently dropped.
 #
 #     roc build --fuzz fuzz/parse-outcomes/main.roc --output=parse-outcomes
 #     ./parse-outcomes run fuzz/parse-outcomes/corpus --time=60
@@ -120,6 +122,21 @@ option_args = |args|
 			}
 	}
 
+## The short names `cli_parser` declares, which a parsed short option group
+## may contain. Help and version never parse, so they are not among them.
+declared_shorts : List(U8)
+declared_shorts = Str.to_utf8("vfabltx")
+
+## Whether an argument that the parser reads as a short option group, a
+## single dash followed by anything but a second dash, consists only of
+## declared short names.
+short_group_is_declared : List(U8) -> Bool
+short_group_is_declared = |arg|
+	match arg {
+		['-', second, .. as rest] if second != '-' => rest.prepend(second).all(|byte| declared_shorts.contains(byte))
+		_ => True
+	}
+
 check_outcome : List(List(U8)), Outcome -> {}
 check_outcome = |args, outcome| {
 	before_delimiter = option_args(args)
@@ -129,6 +146,8 @@ check_outcome = |args, outcome| {
 		# Positional parameters are always whole arguments.
 			if before_delimiter.any(|arg| arg.starts_with(['-', '-', '='])) {
 				crash "parsed a command line with an empty long option name"
+			} else if !before_delimiter.all(short_group_is_declared) {
+				crash "parsed a short option group with a member that is not a declared short option"
 			} else if !args.any(|arg| arg == Str.to_utf8(config.input)) {
 				crash "the input parameter is not one of the arguments"
 			} else if !config.rest.all(|param| args.any(|arg| arg == Str.to_utf8(param))) {

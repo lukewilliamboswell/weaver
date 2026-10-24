@@ -314,3 +314,37 @@ expect {
 		_other => False
 	}
 }
+
+force_parser : Cli.CliParser({ force : Bool, file : Str })
+force_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			{
+				force: Opt.flag({ short: "f", long: "", help: "Force." }),
+				file: Param.str({ name: "file", help: "The file.", default: NoDefault }),
+			}.Cli,
+			{ name: "app", version: "", authors: [], description: "", text_style: Plain },
+		),
+	)
+
+unrecognized_message : List([Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))]), Str -> Bool
+unrecognized_message = |args, shown| {
+	match Cli.parse_or_display_message(force_parser, args, |arg| arg) {
+		Err(InvalidUsage(message)) => message.contains("The argument \"${shown}\" was not recognized.")
+		_other => False
+	}
+}
+
+## A multibyte character in a short group is reported, not dropped.
+expect {
+	unrecognized_message([Utf8("-fé"), Utf8("in")], "-é")
+		and unrecognized_message([Utf8("-é"), Utf8("in")], "-é")
+		and unrecognized_message([UnixBytes(Str.to_utf8("-fé")), Utf8("in")], "-é")
+}
+
+## Invalid text in a short group is reported, not dropped or read as a parameter.
+expect {
+	unrecognized_message([UnixBytes([0x2D, 0x66, 0xC3]), Utf8("in")], "-\u(FFFD)")
+		and unrecognized_message([WindowsU16s([0x002D, 0x0066, 0xDC00]), Utf8("in")], "-\u(FFFD)")
+		and unrecognized_message([UnixBytes([0x2D, 0xFF])], "-\u(FFFD)")
+}

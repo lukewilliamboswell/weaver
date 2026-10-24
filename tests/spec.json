@@ -138,6 +138,16 @@
         },
         {
           "args": [
+            "-fé",
+            "-a",
+            "1"
+          ],
+          "exit_code": 1,
+          "name": "multibyte-in-short-group",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-é\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
             "--help"
           ],
           "name": "help",
