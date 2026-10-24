@@ -1,9 +1,10 @@
 = weaver 0.9.1
 
-This patch changes no package APIs and no parsing behaviour; `roc bump`
-reports no API changes since 0.9.0. It moves the repository onto the shared
-roc-automation release process, so this is the first release with an examples
-archive, an API reference archive, a PDF manual and supply-chain evidence.
+This patch fixes four parsing bugs found by fuzzing, and changes no package
+APIs; `roc bump` reports no API changes since 0.9.0. It also moves the
+repository onto the shared roc-automation release process, so this is the
+first release with an examples archive, an API reference archive, a PDF manual
+and supply-chain evidence.
 
 == Use this release
 
@@ -13,6 +14,21 @@ app [main!] {
     weaver: "{package-url}",
 }
 ----
+
+== Fixes
+
+* Diagnostics no longer echo terminal control sequences. An unknown option,
+  subcommand or parameter is shown quoted, with control characters escaped,
+  so an argument such as `--\x1b[2J` cannot clear or restyle the terminal.
+  Unknown options are now quoted like parameters: `The argument "--wat" was
+  not recognized.`
+* `--=value` no longer sets an option that has no long name. It is reported
+  as an unrecognized argument, whatever encoding carries it.
+* A value option must be the last letter of a short group whatever order the
+  fields are declared in: `-av 12` is rejected and `-va 12` accepted for both.
+* A short group keeps multibyte characters whole. `-fé` reports `-é` as
+  unrecognized instead of silently ignoring it, and invalid UTF-8 in a group
+  is reported rather than dropped.
 
 == Package
 
