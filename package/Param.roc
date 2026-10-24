@@ -318,8 +318,8 @@ expect {
 
 	required_missing
 		and parse_test_param(literal_default, []) == Ok("literal")
-			and parse_test_param(generated_default, []) == Ok("generated")
-				and parse_test_param(required, [Parameter(Path.utf8("provided"))]) == Ok("provided")
+		and parse_test_param(generated_default, []) == Ok("generated")
+		and parse_test_param(required, [Parameter(Path.utf8("provided"))]) == Ok("provided")
 }
 
 ## Optional parameters consume at most one value and variadic parameters consume the rest.

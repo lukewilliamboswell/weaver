@@ -170,7 +170,7 @@ commands_contain_option = |commands, predicate|
 		[(_, command), .. as rest] =>
 			command.options.any(predicate)
 				or subcommands_contain_option(command.subcommands, predicate)
-					or commands_contain_option(rest, predicate)
+				or commands_contain_option(rest, predicate)
 	}
 
 option_is_known : List(OptionConfig), SubcommandsConfig, (OptionConfig -> Bool) -> Bool

@@ -398,8 +398,8 @@ expect {
 
 	required_missing
 		and parse_test_option(literal_default, []) == Ok("literal")
-			and parse_test_option(generated_default, []) == Ok("generated")
-				and parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })]) == Ok("provided")
+		and parse_test_option(generated_default, []) == Ok("generated")
+		and parse_test_option(required, [Long({ name: "value", value: Ok(Path.utf8("provided")) })]) == Ok("provided")
 }
 
 ## Optional and repeatable options parse absent, single, and repeated values.
