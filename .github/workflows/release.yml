@@ -377,7 +377,7 @@ jobs:
           for asset in candidate/dist/* candidate/.docs-out/*.pdf; do
             gh attestation verify "$asset" "${policy[@]}" --bundle "$PROVENANCE"
           done
-          gh attestation verify "candidate/dist/$BUNDLE" "${policy[@]}" --predicate-type https://spdx.dev/Document --bundle "$COMPOSITION"
+          gh attestation verify "candidate/dist/$BUNDLE" "${policy[@]}" --predicate-type https://spdx.dev/Document/v2.3 --bundle "$COMPOSITION"
           cp "$PROVENANCE" candidate/dist/weaver-provenance.sigstore.json
           cp "$COMPOSITION" candidate/dist/weaver-sbom.sigstore.json
 
