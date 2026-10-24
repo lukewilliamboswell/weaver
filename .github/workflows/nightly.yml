@@ -1,0 +1,29 @@
+name: Nightly compatibility
+
+# Answers one question each day: does the release people download today still
+# work with today's compiler? The shared runner tests the examples archive of
+# the latest release, exactly as published, on the latest Roc nightly, and
+# keeps one tracking issue. It never commits, merges or publishes.
+on:
+  schedule:
+    # Once daily, about four hours after the upstream 09:00 UTC build.
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+    inputs:
+      nightly-tag:
+        type: string
+        default: ''
+      release-tag:
+        type: string
+        default: ''
+permissions: {}
+jobs:
+  compatibility:
+    permissions:
+      contents: read
+      issues: write
+    uses: lukewilliamboswell/roc-automation/.github/workflows/nightly-compatibility.yml@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+    with:
+      nightly-tag: ${{ inputs.nightly-tag || '' }}
+      release-tag: ${{ inputs.release-tag || '' }}
+      runners: '["ubuntu-24.04"]'

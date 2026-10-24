@@ -1,0 +1,42 @@
+[#get-started]
+= Get started
+
+This chapter takes you from nothing to a program that parses its command line.
+You need a current Roc https://github.com/roc-lang/nightlies/releases[nightly]
+installed as `roc`.
+
+== Add the package
+
+A Roc application names its packages in its header, each by the URL of a
+release. Save this as `hello.roc`:
+
+include::generated/latest-release.adoc[]
+
+The URL ends in a hash of the package's contents. Roc checks what it downloads
+against that hash, so the URL can only ever mean one thing.
+
+== Run it
+
+[source,sh]
+----
+roc hello.roc -- -a 3
+roc hello.roc -- --help
+roc hello.roc -- -a three
+----
+
+The first prints `alpha is 3`. The second prints the help page weaver wrote
+from the parser. The third reports that the value given to `-a/--alpha` is not a
+valid number, shows the usage line and exits with status 1.
+
+== Where to go next
+
+* <<learn-from-the-examples>> has a complete program for each part of the
+  package, from a single option to nested subcommands.
+* The API reference linked below lists every function of every module.
+
+== API reference for every version
+
+Each release keeps its own API reference, so the pages for the version you
+depend on never change under you.
+
+include::generated/api-versions.adoc[]

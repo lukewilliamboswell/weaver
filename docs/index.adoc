@@ -1,0 +1,44 @@
+= The weaver manual
+:doctype: book
+:author: The weaver contributors
+:revnumber: {docs-version}
+:toc: left
+:toclevels: 2
+:sectnums:
+:sectanchors:
+:icons: font
+:source-highlighter: rouge
+
+[.lead]
+weaver parses the command line of a Roc program. One record builder declares
+the options, parameters and subcommands, and gives back typed data, help text,
+usage and actionable diagnostics.
+
+ifdef::backend-html5[]
+link:weaver.pdf[Download this manual as a PDF] ·
+https://github.com/lukewilliamboswell/weaver[View weaver on GitHub].
+endif::[]
+
+.How to use this manual
+****
+Deciding whether to use weaver:: Start with <<what-weaver-is>>.
+Using it for the first time:: Follow <<get-started>>.
+Looking for code to adapt:: Browse <<learn-from-the-examples>>.
+Changing weaver itself:: Read <<contribute>>.
+Releasing or looking after the repository:: Read <<maintain-and-release>>.
+Upgrading:: See <<release-notes>>.
+****
+
+include::overview.adoc[leveloffset=+1]
+
+include::getting-started.adoc[leveloffset=+1]
+
+include::supply-chain.adoc[leveloffset=+1]
+
+include::examples.adoc[leveloffset=+1]
+
+include::contributing.adoc[leveloffset=+1]
+
+include::maintaining.adoc[leveloffset=+1]
+
+include::releases.adoc[leveloffset=+1]

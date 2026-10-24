@@ -8,6 +8,11 @@ Weaver
 
 An ergonomic command-line argument parser for the Roc language.
 
+This is a maintained fork of [smores56/weaver](https://github.com/smores56/weaver),
+created by Sam Mohr. It keeps weaver working with the current Roc compiler and
+publishes tested releases, with their examples, API reference and supply-chain
+evidence.
+
 This library aims to provide a convenient interface for parsing CLI arguments
 into structured data, in the style of Rust's [clap](https://github.com/clap-rs/clap).
 Without code generation at compile time, the closest we can get in Roc is the use of the
@@ -20,7 +25,9 @@ typed data, help text, usage, and actionable diagnostics.
 
 ![Weaver record-builder source, a typed deployment parse, and a colored usage diagnostic](./assets/pretty-errors.svg)
 
-Read the documentation at <https://lukewilliamboswell.github.io/weaver/Cli/>.
+**[Read the manual](https://lukewilliamboswell.github.io/weaver/)** for getting
+started, the examples, the API reference of every release, and how to verify a
+release's supply-chain evidence.
 
 ## Status
 
@@ -30,208 +37,28 @@ from another CLI parsing library that you think would fit well in Weaver.
 
 ## Example
 
-```roc
-app [main!] {
-    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.25.0/CZsY7tYZwR3rj9kYbpaCfxki2yVAaRL8bBwMLvB2xkbA.tar.zst",
-    weaver: "<latest from https://github.com/lukewilliamboswell/weaver/releases>",
-}
+[`examples/basic.roc`](./examples/basic.roc) is a complete program: one record
+builder declares an option, a flag, an optional parameter and a list of
+parameters, and weaver supplies the parsing, `--help`, `--version` and the
+diagnostics. The manual's
+[Get started](https://lukewilliamboswell.github.io/weaver/getting-started.html)
+chapter has a first program with the latest release's package URL already filled in.
 
-import pf.OsStr
-import pf.Stdout
-import weaver.Cli
-import weaver.Opt
-import weaver.Param
+There are more examples in the [examples](./examples)
+directory; the manual's [examples chapter](https://lukewilliamboswell.github.io/weaver/examples.html)
+describes each one.
 
-BasicConfig : {
-    alpha : U64,
-    force : Bool,
-    file : Try(Str, [NoValue]),
-    files : List(Str),
-}
+## Contributing
 
-main! : List(OsStr) => Try({}, _)
-main! = |args| {
-    match Cli.parse_or_display_message(cli_parser, args, OsStr.to_raw) {
-        Err(Help(message)) => {
-            Stdout.line!(message)?
-            Ok({})
-        }
-
-        Err(Version(message)) => {
-            Stdout.line!(message)?
-            Ok({})
-        }
-
-        Err(InvalidUsage(message)) => {
-            Stdout.line!(message)?
-            Err(Exit(1))
-        }
-
-        Ok(data) => {
-            Stdout.line!("Successfully parsed! Here's what I got:")?
-            Stdout.line!("")?
-            Stdout.line!(Str.inspect(data))?
-
-            Ok({})
-        }
-    }
-}
-
-cli_parser : Cli.CliParser(BasicConfig)
-cli_parser =
-    Cli.assert_valid(
-        Cli.finish(
-            {
-                alpha: Opt.u64({
-                    short: "a",
-                    long: "",
-                    help: "Set the alpha level.",
-                    default: NoDefault,
-                }),
-                force: Opt.flag({
-                    short: "f",
-                    long: "",
-                    help: "Force the task to complete.",
-                }),
-                file: Param.maybe_str({
-                    name: "file",
-                    help: "The file to process.",
-                }),
-                files: Param.str_list({
-                    name: "files",
-                    help: "The rest of the files.",
-                }),
-            }.Cli,
-            {
-                name: "basic",
-                version: "v0.1.0",
-                authors: ["Some One <some.one@mail.com>"],
-                description: "This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!",
-                text_style: Color,
-            },
-        ),
-    )
-```
-
-Set `text_style` to `Color` for ANSI-styled terminal help and diagnostics, or
-choose `Plain` when output is redirected or your application honors `NO_COLOR`.
-
-And here's us calling the above example from the command line:
-
-```console
-$ roc examples/basic.roc -- file1.txt file2.txt -f -a 123
-Successfully parsed! Here's what I got:
-
-{ alpha: 123, file: Ok("file1.txt"), files: ["file2.txt"], force: True }
-
-$ roc examples/basic.roc -- --help
-basic v0.1.0
-Some One <some.one@mail.com>
-
-This is a basic example of what you can build with Weaver. You get safe parsing, useful error messages, and help pages all for free!
-
-Usage:
-  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
-
-Arguments:
-  <file>      The file to process.
-  <files...>  The rest of the files.
-
-Options:
-  -a NUM         Set the alpha level.
-  -f             Force the task to complete.
-  -h, --help     Show this help page.
-  -V, --version  Show the version.
-
-$ roc examples/basic.roc -- --wat
-┌───────────────────────┐
-│ UNRECOGNIZED ARGUMENT │
-└───────────────────────┘
-
-The argument --wat was not recognized.
-
-Usage:
-  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
-
-Tip: Run `basic --help` to see the available arguments.
-```
-
-Help prose and diagnostics wrap conservatively at 80 UTF-8 bytes. Weaver
-preserves explicit line breaks and never splits a token, so an unusually long
-Unicode token can extend beyond that boundary rather than being corrupted.
-
-`Cli.assert_valid` is convenient for static configurations. Applications that
-want to display configuration failures should handle the result from
-`Cli.finish` and pass the error to
-`ErrorFormatter.render_cli_validation_err(err, Color)` (or `Plain`).
-
-Weaver parses exactly the arguments passed to `Cli.parse_or_display_message`; it
-never implicitly drops the first element. The example uses `basic-cli`, which
-supplies `List(OsStr)` without the executable path; passing `OsStr.to_raw` directly
-preserves UTF-8, native Unix bytes, and Windows UTF-16 code units at Weaver's `Path`
-boundary. Only drop the first element when the platform documents that it is the
-executable path.
-
-Use `Opt.arg` or `Param.arg` when you want to keep the raw value as a
-[`path.Path`](https://github.com/roc-lang/path/releases/tag/4.0.0). String
-parsers such as `Opt.str` and `Param.str` intentionally decode at the parser
-boundary without losing path-specific semantics in the raw parsers.
-
-A separate token beginning with `-` is treated as another option, not as an option
-value. Pass an option-like value with `--name=value`, or place `--` before the value;
-for example, both `--beta=-2.5` and `--beta -- -2.5` are unambiguous.
-
-There are also some examples in the [examples](./examples) directory that are more
-feature-complete, with more to come as this library matures.
-
-## Testing
-
-Run the complete package and example suite with:
+See [CONTRIBUTING.md](CONTRIBUTING.md). Everything CI checks runs locally with:
 
 ```sh
-python3 scripts/test.py
+blueprint run check
 ```
 
-The runner formats, checks, tests, documents, and bundles the package; then it
-formats, checks, tests, and builds every example against that bundle. Each built
-example is exercised with the cases in [`scripts/test_spec.json`](./scripts/test_spec.json),
-including successful parses, help and version output, malformed values, missing
-arguments, unknown options, nested subcommands, delimiters, and raw non-UTF-8
-arguments on Unix. Every example must have a spec entry, so adding an example
-without test cases fails the suite.
+Report a suspected vulnerability privately, as [SECURITY.md](SECURITY.md) describes.
 
-Regenerate the README's terminal capture from the compiled basic example with:
+## License
 
-```sh
-python3 scripts/capture_example.py
-```
-
-Generate the complete landing site and fresh main-branch API docs, then preview
-them locally:
-
-```sh
-python3 scripts/serve_www.py
-```
-
-The preview uses an available random local port and prints its URL. Pass
-`--port PORT` to choose a fixed port, `--no-open` to avoid opening a browser,
-or `--no-serve` to only assemble `target/www-preview`. Press `Ctrl-C` to stop
-the server.
-
-The assembled site includes fresh API docs, vendored client-side Roc syntax
-highlighting, and a landing page showing every example's real terminal output,
-captured by building and running it during assembly.
-
-Published documentation is available at
-[lukewilliamboswell.github.io/weaver/](https://lukewilliamboswell.github.io/weaver/).
-
-## Roadmap
-
-Now that an initial release has happened, these are some ideas I have for future development:
-
-- [ ] Optionally set `group : Str` per option so they are visually grouped in the help page
-- [ ] Completion generation for popular shells (e.g. Bash, Zsh, Fish, etc.)
-- [x] Add terminal styling and structured diagnostics to generated help and error messages
-- [ ] add convenient CLI platform wrappers (e.g. parse, or print help and exit) for use with module params
-- [x] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
-- [ ] Add more testing (always)
+[UPL-1.0](LICENSE). weaver keeps the MIT notice of the upstream project for the
+code that originates there.

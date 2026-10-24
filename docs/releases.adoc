@@ -1,0 +1,8 @@
+[#release-notes]
+= Release notes
+
+Each release has its notes in `docs/releases/`, newest first. Releases before
+0.9.1 have theirs on the
+https://github.com/lukewilliamboswell/weaver/releases[releases page].
+
+include::releases/0.9.1.adoc[leveloffset=+1]

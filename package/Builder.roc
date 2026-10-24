@@ -176,9 +176,9 @@ Builder(data, from_action, to_action) := {
 		args.any(
 			|arg|
 				match arg {
-					Short(short) => short == option.short
-					ShortGroup(sg) => sg.names.any(|n| n == option.short)
-					Long(long) => long.name == option.long
+					Short(short) => Parser.names_option(short, option.short)
+					ShortGroup(sg) => sg.names.any(|n| Parser.names_option(n, option.short))
+					Long(long) => Parser.names_option(long.name, option.long)
 					Parameter(_) | PassedThrough(_) => False
 				},
 		)

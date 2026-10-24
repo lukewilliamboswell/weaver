@@ -122,7 +122,7 @@ Extract := [].{
 	find_option_for_extraction = |state, arg, option|
 		match arg {
 			Short(short) =>
-				if short == option.short {
+				if Parser.names_option(short, option.short) {
 					if option.expected_value == NothingExpected {
 						Ok({ ..state, values: state.values.append(Err(NoValue)) })
 					} else {
@@ -136,7 +136,7 @@ Extract := [].{
 				Extract.find_options_in_short_group(state, option, short_group)
 
 			Long(long) =>
-				if long.name == option.long {
+				if Parser.names_option(long.name, option.long) {
 					if option.expected_value == NothingExpected {
 						match long.value {
 							Ok(_) => Err(OptionDoesNotExpectValue(option))
@@ -169,11 +169,23 @@ Extract := [].{
 					remaining = short_group.names.keep_if(|name| name != option.short)
 					values = append_flag_values(short_group.names, option.short, state.values)
 
+					# Taking the group's last letter leaves no letter that was
+					# last as given, so whatever is now last cannot take the next
+					# argument as its value. Marking the rest partial keeps the
+					# "value option must be last" rule from depending on the
+					# order in which options are extracted.
+					complete =
+						if short_group.names.last() == Ok(option.short) {
+							Partial
+						} else {
+							short_group.complete
+						}
+
 					next_remaining_args =
 						if remaining.is_empty() {
 							state.remaining_args
 						} else {
-							state.remaining_args.append(ShortGroup({ names: remaining, complete: short_group.complete }))
+							state.remaining_args.append(ShortGroup({ names: remaining, complete }))
 						}
 
 					Ok({ ..state, values, remaining_args: next_remaining_args })
@@ -214,7 +226,7 @@ split_short_group = |names, target, before|
 	match names {
 		[] => Err(NotFound)
 		[name, .. as rest] =>
-			if name == target {
+			if Parser.names_option(name, target) {
 				Ok({ before, after: rest })
 			} else {
 				split_short_group(rest, target, before.append(name))
@@ -319,4 +331,35 @@ expect {
 	})?
 
 	out.values == [Ok(value)] and out.remaining_args == []
+}
+
+## An empty long name, as in `--=5`, never names an option without a long name.
+expect {
+	short_only = { ..test_value_option, long: "" }
+	arg = Long({ name: "", value: Ok(Path.utf8("5")) })
+	out = Extract.extract_option_values({ args: [arg], option: short_only })?
+
+	out.values == [] and out.remaining_args == [arg]
+}
+
+## Taking a group's last flag leaves the rest unable to take the next argument.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["a", "v"], complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_flag,
+	})?
+
+	out.values == [Err(NoValue)]
+		and out.remaining_args == [ShortGroup({ names: ["a"], complete: Partial }), Parameter(Path.utf8("7"))]
+}
+
+## Taking a flag before a group's last letter leaves the group complete.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["v", "a"], complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_flag,
+	})?
+
+	out.values == [Err(NoValue)]
+		and out.remaining_args == [ShortGroup({ names: ["a"], complete: Complete }), Parameter(Path.utf8("7"))]
 }
