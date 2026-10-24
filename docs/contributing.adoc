@@ -52,8 +52,11 @@ Nothing pins a compiler for the package or the examples. Each script names
 different compiler says why it misbehaves.
 
 The released SBOM utility is a checksum-locked native executable from the Blueprint
-release named in `Blueprint.roc`. `blueprint run sbom` provisions it without compiling an SBOM app or
-installing another Roc compiler. Blueprint embeds its configuration compiler.
+release named in `Blueprint.roc`. `blueprint run prepare-sbom` checks the
+source and prepares the reviewed composition. The release workflow uses
+roc-automation's shared `sbom-sidecars` action to generate and check the
+sidecars; `blueprint run sbom-tool` exposes the native tool for local
+inspection. Blueprint embeds its configuration compiler.
 
 == Run the checks
 

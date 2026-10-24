@@ -31,7 +31,7 @@ config = [
 	Name("weaver"),
 	# The packages the bundle depends on, pinned by the SHA-256 their releases
 	# publish so each supplier's SBOM can be bound to the exact file. They must
-	# match the header of package/main.roc; scripts/release_sbom.roc checks that.
+	# match the header of package/main.roc; scripts/check_all.roc checks that.
 	SourceFile("roc-ansi", "https://github.com/lukewilliamboswell/roc-ansi/releases/download/0.13.3/BioPdu7WjVhTB2j1HaomKMi8htxsuwqwr79GbXY5nAUf.tar.zst", "93750a9b9993e4e2996feac0ddd6f199b6f3fd9ba81154a74f09f47481e1e2ba"),
 	SourceFile("path", "https://github.com/roc-lang/path/releases/download/4.0.0/7YfABZPwJAXtLBY2vm8FqMyGAtNxncCJ65HdNKHFGNnE.tar.zst", "435499c7ffb4f357d2956e3bb2802a81264f6f2f50c896c9913fb86f7bc752bb"),
 	Environment(
@@ -55,7 +55,7 @@ config = [
 		Expect(["blueprint", "env", "git", "realpath", "roc", "sh", "shasum", "tar"]),
 	]),
 	Shell("default", [Use("dev")]),
-	Task("sbom", [Use("sbom"), Run(["scripts/release_sbom.roc"])]),
+	Task("prepare-sbom", [Use("dev"), Run(["scripts/prepare_sbom.roc"])]),
 	Task("sbom-tool", [Use("sbom"), Run(["blueprint-sbom"])]),
 	Task("docs", [Use("docs"), Run(["roc-docs", "build", "--workspace", ".", "--docs-directory", "docs", "--entrypoint", "index.adoc", "--pdf-filename", "weaver.pdf", "--site-url", "https://lukewilliamboswell.github.io/weaver/"])]),
 	Task("docs-path", [Use("docs"), Run(["sh", "-c", "realpath \"$(command -v roc-docs)\""])]),

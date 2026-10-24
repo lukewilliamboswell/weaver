@@ -34,6 +34,11 @@ from the platform URL in `Blueprint.roc`. The shared installer verifies and cach
 executable digest. Blueprint embeds its configuration compiler; the separate
 `roc-stable` script compiler remains pinned, and the package nightly floats.
 
+SBOM generation uses roc-automation's shared `sbom-sidecars` action. The
+`prepare-sbom` task supplies the product-specific source checks and the
+reviewed composition, and the committed `sbom/imports.json` supplies the
+suppliers' SBOMs; the shared action owns generation and its evidence envelope.
+
 Downloaded utilities and compiler archives use Blueprint's verified artifact
 cache, keyed by workflow, job, Blueprint release and lock. Extracted trees are
 recreated and verified, while Roc package sources have a separate cache. A cold
@@ -144,8 +149,8 @@ A release holds:
 | `<hash>.tar.zst.sbom-inventory.json`, `.sbom-evidence.json`
 | Resolved source inventory and the exact file/source/run mappings
 
-| SBOM member list and manifests
-| Archive-member inventory and producer manifests binding each SBOM to its bytes
+| SBOM member list and manifest
+| Archive-member inventory and producer manifest; the shared evidence envelope binds all formats
 
 | `weaver-provenance.sigstore.json`, `weaver-sbom.sigstore.json`
 | Retained provenance and source-composition attestations
@@ -159,7 +164,7 @@ release. A published release is never changed: if one is wrong, publish a new
 version.
 
 On a pull request the workflow builds and tests the same things under the
-version `0.0.1-dry-run`, renders the newest notes, and publishes nothing.
+version `0.0.1-dryrun`, renders the newest notes, and publishes nothing.
 
 A release candidate, such as `<version>-rc1`, goes through the same workflow. It
 is marked as a prerelease, is never the latest release, and needs its own

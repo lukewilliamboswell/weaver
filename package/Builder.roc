@@ -13,6 +13,7 @@ import Base exposing [
 	on_successful_arg_parse,
 	version_option,
 ]
+import Extract
 import Parser exposing [ParsedArg]
 
 Builder(data, from_action, to_action) := {
@@ -148,13 +149,31 @@ Builder(data, from_action, to_action) := {
 
 	combine : CliBuilder(a, action1, action2), CliBuilder(b, action2, action3), (a, b -> c) -> CliBuilder(c, action1, action3)
 	combine = |{ parser: left_parser, options: left_options, parameters: left_parameters, subcommands: left_subcommands }, { parser: right_parser, options: right_options, parameters: right_parameters, subcommands: right_subcommands }, combiner| {
-		combined_parser = |input|
-			match left_parser(input) {
+		# When the right side calls this command's subcommands, the arguments
+		# after the subcommand's name belong to that subcommand alone, so the
+		# left side only sees the arguments before it. Whatever the left side
+		# leaves of those is put back in front of the name for the right side.
+		level_options = left_options.concat(right_options)
+		split_args = |args|
+			match (left_subcommands, right_subcommands) {
+				(NoSubcommands, HasSubcommands({ commands, .. })) =>
+					match Extract.find_subcommand_boundary(args, level_options, commands.map(|(name, _)| name)) {
+						Ok(index) => { own: args.take_first(index), rest: args.drop_first(index) }
+						Err(NotFound) => { own: args, rest: [] }
+					}
+
+				_other => { own: args, rest: [] }
+			}
+
+		combined_parser = |{ args, subcommand_path: input_subcommand_path }| {
+			{ own, rest } = split_args(args)
+
+			match left_parser({ args: own, subcommand_path: input_subcommand_path }) {
 				ShowVersion => ArgParserResult.ShowVersion
 				ShowHelp(sp) => ArgParserResult.ShowHelp(sp)
 				IncorrectUsage(arg_extract_err, sp) => ArgParserResult.IncorrectUsage(arg_extract_err, sp)
 				SuccessfullyParsed({ data, remaining_args, subcommand_path }) =>
-					match right_parser({ args: remaining_args, subcommand_path }) {
+					match right_parser({ args: remaining_args.concat(rest), subcommand_path }) {
 						ShowVersion => ArgParserResult.ShowVersion
 						ShowHelp(sp) => ArgParserResult.ShowHelp(sp)
 						IncorrectUsage(arg_extract_err, sp) => ArgParserResult.IncorrectUsage(arg_extract_err, sp)
@@ -162,6 +181,7 @@ Builder(data, from_action, to_action) := {
 							ArgParserResult.SuccessfullyParsed({ data: combiner(data, data2), remaining_args: rest_of_args, subcommand_path: next_sp })
 					}
 			}
+		}
 
 		{
 			parser: combined_parser,

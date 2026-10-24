@@ -15,7 +15,9 @@ terminal_width = 80
 Help := [].{
 
 	## Walks the subcommand tree from the root CLI config and returns the target
-	## command config, falling back to the root command if the path is invalid.
+	## command config. If the path is invalid, it falls back to the deepest
+	## command its longest valid prefix names, and returns that prefix as the
+	## path so the help header always names the command whose content is shown.
 	find_subcommand_or_default : CliConfig, List(Str) -> { config : CliConfig, subcommand_path : List(Str) }
 	find_subcommand_or_default = |config, subcommand_path| {
 		base_command = {
@@ -25,21 +27,24 @@ Help := [].{
 			subcommands: config.subcommands,
 		}
 
-		match Help.find_subcommand(base_command, subcommand_path.drop_first(1)) {
-			Err(KeyNotFound) => { config, subcommand_path }
-			Ok(command) => {
-				config: {
-					name: config.name,
-					version: config.version,
-					authors: config.authors,
-					description: command.description,
-					options: command.options,
-					parameters: command.parameters,
-					subcommands: command.subcommands,
-				},
-				subcommand_path,
+		(command, valid_path) =
+			match subcommand_path {
+				[] => (base_command, subcommand_path)
+				[root, .. as rest] => longest_valid_command(base_command, rest, [root])
 			}
+
+		found_config : CliConfig
+		found_config = {
+			name: config.name,
+			version: config.version,
+			authors: config.authors,
+			description: command.description,
+			options: command.options,
+			parameters: command.parameters,
+			subcommands: command.subcommands,
 		}
+
+		{ config: found_config, subcommand_path: valid_path }
 	}
 
 	## Searches a command's config for subcommands recursively.
@@ -120,7 +125,7 @@ Help := [].{
 		bottom_sections =
 			join_lines_with(filter_non_empty([subcommands_text, parameters_text, options_text]), "\n\n")
 
-		"${styled_top_line}${authors_text}${description_text}\n\n${Help.usage_help(config, subcommand_path, text_style)}\n\n${bottom_sections}"
+		"${styled_top_line}${authors_text}${description_text}\n\n${Help.usage_help(base_config, subcommand_path, text_style)}\n\n${bottom_sections}"
 	}
 
 	## Render just the usage text for a command at or under the root config.
@@ -200,6 +205,23 @@ commands_help = |subcommands, text_style| {
 
 	"${styled_heading}\n${Str.join_with(aligned_commands, "\n")}"
 }
+
+## Follows `path` from `command` for as long as each name is a subcommand,
+## returning the deepest command reached and the path that names it.
+longest_valid_command : SubcommandConfig, List(Str), List(Str) -> (SubcommandConfig, List(Str))
+longest_valid_command = |command, path, valid_path|
+	match path {
+		[] => (command, valid_path)
+		[first, .. as rest] =>
+			match command.subcommands {
+				NoSubcommands => (command, valid_path)
+				HasSubcommands({ commands, .. }) =>
+					match find_command(commands, first) {
+						Err(KeyNotFound) => (command, valid_path)
+						Ok(subcommand) => longest_valid_command(subcommand, rest, valid_path.append(first))
+					}
+			}
+	}
 
 find_command : List((Str, SubcommandConfig)), Str -> Try(SubcommandConfig, [KeyNotFound])
 find_command = |commands, target|
@@ -584,4 +606,58 @@ expect {
 		\\  -r STR, --required STR   Required value.
 		\\  -d STR, --defaulted STR  Defaulted value.
 		\\                           Continued explanation.
+}
+
+nested_help_config : CliConfig
+nested_help_config = {
+	..full_help_snapshot_config,
+	subcommands: HasSubcommands({
+		commands: [
+			(
+				"run",
+				{
+					..help_test_subcommand,
+					description: "Run the task.",
+					subcommands: HasSubcommands({
+						commands: [("fast", { ..help_test_subcommand, description: "Run it fast." })],
+						required: False,
+					}),
+				},
+			),
+		],
+		required: False,
+	}),
+}
+
+## An invalid path falls back to its longest valid prefix, header and content alike.
+expect {
+	{ config: run_config, subcommand_path: run_path } = Help.find_subcommand_or_default(nested_help_config, ["app", "run", "wat", "fast"])
+	{ config: root_config, subcommand_path: root_path } = Help.find_subcommand_or_default(nested_help_config, ["app", "wat"])
+	{ config: deep_config, subcommand_path: deep_path } = Help.find_subcommand_or_default(nested_help_config, ["app", "run", "fast", "deeper"])
+
+	run_path == ["app", "run"]
+		and run_config.description == "Run the task."
+		and root_path == ["app"]
+		and root_config.description == "A representative command."
+		and deep_path == ["app", "run", "fast"]
+		and deep_config.description == "Run it fast."
+}
+
+## A valid path is returned unchanged with its own command.
+expect {
+	{ config, subcommand_path } = Help.find_subcommand_or_default(nested_help_config, ["app", "run", "fast"])
+
+	subcommand_path == ["app", "run", "fast"] and config.description == "Run it fast."
+}
+
+## Help and usage for an invalid path name the command whose content they show.
+expect {
+	help = Help.help_text(nested_help_config, ["app", "run", "wat"], Plain)
+	usage = Help.usage_help(nested_help_config, ["app", "wat"], Plain)
+
+	help.starts_with("app run v1.2.3\n")
+		and help.contains("\n\nRun the task.\n\nUsage:\n  app run [COMMAND]\n")
+		and !(help.contains("wat"))
+		and usage.starts_with("Usage:\n  app -r/--required STR")
+		and !(usage.contains("wat"))
 }

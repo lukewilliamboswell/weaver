@@ -42,6 +42,10 @@ Use `Opt.arg` or `Param.arg` to keep a raw value as a `Path`. String parsers
 such as `Opt.str` and `Param.str` decode at the parser boundary and report a
 value that is not valid UTF-8 as a usage error.
 
+Everything after a subcommand's name belongs to that subcommand. Give a
+parent's options and parameters before the subcommand's name; after it, they
+are reported as not recognized or not expected, against the subcommand's usage.
+
 A separate token beginning with `-` is another option, not an option's value.
 Pass an option-like value as `--name=value`, or put `--` before it: both
 `--beta=-2.5` and `--beta -- -2.5` are unambiguous.

@@ -183,7 +183,7 @@
       "reason": "Development, checking or documentation tooling; no code from this input is included in the Roc source bundle."
     },
     {
-      "input": "task:sbom",
+      "input": "task:prepare-sbom",
       "component": "",
       "reason": "Development, checking or documentation tooling; no code from this input is included in the Roc source bundle."
     },
@@ -288,9 +288,7 @@
       "reason": "Native SBOM generator; its code is not included in the source bundle."
     }
   ],
-  "imported_documents": [
-    "@IMPORTED_DOCUMENTS@"
-  ],
+  "imported_documents": [],
   "unavailable_sboms": [
     {
       "component": "path",

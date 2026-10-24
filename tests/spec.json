@@ -570,8 +570,9 @@
             "one",
             "two"
           ],
+          "exit_code": 1,
           "name": "root-parameter-after-nested-subcommand",
-          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"two\"), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS2({ a: 1, c: 2, data: \"one\" })), volume: Err(NoValue) })) }\n"
+          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
@@ -596,8 +597,36 @@
             "s1",
             "-f"
           ],
+          "exit_code": 1,
           "name": "root-flag-after-subcommand",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-f\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "x"
+          ],
+          "exit_code": 1,
+          "name": "extra-parameter-after-subcommand",
+          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"x\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-f",
+            "s1"
+          ],
+          "name": "root-flag-before-subcommand",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: True, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "s1",
+            "--",
+            "tail"
+          ],
+          "exit_code": 1,
+          "name": "delimiter-after-subcommand-name",
+          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [

@@ -7,6 +7,7 @@ import Base exposing [
 	SubcommandsConfig,
 	on_successful_arg_parse,
 ]
+import Extract
 import Builder exposing [CliBuilder, GetOptionsAction, GetParamsAction]
 
 SubCmd := [].{
@@ -106,16 +107,22 @@ SubCmd := [].{
 							ArgParserResult.SuccessfullyParsed({ data: Err(NoSubcommand), remaining_args: args, subcommand_path })
 
 						Ok(subcommand) => {
+							# Everything after the subcommand's name is its own;
+							# whatever it leaves unconsumed is its usage error.
+							own_path = subcommand_path.append(subcommand.name)
 							sub_parser =
 								on_successful_arg_parse(
 									subcommand.parser,
 									|{ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }|
-										ArgParserResult.SuccessfullyParsed({ data: Ok(sub_data), remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }),
+										match Extract.ensure_no_remaining_args(sub_remaining_args) {
+											Ok({}) => ArgParserResult.SuccessfullyParsed({ data: Ok(sub_data), remaining_args: [], subcommand_path: sub_subcommand_path })
+											Err(err) => ArgParserResult.IncorrectUsage(err, { subcommand_path: own_path })
+										},
 								)
 
 							sub_parser({
 								args: args.drop_first(1),
-								subcommand_path: subcommand_path.append(subcommand.name),
+								subcommand_path: own_path,
 							})
 						}
 					},
@@ -146,16 +153,22 @@ SubCmd := [].{
 							ArgParserResult.IncorrectUsage(UnrecognizedSubcommand(command), { subcommand_path: subcommand_path })
 
 						Ok(subcommand) => {
+							# Everything after the subcommand's name is its own;
+							# whatever it leaves unconsumed is its usage error.
+							own_path = subcommand_path.append(subcommand.name)
 							sub_parser =
 								on_successful_arg_parse(
 									subcommand.parser,
 									|{ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }|
-										ArgParserResult.SuccessfullyParsed({ data: sub_data, remaining_args: sub_remaining_args, subcommand_path: sub_subcommand_path }),
+										match Extract.ensure_no_remaining_args(sub_remaining_args) {
+											Ok({}) => ArgParserResult.SuccessfullyParsed({ data: sub_data, remaining_args: [], subcommand_path: sub_subcommand_path })
+											Err(err) => ArgParserResult.IncorrectUsage(err, { subcommand_path: own_path })
+										},
 								)
 
 							sub_parser({
 								args: args.drop_first(1),
-								subcommand_path: subcommand_path.append(subcommand.name),
+								subcommand_path: own_path,
 							})
 						}
 					},
