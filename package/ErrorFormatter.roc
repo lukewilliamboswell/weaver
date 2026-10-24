@@ -67,7 +67,7 @@ ErrorFormatter := [].{
 				"The argument ${quote("-${short}")} was not recognized."
 
 			UnrecognizedLongArg(long) =>
-				"The argument ${quote("--${long}")} was not recognized."
+				"The argument ${long_arg_display(long)} was not recognized."
 
 			ExtraParamProvided(param) =>
 				"The parameter ${quote(Path.display(param))} was not expected."
@@ -342,6 +342,15 @@ short_group_display : List(Str) -> Str
 short_group_display = |names|
 	quote("-${Str.join_with(names, "")}")
 
+## An empty long name can only have been written as `--=value`.
+long_arg_display : Str -> Str
+long_arg_display = |name|
+	if name == "" {
+		quote("--=")
+	} else {
+		quote("--${name}")
+	}
+
 option_display_name : { short : Str, long : Str, .. } -> Str
 option_display_name = |option|
 	match (option.short, option.long) {
@@ -534,6 +543,7 @@ expect {
 	errors = [
 		UnrecognizedShortArg(escape),
 		UnrecognizedLongArg("${escape}[2Jpwned"),
+		UnrecognizedLongArg(""),
 		UnrecognizedSubcommand(Path.utf8("run${escape}[31m")),
 		ExtraParamProvided(Path.from_raw(UnixBytes([0x74, 0x0A, 0xFF]))),
 		ValueOptionMustBeLastInShortGroup(error_test_option, ["a", escape]),
@@ -547,6 +557,7 @@ expect {
 		==
 		\\The argument "-\\u(1b)" was not recognized.
 		\\The argument "--\\u(1b)[2Jpwned" was not recognized.
+		\\The argument "--=" was not recognized.
 		\\The subcommand "run\\u(1b)[31m" was not recognized.
 		\\The parameter "t\\n�" was not expected.
 		\\Option -a/--alpha must be last in the short option group "-a\\u(1b)".

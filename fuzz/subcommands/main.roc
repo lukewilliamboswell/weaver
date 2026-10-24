@@ -14,7 +14,8 @@ import weaver.SubCmd
 # command path that really exists and that the arguments really named, in
 # order, and parsed subcommand data must come from the arguments given. The
 # outcome must not depend on whether valid UTF-8 arrives as a `Str` or as
-# Unix bytes.
+# Unix bytes. An empty long name such as `--=5` never names an option, so a
+# command line containing one never parses.
 #
 #     roc build --fuzz fuzz/subcommands/main.roc --output=subcommands
 #     ./subcommands run fuzz/subcommands/corpus --time=60
@@ -171,6 +172,19 @@ described_paths = |args, message|
 		},
 	)
 
+## The arguments the parser reads as options: everything before the first `--`.
+option_args : List(List(U8)) -> List(List(U8))
+option_args = |args|
+	match args {
+		[] => []
+		[first, .. as rest] =>
+			if first == ['-', '-'] {
+				[]
+			} else {
+				option_args(rest).prepend(first)
+			}
+	}
+
 check_outcome : List(List(U8)), Outcome -> {}
 check_outcome = |args, outcome|
 	match outcome {
@@ -191,7 +205,11 @@ check_outcome = |args, outcome|
 					}
 				}
 
-			if !named_in_order(args, path) {
+			before_delimiter = option_args(args)
+
+			if before_delimiter.any(|arg| arg.starts_with(['-', '-', '='])) {
+				crash "parsed a command line with an empty long option name"
+			} else if !named_in_order(args, path) {
 				crash "parsed a subcommand the arguments did not name"
 			} else if !config.files.all(came_from_args) {
 				crash "a files parameter is not one of the arguments"

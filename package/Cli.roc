@@ -184,7 +184,7 @@ find_unrecognized_option_in_args = |args, options, subcommands|
 		[first, .. as rest] => {
 			match first {
 				Short(name) =>
-					if option_is_known(options, subcommands, |option| option.short == name) {
+					if option_is_known(options, subcommands, |option| Parser.names_option(name, option.short)) {
 						find_unrecognized_option_in_args(rest, options, subcommands)
 					} else {
 						Err(UnrecognizedShortArg(name))
@@ -196,7 +196,7 @@ find_unrecognized_option_in_args = |args, options, subcommands|
 				}
 
 				Long({ name, .. }) =>
-					if option_is_known(options, subcommands, |option| option.long == name) {
+					if option_is_known(options, subcommands, |option| Parser.names_option(name, option.long)) {
 						find_unrecognized_option_in_args(rest, options, subcommands)
 					} else {
 						Err(UnrecognizedLongArg(name))
@@ -213,7 +213,7 @@ find_unrecognized_short_name = |names, options, subcommands|
 	match names {
 		[] => Ok({})
 		[name, .. as rest] =>
-			if option_is_known(options, subcommands, |option| option.short == name) {
+			if option_is_known(options, subcommands, |option| Parser.names_option(name, option.short)) {
 				find_unrecognized_short_name(rest, options, subcommands)
 			} else {
 				Err(UnrecognizedShortArg(name))

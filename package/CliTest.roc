@@ -207,6 +207,58 @@ expect {
 	}
 }
 
+short_only_parser : Cli.CliParser({ alpha : U64 })
+short_only_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			Cli.map(
+				Opt.u64({ short: "a", long: "", help: "Alpha.", default: NoDefault }),
+				|alpha| { alpha: alpha },
+			),
+			{
+				name: "app",
+				version: "",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+## An empty long name never sets an option without a long name, in any encoding.
+expect {
+	encodings : List(Str -> [Utf8(Str), UnixBytes(List(U8)), WindowsU16s(List(U16))])
+	encodings = [
+		|arg| Utf8(arg),
+		|arg| UnixBytes(Str.to_utf8(arg)),
+		|arg| WindowsU16s(Str.to_utf8(arg).map(U8.to_u16)),
+	]
+
+	["--=5", "--="].all(
+		|arg|
+			encodings.all(
+				|encode|
+					match Cli.parse_or_display_message(short_only_parser, [arg], encode) {
+						Err(InvalidUsage(message)) => message.contains("The argument \"--=\" was not recognized.")
+						_other => False
+					},
+			),
+	)
+}
+
+## An empty long name with a value that is not valid text is reported the same way.
+expect {
+	args = [UnixBytes([0x2D, 0x2D, 0x3D, 0xFF]), WindowsU16s([0x002D, 0x002D, 0x003D, 0xD800])]
+
+	args.all(
+		|arg|
+			match Cli.parse_or_display_message(short_only_parser, [arg], |a| a) {
+				Err(InvalidUsage(message)) => message.contains("The argument \"--=\" was not recognized.")
+				_other => False
+			},
+	)
+}
+
 flag_first_parser : Cli.CliParser({ verbose : Bool, alpha : U64 })
 flag_first_parser =
 	Cli.assert_valid(

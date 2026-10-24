@@ -12,7 +12,8 @@ import weaver.Param
 # positional parameters must end in exactly one well-formed outcome: parsed
 # data, the help page, the version, or a usage report naming the problem. The
 # outcome must also not depend on whether a valid UTF-8 argument arrives as a
-# `Str`, as Unix bytes or as Windows UTF-16.
+# `Str`, as Unix bytes or as Windows UTF-16. No empty long name such as `--=5`
+# ever names an option, so a command line containing one never parses.
 #
 #     roc build --fuzz fuzz/parse-outcomes/main.roc --output=parse-outcomes
 #     ./parse-outcomes run fuzz/parse-outcomes/corpus --time=60
@@ -126,7 +127,9 @@ check_outcome = |args, outcome| {
 	match outcome {
 		Ok(config) =>
 		# Positional parameters are always whole arguments.
-			if !args.any(|arg| arg == Str.to_utf8(config.input)) {
+			if before_delimiter.any(|arg| arg.starts_with(['-', '-', '='])) {
+				crash "parsed a command line with an empty long option name"
+			} else if !args.any(|arg| arg == Str.to_utf8(config.input)) {
 				crash "the input parameter is not one of the arguments"
 			} else if !config.rest.all(|param| args.any(|arg| arg == Str.to_utf8(param))) {
 				crash "a rest parameter is not one of the arguments"

@@ -51,24 +51,32 @@ Parser := [].{
 	parse_arg = |arg| {
 		match Path.to_str(arg) {
 			Ok(str_arg) => Parser.parse_decoded_arg(arg, str_arg)
-			Err(_) =>
-				match Path.to_raw(arg) {
-					UnixBytes(bytes) =>
-						match parse_raw_unix_long_arg(bytes) {
-							Ok(parsed) => parsed
-							Err(NotRawLong) => Parameter(arg)
-						}
+			Err(_) => {
+				# Whether an argument is a long option depends only on its
+				# leading dashes, never on whether the rest of it is valid text.
+				# Its name is read lossily, so an invalid sequence becomes U+FFFD
+				# and is reported rather than read as a parameter; an attached
+				# value stays raw.
+				lossy = Parser.parse_decoded_arg(arg, Path.display(arg))
 
-					WindowsU16s(code_units) =>
-						match parse_raw_windows_long_arg(code_units) {
-							Ok(parsed) => parsed
-							Err(NotRawLong) => Parameter(arg)
-						}
+				match lossy {
+					Long({ name, value: Ok(lossy_value) }) =>
+						Long({ name, value: Ok(raw_long_value(arg) ?? lossy_value) })
 
-					Utf8(_) => Parameter(arg)
+					Long(long) => Long(long)
+					_other => Parameter(arg)
 				}
+			}
 		}
 	}
+
+	## Whether a name given on the command line names an option's declared
+	## short or long name. An option that declares no such name, written as
+	## the empty string, is never named, not even by an empty name like the
+	## one in `--=value`.
+	names_option : Str, Str -> Bool
+	names_option = |given, declared|
+		declared != "" and given == declared
 
 	parse_decoded_arg : Path, Str -> ParsedArg
 	parse_decoded_arg = |arg, str_arg| {
@@ -119,46 +127,22 @@ Parser := [].{
 	}
 }
 
-parse_raw_unix_long_arg : List(U8) -> Try(Parser.ParsedArg, [NotRawLong])
-parse_raw_unix_long_arg = |bytes|
-	match bytes {
-		[45, 45, .. as rest] => {
-			{ name_units, value_units } = split_u8_at_equals(rest, [])?
-			name =
-				match Str.from_utf8(name_units) {
-					Ok(value) => value
-					Err(_) => return Err(NotRawLong)
-				}
-
-			if name == "" or name.starts_with("-") {
-				Err(NotRawLong)
-			} else {
-				Ok(Long({ name, value: Ok(Path.from_raw(UnixBytes(value_units))) }))
-			}
+## The raw value attached after the first `=` of a long option that is not
+## valid text.
+raw_long_value : Path -> Try(Path, [NotRawLong])
+raw_long_value = |arg|
+	match Path.to_raw(arg) {
+		UnixBytes(bytes) => {
+			{ value_units, .. } = split_u8_at_equals(bytes.drop_first(2), [])?
+			Ok(Path.from_raw(UnixBytes(value_units)))
 		}
 
-		_other => Err(NotRawLong)
-	}
-
-parse_raw_windows_long_arg : List(U16) -> Try(Parser.ParsedArg, [NotRawLong])
-parse_raw_windows_long_arg = |code_units|
-	match code_units {
-		[45, 45, .. as rest] => {
-			{ name_units, value_units } = split_u16_at_equals(rest, [])?
-			name =
-				match Path.to_str(Path.from_raw(WindowsU16s(name_units))) {
-					Ok(value) => value
-					Err(_) => return Err(NotRawLong)
-				}
-
-			if name == "" or name.starts_with("-") {
-				Err(NotRawLong)
-			} else {
-				Ok(Long({ name, value: Ok(Path.from_raw(WindowsU16s(value_units))) }))
-			}
+		WindowsU16s(code_units) => {
+			{ value_units, .. } = split_u16_at_equals(code_units.drop_first(2), [])?
+			Ok(Path.from_raw(WindowsU16s(value_units)))
 		}
 
-		_other => Err(NotRawLong)
+		Utf8(_) => Err(NotRawLong)
 	}
 
 split_u8_at_equals : List(U8), List(U8) -> Try({ name_units : List(U8), value_units : List(U8) }, [NotRawLong])
@@ -275,4 +259,36 @@ expect {
 			Parameter(Path.utf8("xyz")),
 			PassedThrough(Path.utf8("--subject=world")),
 		]
+}
+
+## An empty long name parses as written, with its attached value.
+expect {
+	Parser.parse_arg(Path.utf8("--=5")) == Long({ name: "", value: Ok(Path.utf8("5")) })
+		and Parser.parse_arg(Path.utf8("--=")) == Long({ name: "", value: Ok(Path.utf8("")) })
+}
+
+## An empty long name parses alike whatever encoding carries it.
+expect {
+	unix = Path.from_raw(UnixBytes(Str.to_utf8("--=").append(0xFF)))
+	windows = Path.from_raw(WindowsU16s([0x002D, 0x002D, 0x003D, 0xD800]))
+
+	Parser.parse_arg(unix) == Long({ name: "", value: Ok(Path.from_raw(UnixBytes([0xFF]))) })
+		and Parser.parse_arg(windows) == Long({ name: "", value: Ok(Path.from_raw(WindowsU16s([0xD800]))) })
+}
+
+## No option is named by an empty name, even one that declares no such name.
+expect !(Parser.names_option("", "")) and !(Parser.names_option("a", "")) and Parser.names_option("a", "a")
+
+## A long name that is not valid text is still a long option, so it is reported.
+expect {
+	arg = Path.from_raw(UnixBytes([0x2D, 0x2D, 0xFF]))
+
+	Parser.parse_arg(arg) == Long({ name: "\u(FFFD)", value: Err(NoValue) })
+}
+
+## Three leading dashes stay a parameter whatever encoding carries them.
+expect {
+	arg = Path.from_raw(UnixBytes([0x2D, 0x2D, 0x2D, 0xFF]))
+
+	Parser.parse_arg(arg) == Parameter(arg)
 }
