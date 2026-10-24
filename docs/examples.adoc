@@ -1,0 +1,74 @@
+[#learn-from-the-examples]
+= Learn from the examples
+
+Each example is a complete program that shows one way to use weaver. Read them
+top to bottom, or copy one as a starting point.
+
+[cols="1,3",options="header"]
+|===
+| Example | What it shows
+
+| https://github.com/lukewilliamboswell/weaver/blob/main/examples/single-arg.roc[`single-arg.roc`]
+| The smallest parser: one required option, mapped into a tag
+
+| https://github.com/lukewilliamboswell/weaver/blob/main/examples/basic.roc[`basic.roc`]
+| A record of an option, a flag, an optional parameter and a list of parameters
+
+| https://github.com/lukewilliamboswell/weaver/blob/main/examples/default-values.roc[`default-values.roc`]
+| Options and parameters with fixed and generated defaults
+
+| https://github.com/lukewilliamboswell/weaver/blob/main/examples/subcommands.roc[`subcommands.roc`]
+| Nested subcommands, each with its own options, parameters and help
+
+| https://github.com/lukewilliamboswell/weaver/blob/main/examples/deploy.roc[`deploy.roc`]
+| A realistic deployment command line, and the diagnostics a user sees
+|===
+
+== Which copy to use
+
+The examples exist in two places, and they are not the same.
+
+The examples for a release:: Each release attaches an archive,
+`weaver-examples-<version>.zip`, linked from
+xref:getting-started.adoc#add-the-package[Add the package]. Its examples depend
+on that release's package URL and never change. Use these to start a project.
+
+The examples in the repository:: These depend on the package beside them,
+`weaver: "../package/main.roc"`, so they always match the unreleased code on
+`main`. They may use something no release has yet. Use these when you are
+changing weaver.
+
+== What the output looks like
+
+[source,console]
+----
+$ roc examples/basic.roc -- file1.txt file2.txt -f -a 123
+Successfully parsed! Here's what I got:
+
+{ alpha: 123, file: Ok("file1.txt"), files: ["file2.txt"], force: True }
+
+$ roc examples/basic.roc -- --help
+basic v0.1.0
+Some One <some.one@mail.com>
+
+This is a basic example of what you can build with Weaver. You get safe
+parsing, useful error messages, and help pages all for free!
+
+Usage:
+  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]
+
+Arguments:
+  <file>      The file to process.
+  <files...>  The rest of the files.
+
+Options:
+  -a NUM         Set the alpha level.
+  -f             Force the task to complete.
+  -h, --help     Show this help page.
+  -V, --version  Show the version.
+----
+
+The archive also holds `spec.json`, which records exactly what each example
+printed when the release was made, with cases covering successful parses, help
+and version pages, malformed values, missing arguments, unknown options,
+nested subcommands and delimiters.

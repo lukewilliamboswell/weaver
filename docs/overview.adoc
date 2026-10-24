@@ -1,0 +1,58 @@
+[#what-weaver-is]
+= What weaver is
+
+weaver is an ergonomic command-line argument parser for Roc, in the style of
+Rust's https://github.com/clap-rs/clap[clap]. Roc has no code generation at
+compile time, so weaver uses the
+https://www.roc-lang.org/examples/RecordBuilder/README.html[record builder syntax]
+instead: the same expression builds the configuration and the parser, so they
+cannot disagree, and the result is checked by the type checker.
+
+weaver was created by Sam Mohr as https://github.com/smores56/weaver[smores56/weaver].
+This repository is a maintained fork that keeps it working with the current Roc
+compiler and publishes tested releases.
+
+== What it gives you
+
+From one declaration of a command line, weaver produces:
+
+* *Typed data.* Options and parameters parse to `U64`, `Dec`, `Str`, flags,
+  counts, lists and your own types, and the record you get back has exactly the
+  fields you declared.
+* *Help and version pages.* `-h`/`--help` and `-V`/`--version` are added for
+  you, and every subcommand has its own help page.
+* *Diagnostics.* A missing option, a malformed value, an unknown argument or a
+  misplaced parameter is reported with what went wrong, the usage line, and a
+  tip for fixing it.
+* *Subcommands*, nested to any depth, each with its own options and parameters.
+
+Set `text_style` to `Color` for ANSI-styled help and diagnostics, or choose
+`Plain` when output is redirected or your application honours `NO_COLOR`.
+
+== How it treats arguments
+
+weaver parses exactly the arguments passed to `Cli.parse_or_display_message`;
+it never drops the first one. `basic-cli` supplies `List(OsStr)` without the
+executable path, so pass them straight through with `OsStr.to_raw`. That
+keeps UTF-8, native Unix bytes and Windows UTF-16 code units intact as a
+https://github.com/roc-lang/path[`path.Path`]. Only drop the
+first element when your platform documents that it is the executable path.
+
+Use `Opt.arg` or `Param.arg` to keep a raw value as a `Path`. String parsers
+such as `Opt.str` and `Param.str` decode at the parser boundary and report a
+value that is not valid UTF-8 as a usage error.
+
+A separate token beginning with `-` is another option, not an option's value.
+Pass an option-like value as `--name=value`, or put `--` before it: both
+`--beta=-2.5` and `--beta -- -2.5` are unambiguous.
+
+Help prose and diagnostics wrap at 80 UTF-8 bytes. weaver keeps explicit line
+breaks and never splits a token, so an unusually long token can run past that
+boundary rather than being corrupted.
+
+== Validating a configuration
+
+`Cli.assert_valid` is convenient for a configuration written in the source,
+which is either valid or a bug. An application that builds its configuration
+at run time should handle the result of `Cli.finish` and show the error with
+`ErrorFormatter.render_cli_validation_err(err, Color)`, or `Plain`.

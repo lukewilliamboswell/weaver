@@ -1,0 +1,662 @@
+{
+  "apps": [
+    {
+      "cases": [
+        {
+          "args": [
+            "-a",
+            "1"
+          ],
+          "name": "minimal-required-option",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Err(NoValue), files: [], force: False }\n"
+        },
+        {
+          "args": [
+            "-a",
+            "123",
+            "-f",
+            "file1.txt",
+            "file2.txt"
+          ],
+          "name": "all-fields",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, file: Ok(\"file1.txt\"), files: [\"file2.txt\"], force: True }\n"
+        },
+        {
+          "args": [
+            "-fa",
+            "7"
+          ],
+          "name": "grouped-short-options",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 7, file: Err(NoValue), files: [], force: True }\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "--",
+            "-f",
+            "tail"
+          ],
+          "name": "double-dash-delimiter",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Ok(\"-f\"), files: [\"tail\"], force: False }\n"
+        },
+        {
+          "exit_code": 1,
+          "name": "missing-required-option",
+          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -a is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a number` as shown in Usage.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a"
+          ],
+          "exit_code": 1,
+          "name": "missing-option-value",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "nope"
+          ],
+          "exit_code": 1,
+          "name": "invalid-number",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "18446744073709551616"
+          ],
+          "exit_code": 1,
+          "name": "number-overflow",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "-a",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "duplicate-option",
+          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a` option.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-ff",
+            "-a",
+            "1"
+          ],
+          "exit_code": 1,
+          "name": "repeated-flag-in-group",
+          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -f can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-f` option.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "-x"
+          ],
+          "exit_code": 1,
+          "name": "unknown-short-option",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument -x was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-x"
+          ],
+          "exit_code": 1,
+          "name": "unknown-short-before-required",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument -x was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "--alpha"
+          ],
+          "exit_code": 1,
+          "name": "unknown-long-option",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --alpha was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--wat"
+          ],
+          "exit_code": 1,
+          "name": "unknown-long-before-required",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "name": "help",
+          "stdout": "\u001b[1m\u001b[36mbasic\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nThis is a basic example of what you can build with Weaver. You get safe parsing,\nuseful error messages, and help pages all for free!\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m      The file to process.\n  \u001b[1m\u001b[36m<files...>\u001b[0m  The rest of the files.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m         Set the alpha level.\n  \u001b[1m\u001b[36m-f\u001b[0m             Force the task to complete.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
+        },
+        {
+          "args": [
+            "--version"
+          ],
+          "name": "version",
+          "stdout": "v0.0.1\n"
+        }
+      ],
+      "path": "examples/basic.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [
+            "ghcr.io/acme/api:v2",
+            "--environment",
+            "production",
+            "--replicas",
+            "4",
+            "--label",
+            "team=payments",
+            "--label",
+            "tier=api",
+            "--dry-run"
+          ],
+          "name": "deployment-plan",
+          "stdout": "Deployment plan:\n{ dry_run: True, environment: \"production\", labels: [\"team=payments\", \"tier=api\"], region: \"us-east-1\", replicas: 4, target_image: \"ghcr.io/acme/api:v2\" }\n"
+        },
+        {
+          "args": [
+            "ghcr.io/acme/web:v1",
+            "--environment",
+            "staging"
+          ],
+          "name": "defaults",
+          "stdout": "Deployment plan:\n{ dry_run: False, environment: \"staging\", labels: [], region: \"us-east-1\", replicas: 3, target_image: \"ghcr.io/acme/web:v1\" }\n"
+        },
+        {
+          "args": [
+            "ghcr.io/acme/api:v2"
+          ],
+          "exit_code": 1,
+          "name": "missing-environment",
+          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -e/--environment is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-e/--environment string` as shown in Usage.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "ghcr.io/acme/api:v2",
+            "--environment",
+            "production",
+            "--replicas",
+            "many"
+          ],
+          "exit_code": 1,
+          "name": "invalid-replicas",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -r/--replicas was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-r/--replicas`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "name": "help",
+          "stdout": "\u001b[1m\u001b[36mdeploy\u001b[0m \u001b[90mv0.1.0\u001b[0m\n\u001b[90mAcme Platform Team <platform@example.com>\u001b[0m\n\nRoll out a container image to one deployment environment.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<image>\u001b[0m  Container image and tag to deploy.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-n, --dry-run\u001b[0m              Print the deployment plan without applying it.\n  \u001b[1m\u001b[36m-e STR, --environment STR\u001b[0m  Target environment, such as staging or production.\n  \u001b[1m\u001b[36m-l STR, --label STR\u001b[0m        Attach a repeatable KEY=VALUE label.\n  \u001b[1m\u001b[36m--region STR\u001b[0m               Cloud region. [default: us-east-1]\n  \u001b[1m\u001b[36m-r NUM, --replicas NUM\u001b[0m     Number of service replicas. [default: 3]\n  \u001b[1m\u001b[36m-h, --help\u001b[0m                 Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m              Show the version.\n"
+        },
+        {
+          "args": [
+            "--version"
+          ],
+          "name": "version",
+          "stdout": "v0.1.0\n"
+        }
+      ],
+      "path": "examples/deploy.roc"
+    },
+    {
+      "cases": [
+        {
+          "name": "all-defaults",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"NONE\" }\n"
+        },
+        {
+          "args": [
+            "file.txt"
+          ],
+          "name": "positional-file",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"file.txt\" }\n"
+        },
+        {
+          "args": [
+            "--alpha=9",
+            "--beta",
+            "2.5",
+            "file.txt"
+          ],
+          "name": "override-defaults",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 9, beta: 2.5, file: \"file.txt\" }\n"
+        },
+        {
+          "args": [
+            "--beta=-2.5"
+          ],
+          "name": "negative-decimal",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
+        },
+        {
+          "args": [
+            "--beta",
+            "--",
+            "-2.5"
+          ],
+          "name": "negative-decimal-after-delimiter",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
+        },
+        {
+          "args": [
+            "--alpha",
+            "--beta",
+            "2.5"
+          ],
+          "exit_code": 1,
+          "name": "option-is-not-consumed-as-value",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--",
+            "-a"
+          ],
+          "name": "delimiter-preserves-option-like-file",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"-a\" }\n"
+        },
+        {
+          "args": [
+            "--alpha",
+            "nope"
+          ],
+          "exit_code": 1,
+          "name": "invalid-u64",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-b",
+            "nope"
+          ],
+          "exit_code": 1,
+          "name": "invalid-decimal",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -b/--beta was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-b/--beta`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-b"
+          ],
+          "exit_code": 1,
+          "name": "missing-decimal-value",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -b/--beta expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-b/--beta`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "--alpha",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "duplicate-defaulted-option",
+          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "one",
+            "two"
+          ],
+          "exit_code": 1,
+          "name": "extra-positional",
+          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "name": "help",
+          "stdout": "\u001b[1m\u001b[36mdefault-values\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m  The file to process. [default: NONE]\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM, --alpha NUM\u001b[0m  Set the alpha level. [default: 123]\n  \u001b[1m\u001b[36m-b NUM, --beta NUM\u001b[0m   Set the beta level. [default: 3.14]\n  \u001b[1m\u001b[36m-h, --help\u001b[0m           Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m        Show the version.\n"
+        },
+        {
+          "args": [
+            "--version"
+          ],
+          "name": "version",
+          "stdout": "v0.0.1\n"
+        }
+      ],
+      "path": "examples/default-values.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [
+            "-a",
+            "123"
+          ],
+          "name": "short-option",
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(123)\n"
+        },
+        {
+          "args": [
+            "--alpha",
+            "42"
+          ],
+          "name": "long-option",
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(42)\n"
+        },
+        {
+          "args": [
+            "--alpha=7"
+          ],
+          "name": "long-option-with-equals",
+          "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(7)\n"
+        },
+        {
+          "exit_code": 1,
+          "name": "missing-required-option",
+          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -a/--alpha is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a/--alpha number` as shown in Usage.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a"
+          ],
+          "exit_code": 1,
+          "name": "missing-option-value",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "x"
+          ],
+          "exit_code": 1,
+          "name": "invalid-number",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "18446744073709551616"
+          ],
+          "exit_code": 1,
+          "name": "number-overflow",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "--alpha",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "duplicate-option",
+          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--beta",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "unknown-option-precedes-missing-required",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --beta was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `single-arg --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a",
+            "1",
+            "tail"
+          ],
+          "exit_code": 1,
+          "name": "extra-positional",
+          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "-a1",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "partial-short-group",
+          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a/--alpha must be last in the short option group -a1.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a/--alpha` to the end of the group or pass it separately.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "name": "help",
+          "stdout": "\u001b[1m\u001b[36msingle-arg\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM, --alpha NUM\u001b[0m  Set the alpha level.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m           Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m        Show the version.\n"
+        },
+        {
+          "args": [
+            "--version"
+          ],
+          "name": "version",
+          "stdout": "v0.0.1\n"
+        }
+      ],
+      "path": "examples/single-arg.roc"
+    },
+    {
+      "cases": [
+        {
+          "name": "empty-root",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "args": [
+            "-f",
+            "file.txt",
+            "tail.txt"
+          ],
+          "name": "root-fields",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"file.txt\"), files: [\"tail.txt\"], force: True, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "args": [
+            "wat"
+          ],
+          "name": "unknown-subcommand-is-root-parameter",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"wat\"), files: [], force: False, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "args": [
+            "s1"
+          ],
+          "name": "first-subcommand-empty",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "s1",
+            "-d",
+            "3",
+            "--volume=8"
+          ],
+          "name": "first-subcommand-options",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Ok(3), sc: Err(NoSubcommand), volume: Ok(8) })) }\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss1",
+            "-a",
+            "1",
+            "-b",
+            "2"
+          ],
+          "name": "first-nested-subcommand",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS1({ a: 1, b: 2 })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss1",
+            "-ab",
+            "1",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "nested-grouped-options",
+          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a must be last in the short option group -ab.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a` to the end of the group or pass it separately.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss1",
+            "-a",
+            "1"
+          ],
+          "exit_code": 1,
+          "name": "nested-required-option-missing",
+          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -b is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-b number` as shown in Usage.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss2",
+            "-a",
+            "1",
+            "-c",
+            "2",
+            "payload"
+          ],
+          "name": "second-nested-subcommand",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS2({ a: 1, c: 2, data: \"payload\" })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss2",
+            "-a",
+            "1",
+            "-c",
+            "2"
+          ],
+          "exit_code": 1,
+          "name": "nested-required-parameter-missing",
+          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nThe 'data' parameter did not receive a value.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `<data>` in the position shown in Usage.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss2",
+            "-a",
+            "1",
+            "-c",
+            "2",
+            "one",
+            "two"
+          ],
+          "name": "root-parameter-after-nested-subcommand",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"two\"), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS2({ a: 1, c: 2, data: \"one\" })), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "s2",
+            "-d",
+            "9"
+          ],
+          "name": "second-subcommand",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S2(DFlag(Ok(9)))) }\n"
+        },
+        {
+          "args": [
+            "s2",
+            "-d"
+          ],
+          "exit_code": 1,
+          "name": "second-subcommand-value-missing",
+          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -d expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s2 [-d NUM] [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-d`.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "-f"
+          ],
+          "name": "root-flag-after-subcommand",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: True, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
+        },
+        {
+          "args": [
+            "--",
+            "s1",
+            "tail"
+          ],
+          "name": "delimiter-before-subcommand-name",
+          "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"s1\"), files: [\"tail\"], force: False, sc: Err(NoSubcommand) }\n"
+        },
+        {
+          "args": [
+            "--wat"
+          ],
+          "exit_code": 1,
+          "name": "unknown-root-option",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "s1",
+            "--wat"
+          ],
+          "exit_code": 1,
+          "name": "unknown-subcommand-option",
+          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument --wat was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "name": "root-help",
+          "stdout": "\u001b[1m\u001b[36msubcommands\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nThis is a basic example of what you can build with Weaver. You get safe parsing,\nuseful error messages, and help pages all for free!\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mCommands:\u001b[0m\n  \u001b[1m\u001b[36ms1\u001b[0m  A first subcommand.\n  \u001b[1m\u001b[36ms2\u001b[0m  Another subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m      The file to process.\n  \u001b[1m\u001b[36m<files...>\u001b[0m  The rest of the files.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-f\u001b[0m             Force the task to complete.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
+        },
+        {
+          "args": [
+            "s1",
+            "--help"
+          ],
+          "name": "subcommand-help",
+          "stdout": "\u001b[1m\u001b[36msubcommands s1\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nA first subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mCommands:\u001b[0m\n  \u001b[1m\u001b[36mss1\u001b[0m  A sub-subcommand.\n  \u001b[1m\u001b[36mss2\u001b[0m  Another sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-d NUM\u001b[0m                A non-overlapping subcommand flag with s2.\n  \u001b[1m\u001b[36m-v NUM, --volume NUM\u001b[0m  How loud to grind the gears.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m            Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m         Show the version.\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss1",
+            "--help"
+          ],
+          "name": "first-nested-help",
+          "stdout": "\u001b[1m\u001b[36msubcommands s1 ss1\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nA sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m         An example short flag for a sub-subcommand.\n  \u001b[1m\u001b[36m-b NUM\u001b[0m         Another example short flag for a sub-subcommand.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
+        },
+        {
+          "args": [
+            "s1",
+            "ss2",
+            "--help"
+          ],
+          "name": "second-nested-help",
+          "stdout": "\u001b[1m\u001b[36msubcommands s1 ss2\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nAnother sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<data>\u001b[0m  Data to manipulate.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m                Set the alpha level.\n  \u001b[1m\u001b[36m-c NUM, --create NUM\u001b[0m  Create a doohickey.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m            Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m         Show the version.\n"
+        },
+        {
+          "args": [
+            "--version"
+          ],
+          "name": "root-version",
+          "stdout": "v0.0.1\n"
+        },
+        {
+          "args": [
+            "s1",
+            "--version"
+          ],
+          "name": "subcommand-version",
+          "stdout": "v0.0.1\n"
+        }
+      ],
+      "path": "examples/subcommands.roc"
+    }
+  ]
+}

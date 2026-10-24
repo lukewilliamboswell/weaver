@@ -1,0 +1,43 @@
+= weaver 0.9.1
+
+This patch changes no package APIs and no parsing behaviour; `roc bump`
+reports no API changes since 0.9.0. It moves the repository onto the shared
+roc-automation release process, so this is the first release with an examples
+archive, an API reference archive, a PDF manual and supply-chain evidence.
+
+== Use this release
+
+[source,roc]
+----
+app [main!] {
+    weaver: "{package-url}",
+}
+----
+
+== Package
+
+* Depends on roc-ansi 0.13.3, whose release publishes an SBOM, instead of
+  0.13.0. The examples print exactly what they did before.
+* Formatted with the current nightly's formatter.
+* Arguments that are not valid UTF-8 are tested in the package itself, for
+  both option values and parameters.
+
+== Tooling and documentation
+
+* Blueprint provides the development environment without Nix, replacing
+  Kai, and the repository scripts are written in Roc instead of Python.
+* roc-automation's shared tools render this manual as HTML, PDF and Markdown.
+* The examples archive holds the canonical roc-automation compatibility suite,
+  so the shared nightly runner tests this release on every new nightly.
+* Fuzz targets under `fuzz/` are built and replay their corpus on every pull
+  request.
+
+== Supply-chain evidence
+
+* The source bundle gains SPDX and CycloneDX sidecars bound to its final
+  SHA-256, plus retained signed provenance and SBOM-attestation evidence.
+* weaver is now licensed under UPL-1.0. `LICENSE`, attached to the release,
+  keeps the MIT notice of the upstream project for the code that originates there.
+* The inventory records the package's dependencies, which the bundle does not
+  contain, and imports roc-ansi's own SBOM bound to the exact file it depends on. Compiler/toolchain closure remains an explicit
+  coverage gap; examples and documentation are separate deliverables.

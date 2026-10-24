@@ -1,6 +1,7 @@
 import Base exposing [ArgParserResult, CliConfig, SubcommandsConfig]
 import Cli
 import Opt
+import Param
 import path.Path
 
 CliTest := [].{}
@@ -134,6 +135,42 @@ expect {
 expect {
 	match Cli.parse_or_display_message(required_option_parser, ["--help", "--wat"], |arg| Utf8(arg)) {
 		Err(Help(message)) => message.starts_with("app\n\nUsage:")
+		_other => False
+	}
+}
+
+## An option value that is not valid UTF-8 is reported against that option.
+expect {
+	args = [Utf8("-a"), UnixBytes([255])]
+	match Cli.parse_or_display_message(required_option_parser, args, |arg| arg) {
+		Err(InvalidUsage(message)) => message.contains("The value provided to -a/--alpha was not valid UTF-8.")
+		_other => False
+	}
+}
+
+file_parameter_parser : Cli.CliParser({ file : Str })
+file_parameter_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			Cli.map(
+				Param.str({ name: "file", help: "The file to process.", default: NoDefault }),
+				|file| { file: file },
+			),
+			{
+				name: "app",
+				version: "",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+## A parameter that is not valid UTF-8 is reported against that parameter.
+expect {
+	args = [UnixBytes([255])]
+	match Cli.parse_or_display_message(file_parameter_parser, args, |arg| arg) {
+		Err(InvalidUsage(message)) => message.contains("The value provided to the 'file' parameter was not valid UTF-8.")
 		_other => False
 	}
 }

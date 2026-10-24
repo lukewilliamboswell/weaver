@@ -1,50 +1,49 @@
 name: CI
 
+# Checks the working tree. The scripts run on the tooling compiler that
+# Blueprint.roc names; the package, its examples and what a release would
+# publish are checked with the latest Roc nightly, which is not pinned.
 on:
   pull_request:
-  workflow_call:
-    inputs:
-      ref:
-        description: Git ref to test
-        required: false
-        type: string
-  schedule:
-    - cron: "0 10 * * *"
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      nightly_validation:
-        description: "Validate a nightly candidate without publishing or deploying"
-        type: boolean
-        required: false
-        default: false
+
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 jobs:
-  test:
-    name: package examples (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+  test-examples:
+    # This name is a required status check in the branch ruleset.
+    name: test-examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          persist-credentials: false
 
-      - name: Install Roc
-        uses: ./.github/actions/setup-roc
+      - name: Install blueprint without Nix
+        uses: ./.github/actions/setup-blueprint
 
-      - name: Run checks
-        shell: python
-        run: import runpy; runpy.run_path("scripts/test.py", run_name="__main__")
+      - name: Install the latest Roc nightly
+        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        with:
+          version: nightly-new-compiler
+
+      - name: Every task runs without Nix
+        run: |
+          if command -v nix; then
+            echo "Nix must not be on PATH for this check" >&2
+            exit 1
+          fi
+          blueprint check
+          blueprint requirements --json | jq -e '.providers == [] and all(.tasks[]; .providers == [] and .unavailable == [])'
+
+      - name: Check the scripts, package, examples and release artifacts
+        run: blueprint run check
