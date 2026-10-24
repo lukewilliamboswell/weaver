@@ -22,6 +22,9 @@ jobs:
     permissions:
       contents: read
       issues: write
+    # TODO: with a single runner the shared verdict job reports setup-failed
+    # even when every case passed; repin once that is fixed upstream:
+    # https://github.com/lukewilliamboswell/roc-automation/issues/79
     uses: lukewilliamboswell/roc-automation/.github/workflows/nightly-compatibility.yml@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
     with:
       nightly-tag: ${{ inputs.nightly-tag || '' }}
