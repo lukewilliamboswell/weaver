@@ -11,6 +11,7 @@ import Base exposing [
 	map_successfully_parsed,
 ]
 import Builder exposing [CliBuilder]
+import Extract
 import ErrorFormatter exposing [render_arg_extract_err]
 import Help exposing [help_text, usage_help]
 import Parser exposing [ParsedArg, parse_args]
@@ -45,21 +46,7 @@ Cli := [].{
 	## Fail the parsing process if any arguments are left over after parsing.
 	ensure_all_args_were_parsed : List(ParsedArg) -> Try({}, ArgExtractErr)
 	ensure_all_args_were_parsed = |remaining_args|
-		match remaining_args {
-			[] => Ok({})
-			[first, ..] => {
-				extra_arg_err =
-					match first {
-						Parameter(param) => ExtraParamProvided(param)
-						Long(long) => UnrecognizedLongArg(long.name)
-						Short(short) => UnrecognizedShortArg(short)
-						ShortGroup(short_group) => UnrecognizedShortArg(first_or_empty(short_group.names))
-						PassedThrough(param) => ExtraParamProvided(param)
-					}
-
-				Err(extra_arg_err)
-			}
-		}
+		Extract.ensure_no_remaining_args(remaining_args)
 
 	## Bundle a CLI builder into a parser, ensuring its configuration is valid.
 	finish : CliBuilder(data, from_action, to_action), CliConfigParams -> Try(CliParser(data), CliValidationErr)
@@ -103,10 +90,10 @@ Cli := [].{
 				raw_result = parser({ args: parsed_args, subcommand_path: [name] })
 				parser_result =
 					match raw_result {
-						IncorrectUsage(MissingOption(_), { subcommand_path }) =>
+						IncorrectUsage(MissingOption(_), _) =>
 							match find_unrecognized_option(config, parsed_args) {
 								Ok({}) => raw_result
-								Err(err) => ArgParserResult.IncorrectUsage(err, { subcommand_path: subcommand_path })
+								Err((err, subcommand_path)) => ArgParserResult.IncorrectUsage(err, { subcommand_path: subcommand_path })
 							}
 
 						_other => raw_result
@@ -151,78 +138,109 @@ Cli := [].{
 	}
 }
 
-find_unrecognized_option : CliConfig, List(ParsedArg) -> Try({}, ArgExtractErr)
+## Find an option that is not declared by the command it was given to, and
+## the path of that command. Arguments after a subcommand's name are given to
+## that subcommand, so each one is checked against its own command only.
+find_unrecognized_option : CliConfig, List(ParsedArg) -> Try({}, (ArgExtractErr, List(Str)))
 find_unrecognized_option = |config, args| {
-	find_unrecognized_option_in_args(args, config.options, config.subcommands)
+	find_unrecognized_option_in_command(args, config.options, config.subcommands, [config.name])
 }
 
-subcommands_contain_option : SubcommandsConfig, (OptionConfig -> Bool) -> Bool
-subcommands_contain_option = |subcommands, predicate|
-	match subcommands {
-		NoSubcommands => False
-		HasSubcommands({ commands, .. }) => commands_contain_option(commands, predicate)
-	}
+find_unrecognized_option_in_command : List(ParsedArg), List(OptionConfig), SubcommandsConfig, List(Str) -> Try({}, (ArgExtractErr, List(Str)))
+find_unrecognized_option_in_command = |args, options, subcommands, subcommand_path| {
+	commands =
+		match subcommands {
+			NoSubcommands => []
+			HasSubcommands(group) => group.commands
+		}
+	boundary = Extract.find_subcommand_boundary(args, options, commands.map(|(name, _)| name))
+	own_args =
+		match boundary {
+			Ok(index) => args.take_first(index)
+			Err(NotFound) => args
+		}
 
-commands_contain_option : List((Str, SubcommandConfig)), (OptionConfig -> Bool) -> Bool
-commands_contain_option = |commands, predicate|
+	match find_unrecognized_option_in_args(own_args, options) {
+		Err(err) => Err((err, subcommand_path))
+		Ok({}) =>
+			match boundary {
+				Err(NotFound) => Ok({})
+				Ok(index) =>
+					match args.get(index) {
+						Ok(Parameter(name_arg)) =>
+							match find_command_by_name(commands, Path.to_str(name_arg) ?? "") {
+								Ok((name, command)) =>
+									find_unrecognized_option_in_command(
+										args.drop_first(index + 1),
+										command.options,
+										command.subcommands,
+										subcommand_path.append(name),
+									)
+
+								Err(NotFound) => Ok({})
+							}
+
+						_other => Ok({})
+					}
+			}
+	}
+}
+
+find_command_by_name : List((Str, SubcommandConfig)), Str -> Try((Str, SubcommandConfig), [NotFound])
+find_command_by_name = |commands, target|
 	match commands {
-		[] => False
-		[(_, command), .. as rest] =>
-			command.options.any(predicate)
-				or subcommands_contain_option(command.subcommands, predicate)
-				or commands_contain_option(rest, predicate)
+		[] => Err(NotFound)
+		[(name, command), .. as rest] =>
+			if name == target {
+				Ok((name, command))
+			} else {
+				find_command_by_name(rest, target)
+			}
 	}
 
-option_is_known : List(OptionConfig), SubcommandsConfig, (OptionConfig -> Bool) -> Bool
-option_is_known = |options, subcommands, predicate|
-	options.any(predicate) or subcommands_contain_option(subcommands, predicate)
+option_is_known : List(OptionConfig), (OptionConfig -> Bool) -> Bool
+option_is_known = |options, predicate|
+	options.any(predicate)
 
-find_unrecognized_option_in_args : List(ParsedArg), List(OptionConfig), SubcommandsConfig -> Try({}, ArgExtractErr)
-find_unrecognized_option_in_args = |args, options, subcommands|
+find_unrecognized_option_in_args : List(ParsedArg), List(OptionConfig) -> Try({}, ArgExtractErr)
+find_unrecognized_option_in_args = |args, options|
 	match args {
 		[] => Ok({})
 		[first, .. as rest] => {
 			match first {
 				Short(name) =>
-					if option_is_known(options, subcommands, |option| Parser.names_option(name, option.short)) {
-						find_unrecognized_option_in_args(rest, options, subcommands)
+					if option_is_known(options, |option| Parser.names_option(name, option.short)) {
+						find_unrecognized_option_in_args(rest, options)
 					} else {
 						Err(UnrecognizedShortArg(name))
 					}
 
 				ShortGroup({ names, .. }) => {
-					find_unrecognized_short_name(names, options, subcommands)?
-					find_unrecognized_option_in_args(rest, options, subcommands)
+					find_unrecognized_short_name(names, options)?
+					find_unrecognized_option_in_args(rest, options)
 				}
 
 				Long({ name, .. }) =>
-					if option_is_known(options, subcommands, |option| Parser.names_option(name, option.long)) {
-						find_unrecognized_option_in_args(rest, options, subcommands)
+					if option_is_known(options, |option| Parser.names_option(name, option.long)) {
+						find_unrecognized_option_in_args(rest, options)
 					} else {
 						Err(UnrecognizedLongArg(name))
 					}
 
 				Parameter(_) | PassedThrough(_) =>
-					find_unrecognized_option_in_args(rest, options, subcommands)
+					find_unrecognized_option_in_args(rest, options)
 			}
 		}
 	}
 
-find_unrecognized_short_name : List(Str), List(OptionConfig), SubcommandsConfig -> Try({}, ArgExtractErr)
-find_unrecognized_short_name = |names, options, subcommands|
+find_unrecognized_short_name : List(Str), List(OptionConfig) -> Try({}, ArgExtractErr)
+find_unrecognized_short_name = |names, options|
 	match names {
 		[] => Ok({})
 		[name, .. as rest] =>
-			if option_is_known(options, subcommands, |option| Parser.names_option(name, option.short)) {
-				find_unrecognized_short_name(rest, options, subcommands)
+			if option_is_known(options, |option| Parser.names_option(name, option.short)) {
+				find_unrecognized_short_name(rest, options)
 			} else {
 				Err(UnrecognizedShortArg(name))
 			}
-	}
-
-first_or_empty : List(Str) -> Str
-first_or_empty = |values|
-	match values {
-		[] => ""
-		[first, ..] => first
 	}

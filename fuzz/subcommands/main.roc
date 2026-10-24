@@ -17,6 +17,11 @@ import weaver.SubCmd
 # Unix bytes. Nothing parses unless every option it spells is declared
 # somewhere on the command path: an empty long name such as `--=5` never
 # names an option, and no member of a short option group is dropped.
+# Arguments after a subcommand's name belong to that subcommand alone: a
+# parsed parent never takes an option or parameter from after the name of the
+# subcommand it called, so the root's data comes only from the arguments
+# before the first subcommand name, and `s1`'s only from those between its
+# name and its sub-subcommand's.
 #
 #     roc build --fuzz fuzz/subcommands/main.roc --output=subcommands
 #     ./subcommands run fuzz/subcommands/corpus --time=60
@@ -200,6 +205,75 @@ short_group_is_declared = |arg|
 		_ => True
 	}
 
+## Whether an argument read as a short option or group spells `letter`.
+spells_short : List(U8), U8 -> Bool
+spells_short = |arg, letter|
+	match arg {
+		['-', second, .. as rest] if second != '-' => rest.prepend(second).contains(letter)
+		_ => False
+	}
+
+## The index of the first argument after `start` that is exactly `name`.
+index_of_name : List(List(U8)), Str, U64 -> U64
+index_of_name = |args, name, start|
+	match args.get(start) {
+		Err(_) => start
+		Ok(arg) =>
+			if arg == Str.to_utf8(name) {
+				start
+			} else {
+				index_of_name(args, name, start + 1)
+			}
+	}
+
+## Check that each command on the selected path only took data from the
+## arguments between its own name and the next subcommand's name.
+check_scope : List(List(U8)), RootConfig, List(Str) -> {}
+check_scope = |args, config, path|
+	match path {
+		[] => {}
+		[first, .. as nested] => {
+			first_index = index_of_name(args, first, 0)
+			root_args = args.take_first(first_index)
+			root_spells_force = root_args.any(|arg| spells_short(arg, 'f'))
+
+			if config.file != Err(NoValue) or !config.files.is_empty() {
+				crash "a root parameter was taken from after a subcommand's name"
+			} else if config.force and !root_spells_force {
+				crash "the root flag was taken from after a subcommand's name"
+			} else if !config.force and root_spells_force {
+				crash "the root flag before a subcommand's name was lost"
+			} else {
+				match (nested, config.sc) {
+					([second], Ok(S1({ d, volume, sc }))) => {
+						second_index = index_of_name(args, second, first_index + 1)
+						s1_args = args.sublist({ start: first_index + 1, len: second_index - first_index - 1 })
+						ss_args = args.drop_first(second_index + 1)
+						s1_spells_d = s1_args.any(|arg| spells_short(arg, 'd'))
+						s1_spells_volume = s1_args.any(|arg| spells_short(arg, 'v') or arg.starts_with(Str.to_utf8("--volume")))
+						data_from_ss =
+							match sc {
+								Ok(SS2({ data, .. })) => ss_args.keep_oks(Str.from_utf8).contains(data)
+								_ => True
+							}
+
+						if d != Err(NoValue) and !s1_spells_d {
+							crash "an s1 option was taken from after a sub-subcommand's name"
+						} else if volume != Err(NoValue) and !s1_spells_volume {
+							crash "an s1 option was taken from after a sub-subcommand's name"
+						} else if !data_from_ss {
+							crash "ss2 data is not one of the arguments after its name"
+						} else {
+							{}
+						}
+					}
+
+					_ => {}
+				}
+			}
+		}
+	}
+
 check_outcome : List(List(U8)), Outcome -> {}
 check_outcome = |args, outcome|
 	match outcome {
@@ -233,7 +307,7 @@ check_outcome = |args, outcome|
 			} else {
 				match config.file {
 					Ok(file) if !came_from_args(file) => crash "the file parameter is not one of the arguments"
-					_ => {}
+					_ => check_scope(args, config, path)
 				}
 			}
 		}

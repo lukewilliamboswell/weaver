@@ -219,7 +219,89 @@ Extract := [].{
 
 		Ok({ ..state, action: FindOption, values: state.values.append(Ok(value)) })
 	}
+
+	## Find the subcommand name that ends a command's own arguments.
+	##
+	## Arguments after a subcommand's name belong to that subcommand alone, so
+	## the parent's options and parameters must only see the arguments before
+	## it. The name is the first argument that is neither an option nor the
+	## value of one of `options`, provided that it is a plain parameter naming
+	## one of `subcommand_names`; anything else, including an argument after
+	## `--`, means no subcommand is called.
+	find_subcommand_boundary : List(ParsedArg), List(OptionConfig), List(Str) -> Try(U64, [NotFound])
+	find_subcommand_boundary = |args, options, subcommand_names|
+		find_boundary_loop(args, 0, options, subcommand_names)
+
+	## The error for the first argument a parser left unconsumed, if any.
+	ensure_no_remaining_args : List(ParsedArg) -> Try({}, ArgExtractErr)
+	ensure_no_remaining_args = |remaining_args|
+		match remaining_args {
+			[] => Ok({})
+			[first, ..] =>
+				match first {
+					Parameter(param) => Err(ExtraParamProvided(param))
+					Long(long) => Err(UnrecognizedLongArg(long.name))
+					Short(short) => Err(UnrecognizedShortArg(short))
+					ShortGroup(short_group) =>
+						match short_group.names {
+							[] => Err(UnrecognizedShortArg(""))
+							[name, ..] => Err(UnrecognizedShortArg(name))
+						}
+
+					PassedThrough(param) => Err(ExtraParamProvided(param))
+				}
+		}
 }
+
+find_boundary_loop : List(ParsedArg), U64, List(OptionConfig), List(Str) -> Try(U64, [NotFound])
+find_boundary_loop = |args, index, options, subcommand_names|
+	match args {
+		[] => Err(NotFound)
+		[arg, .. as rest] =>
+			match arg {
+				Parameter(p) =>
+					match Path.to_str(p) {
+						Ok(name) if subcommand_names.contains(name) => Ok(index)
+						_ => Err(NotFound)
+					}
+
+				PassedThrough(_) => Err(NotFound)
+
+				Short(_) | ShortGroup(_) | Long(_) =>
+					if takes_next_arg_as_value(arg, options) and next_can_be_value(rest) {
+						find_boundary_loop(rest.drop_first(1), index + 2, options, subcommand_names)
+					} else {
+						find_boundary_loop(rest, index + 1, options, subcommand_names)
+					}
+			}
+	}
+
+## Whether option extraction would take the argument after `arg` as its value.
+takes_next_arg_as_value : ParsedArg, List(OptionConfig) -> Bool
+takes_next_arg_as_value = |arg, options| {
+	expects_value = |option| option.expected_value != NothingExpected
+
+	match arg {
+		Short(short) => options.any(|option| expects_value(option) and Parser.names_option(short, option.short))
+		ShortGroup({ names, complete: Complete }) =>
+			match names.last() {
+				Ok(last) => options.any(|option| expects_value(option) and Parser.names_option(last, option.short))
+				Err(_) => False
+			}
+
+		ShortGroup({ complete: Partial, .. }) => False
+		Long({ name, value: Err(NoValue) }) => options.any(|option| expects_value(option) and Parser.names_option(name, option.long))
+		Long({ value: Ok(_), .. }) => False
+		Parameter(_) | PassedThrough(_) => False
+	}
+}
+
+next_can_be_value : List(ParsedArg) -> Bool
+next_can_be_value = |args|
+	match args {
+		[Parameter(_), ..] | [PassedThrough(_), ..] => True
+		_ => False
+	}
 
 split_short_group : List(Str), Str, List(Str) -> Try({ before : List(Str), after : List(Str) }, [NotFound])
 split_short_group = |names, target, before|
@@ -362,4 +444,39 @@ expect {
 
 	out.values == [Err(NoValue)]
 		and out.remaining_args == [ShortGroup({ names: ["a"], complete: Complete }), Parameter(Path.utf8("7"))]
+}
+
+boundary_test_options : List(OptionConfig)
+boundary_test_options = [test_flag, test_value_option]
+
+boundary_of : List(ParsedArg) -> Try(U64, [NotFound])
+boundary_of = |args| Extract.find_subcommand_boundary(args, boundary_test_options, ["run"])
+
+## The subcommand name is the first free argument, after any options.
+expect {
+	run = Parameter(Path.utf8("run"))
+
+	boundary_of([run]) == Ok(0)
+		and boundary_of([Short("v"), run, Short("v")]) == Ok(1)
+		and boundary_of([ShortGroup({ names: ["v", "v"], complete: Complete }), Short("x"), run]) == Ok(2)
+}
+
+## The value of a value option is never the subcommand name.
+expect {
+	run = Parameter(Path.utf8("run"))
+
+	boundary_of([Short("a"), run, run]) == Ok(2)
+		and boundary_of([ShortGroup({ names: ["v", "a"], complete: Complete }), run, run]) == Ok(2)
+		and boundary_of([Long({ name: "alpha", value: Err(NoValue) }), run, run]) == Ok(2)
+		and boundary_of([Long({ name: "alpha", value: Ok(Path.utf8("1")) }), run]) == Ok(1)
+		and boundary_of([Short("a"), Short("v"), run]) == Ok(2)
+}
+
+## A parameter or the delimiter before the name means no subcommand is called.
+expect {
+	run = Parameter(Path.utf8("run"))
+
+	boundary_of([Parameter(Path.utf8("file")), run]) == Err(NotFound)
+		and boundary_of([PassedThrough(Path.utf8("run"))]) == Err(NotFound)
+		and boundary_of([]) == Err(NotFound)
 }
