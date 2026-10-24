@@ -8,6 +8,11 @@ Weaver
 
 An ergonomic command-line argument parser for the Roc language.
 
+This is a maintained fork of [smores56/weaver](https://github.com/smores56/weaver),
+created by Sam Mohr. It keeps weaver working with the current Roc compiler and
+publishes tested releases, with their examples, API reference and supply-chain
+evidence.
+
 This library aims to provide a convenient interface for parsing CLI arguments
 into structured data, in the style of Rust's [clap](https://github.com/clap-rs/clap).
 Without code generation at compile time, the closest we can get in Roc is the use of the
@@ -235,3 +240,8 @@ Now that an initial release has happened, these are some ideas I have for future
 - [ ] add convenient CLI platform wrappers (e.g. parse, or print help and exit) for use with module params
 - [x] Clean up default parameter code if we can elide different fields on the same record type in different places (not currently allowed)
 - [ ] Add more testing (always)
+
+## License
+
+[UPL-1.0](LICENSE). weaver keeps the MIT notice of the upstream project for the
+code that originates there.
