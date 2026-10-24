@@ -13,7 +13,10 @@ import weaver.Param
 # grouped short flags such as `-vvfn 42`, any order of different options, and
 # parameters on either side of the options all parse alike; a number comes
 # back as the value whose decimal text was given; and after `--` every
-# argument, however option-like, is a parameter.
+# argument, however option-like, is a parameter. None of this depends on the
+# order the options are declared in: a parser declaring the same options in
+# reverse order agrees on every spelling, and both reject a group such as
+# `-nvf 42` that puts the value option before other letters.
 #
 #     roc build --fuzz fuzz/equivalent-spellings/main.roc --output=equivalent-spellings
 #     ./equivalent-spellings run fuzz/equivalent-spellings/corpus --time=60
@@ -49,6 +52,30 @@ cli_parser =
 				force: Opt.flag({ short: "f", long: "force", help: "Do it anyway." }),
 				num: Opt.maybe_u64({ short: "n", long: "num", help: "A number." }),
 				tags: Opt.str_list({ short: "t", long: "tag", help: "A tag; repeatable." }),
+				files: Param.str_list({ name: "files", help: "Files." }),
+			}.Cli,
+			{
+				name: "spellings",
+				version: "v1.0.0",
+				authors: [],
+				description: "",
+				text_style: Plain,
+			},
+		),
+	)
+
+## The same options declared in reverse order, so that each is extracted
+## from the command line in the opposite order. Parameters must follow the
+## options, so they stay last.
+reversed_parser : Cli.CliParser(Config)
+reversed_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			{
+				tags: Opt.str_list({ short: "t", long: "tag", help: "A tag; repeatable." }),
+				num: Opt.maybe_u64({ short: "n", long: "num", help: "A number." }),
+				force: Opt.flag({ short: "f", long: "force", help: "Do it anyway." }),
+				verbose: Opt.count({ short: "v", long: "verbose", help: "Say more." }),
 				files: Param.str_list({ name: "files", help: "Files." }),
 			}.Cli,
 			{
@@ -144,6 +171,29 @@ canonical_args = |case| {
 	verbose.concat(force).concat(num).concat(tags).concat(case.leading).append("--").concat(case.passed)
 }
 
+## The grouped flags a case sets, such as `vvf`.
+flag_letters_of : Case -> Str
+flag_letters_of = |case|
+	Str.join_with(List.repeat("v", case.verbose), "").concat(
+		if case.force {
+			"f"
+		} else {
+			""
+		},
+	)
+
+## A misspelling of a case that sets a number and a flag: the value option
+## leads its short group, so it is not last and the group must be rejected.
+misplaced_value_args : Case -> Try(List(Str), [NotApplicable])
+misplaced_value_args = |case| {
+	flag_letters = flag_letters_of(case)
+
+	match case.num {
+		Ok(n) if !flag_letters.is_empty() => Ok(case.leading.concat(["-n${flag_letters}", n.to_str()]).append("--").concat(case.passed))
+		_ => Err(NotApplicable)
+	}
+}
+
 ## The same values spelled another way: leading parameters first, then the
 ## tags, the number and the flags, using short and grouped forms.
 variant_args : Case -> List(Str)
@@ -158,13 +208,7 @@ variant_args = |case| {
 					["--tag=${tag}"]
 				},
 		)
-	flag_letters = Str.join_with(List.repeat("v", case.verbose), "").concat(
-		if case.force {
-			"f"
-		} else {
-			""
-		},
-	)
+	flag_letters = flag_letters_of(case)
 	separate_flags = List.repeat("-v", case.verbose).concat(
 		if case.force {
 			["-f"]
@@ -203,6 +247,34 @@ test = |case| {
 		crash "the variant spelling did not parse to the values it spells"
 	}
 
+	if Cli.parse_or_display_message(reversed_parser, canonical_args(case), |arg| Utf8(arg)) != expected {
+		crash "declaring the options in reverse order changed how the canonical spelling parses"
+	}
+
+	if Cli.parse_or_display_message(reversed_parser, variant_args(case), |arg| Utf8(arg)) != expected {
+		crash "declaring the options in reverse order changed how the variant spelling parses"
+	}
+
+	match misplaced_value_args(case) {
+		Ok(args) => {
+			rejected = |parser|
+				match Cli.parse_or_display_message(parser, args, |arg| Utf8(arg)) {
+					Err(InvalidUsage(_)) => True
+					_ => False
+				}
+
+			if !rejected(cli_parser) {
+				crash "a value option that is not last in its short group was accepted"
+			}
+
+			if !rejected(reversed_parser) {
+				crash "a value option that is not last in its short group was accepted with the options declared in reverse order"
+			}
+		}
+
+		Err(NotApplicable) => {}
+	}
+
 	Fuzz.keep
 }
 
@@ -210,5 +282,5 @@ target = Fuzz.target_with({
 	name: "equivalent-spellings",
 	generator: Fuzz.map(Fuzz.raw_bytes, generate),
 	test,
-	show: |case| "canonical=${Str.inspect(canonical_args(case))} variant=${Str.inspect(variant_args(case))}",
+	show: |case| "canonical=${Str.inspect(canonical_args(case))} variant=${Str.inspect(variant_args(case))} misplaced=${Str.inspect(misplaced_value_args(case))}",
 })

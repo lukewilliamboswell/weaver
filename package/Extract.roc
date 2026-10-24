@@ -169,11 +169,23 @@ Extract := [].{
 					remaining = short_group.names.keep_if(|name| name != option.short)
 					values = append_flag_values(short_group.names, option.short, state.values)
 
+					# Taking the group's last letter leaves no letter that was
+					# last as given, so whatever is now last cannot take the next
+					# argument as its value. Marking the rest partial keeps the
+					# "value option must be last" rule from depending on the
+					# order in which options are extracted.
+					complete =
+						if short_group.names.last() == Ok(option.short) {
+							Partial
+						} else {
+							short_group.complete
+						}
+
 					next_remaining_args =
 						if remaining.is_empty() {
 							state.remaining_args
 						} else {
-							state.remaining_args.append(ShortGroup({ names: remaining, complete: short_group.complete }))
+							state.remaining_args.append(ShortGroup({ names: remaining, complete }))
 						}
 
 					Ok({ ..state, values, remaining_args: next_remaining_args })
@@ -319,4 +331,26 @@ expect {
 	})?
 
 	out.values == [Ok(value)] and out.remaining_args == []
+}
+
+## Taking a group's last flag leaves the rest unable to take the next argument.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["a", "v"], complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_flag,
+	})?
+
+	out.values == [Err(NoValue)]
+		and out.remaining_args == [ShortGroup({ names: ["a"], complete: Partial }), Parameter(Path.utf8("7"))]
+}
+
+## Taking a flag before a group's last letter leaves the group complete.
+expect {
+	out = Extract.extract_option_values({
+		args: [ShortGroup({ names: ["v", "a"], complete: Complete }), Parameter(Path.utf8("7"))],
+		option: test_flag,
+	})?
+
+	out.values == [Err(NoValue)]
+		and out.remaining_args == [ShortGroup({ names: ["a"], complete: Complete }), Parameter(Path.utf8("7"))]
 }

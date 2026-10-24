@@ -206,3 +206,59 @@ expect {
 		_other => False
 	}
 }
+
+flag_first_parser : Cli.CliParser({ verbose : Bool, alpha : U64 })
+flag_first_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			{
+				verbose: Opt.flag({ short: "v", long: "", help: "Verbose." }),
+				alpha: Opt.u64({ short: "a", long: "", help: "Alpha.", default: Value(0) }),
+			}.Cli,
+			{ name: "app", version: "", authors: [], description: "", text_style: Plain },
+		),
+	)
+
+value_first_parser : Cli.CliParser({ alpha : U64, verbose : Bool })
+value_first_parser =
+	Cli.assert_valid(
+		Cli.finish(
+			{
+				alpha: Opt.u64({ short: "a", long: "", help: "Alpha.", default: Value(0) }),
+				verbose: Opt.flag({ short: "v", long: "", help: "Verbose." }),
+			}.Cli,
+			{ name: "app", version: "", authors: [], description: "", text_style: Plain },
+		),
+	)
+
+## A value option before a flag in a short group is rejected whichever is declared first.
+expect {
+	args = ["-av", "12"]
+	flag_first = Cli.parse_or_display_message(flag_first_parser, args, |arg| Utf8(arg))
+	value_first = Cli.parse_or_display_message(value_first_parser, args, |arg| Utf8(arg))
+
+	match (flag_first, value_first) {
+		(Err(InvalidUsage(_)), Err(InvalidUsage(message))) =>
+			message.contains("Option -a must be last in the short option group \"-av\".")
+		_other => False
+	}
+}
+
+## A value option last in a short group is accepted whichever is declared first.
+expect {
+	args = ["-va", "12"]
+	flag_first = Cli.parse_or_display_message(flag_first_parser, args, |arg| Utf8(arg))
+	value_first = Cli.parse_or_display_message(value_first_parser, args, |arg| Utf8(arg))
+
+	flag_first == Ok({ verbose: True, alpha: 12 }) and value_first == Ok({ alpha: 12, verbose: True })
+}
+
+## A flag repeated after a value option still leaves the value option not last.
+expect {
+	args = ["-vav", "12"]
+
+	match (Cli.parse_or_display_message(flag_first_parser, args, |arg| Utf8(arg)), Cli.parse_or_display_message(value_first_parser, args, |arg| Utf8(arg))) {
+		(Err(InvalidUsage(_)), Err(InvalidUsage(_))) => True
+		_other => False
+	}
+}
