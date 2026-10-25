@@ -1,4 +1,4 @@
-## Pure inspection and rewriting of the header of a Roc application or package.
+## Pure inspection of the header of a Roc application or package.
 Headers := [].{
 
 	## Whether an app or package header declares a `roc` compiler pin.
@@ -41,18 +41,6 @@ Headers := [].{
 			[] => Err(MissingDependency(shorthand))
 			_ => Err(DuplicateDependency(shorthand))
 		}
-
-	## The same source with the dependency named `shorthand` pointing at
-	## `replacement`. Nothing else changes, and the header must be formatted by
-	## `roc fmt` so the field can be found exactly once.
-	with_dependency : Str, Str, Str -> Try(Str, [MissingDependency(Str), DuplicateDependency(Str), InvalidDependency(Str), UnformattedDependency(Str)])
-	with_dependency = |source, shorthand, replacement| {
-		declared = Headers.dependency(source, shorthand)?
-		match Str.split_first(source, "${shorthand}: \"${declared}\"") {
-			Ok({ before, after }) if opens_header(before) => Ok("${before}${shorthand}: \"${replacement}\"${after}")
-			_ => Err(UnformattedDependency(shorthand))
-		}
-	}
 }
 
 # Type modules have no header, so only a line that starts an app or package opens one.
@@ -65,12 +53,6 @@ fields = |source|
 			}
 		Err(_) => []
 	}
-
-# Whether `text` ends inside the braces of the header, before they close.
-opens_header = |text| {
-	header = header_onwards(Str.split_on(text, "\n"))
-	header.contains("{") and !header.contains("}")
-}
 
 header_onwards = |lines|
 	match lines {
@@ -110,7 +92,3 @@ expect Headers.dependency(example, "weaver") == Ok("../package/main.roc")
 expect Headers.dependency(example, "pf") == Ok("https://example.com/cli.tar.zst")
 expect Headers.dependency(example, "ansi") == Err(MissingDependency("ansi"))
 expect Headers.dependency("app [main!] { weaver: \"a\", weaver: \"b\" }\n", "weaver") == Err(DuplicateDependency("weaver"))
-expect Headers.with_dependency(example, "weaver", "https://example.com/abc.tar.zst") == Ok("app [main!] {\n\tweaver: \"https://example.com/abc.tar.zst\",\n\tpf: platform \"https://example.com/cli.tar.zst\",\n}\n\nmain! = |_| { weaver: \"../package/main.roc\" }\n")
-expect Headers.with_dependency(example, "ansi", "x") == Err(MissingDependency("ansi"))
-expect Headers.with_dependency("app [main!] { weaver : \"../package/main.roc\" }\n", "weaver", "x") == Err(UnformattedDependency("weaver"))
-expect Headers.with_dependency("# weaver: \"x\"\napp [main!] { weaver: \"x\" }\n", "weaver", "y") == Err(UnformattedDependency("weaver"))

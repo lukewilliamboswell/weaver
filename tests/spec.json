@@ -7,7 +7,10 @@
             "-a",
             "1"
           ],
+          "exit_code": 0,
           "name": "minimal-required-option",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Err(NoValue), files: [], force: False }\n"
         },
         {
@@ -18,7 +21,10 @@
             "file1.txt",
             "file2.txt"
           ],
+          "exit_code": 0,
           "name": "all-fields",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, file: Ok(\"file1.txt\"), files: [\"file2.txt\"], force: True }\n"
         },
         {
@@ -26,7 +32,10 @@
             "-fa",
             "7"
           ],
+          "exit_code": 0,
           "name": "grouped-short-options",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 7, file: Err(NoValue), files: [], force: True }\n"
         },
         {
@@ -37,13 +46,19 @@
             "-f",
             "tail"
           ],
+          "exit_code": 0,
           "name": "double-dash-delimiter",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 1, file: Ok(\"-f\"), files: [\"tail\"], force: False }\n"
         },
         {
+          "args": [],
           "exit_code": 1,
           "name": "missing-required-option",
-          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -a is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a number` as shown in Usage.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nRequired option -a is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a number` as shown in Usage.\u001b[0m\n"
         },
         {
           "args": [
@@ -51,7 +66,9 @@
           ],
           "exit_code": 1,
           "name": "missing-option-value",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a`.\u001b[0m\n"
         },
         {
           "args": [
@@ -60,7 +77,9 @@
           ],
           "exit_code": 1,
           "name": "invalid-number",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
         },
         {
           "args": [
@@ -69,7 +88,9 @@
           ],
           "exit_code": 1,
           "name": "number-overflow",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -a was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a`.\u001b[0m\n"
         },
         {
           "args": [
@@ -80,7 +101,9 @@
           ],
           "exit_code": 1,
           "name": "duplicate-option",
-          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a` option.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a` option.\u001b[0m\n"
         },
         {
           "args": [
@@ -90,7 +113,9 @@
           ],
           "exit_code": 1,
           "name": "repeated-flag-in-group",
-          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -f can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-f` option.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -f can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-f` option.\u001b[0m\n"
         },
         {
           "args": [
@@ -100,7 +125,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-short-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -108,7 +135,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-short-before-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"-x\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -118,7 +147,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-long-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--alpha\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--alpha\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -126,7 +157,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-long-before-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -134,30 +167,40 @@
           ],
           "exit_code": 1,
           "name": "empty-long-name",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--=\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--=\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
-            "-fé",
+            "-f\u00e9",
             "-a",
             "1"
           ],
           "exit_code": 1,
           "name": "multibyte-in-short-group",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-é\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"-\u00e9\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `basic --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
             "--help"
           ],
+          "exit_code": 0,
           "name": "help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36mbasic\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nThis is a basic example of what you can build with Weaver. You get safe parsing,\nuseful error messages, and help pages all for free!\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  basic -a NUM [-f] [-h/--help] [-V/--version] [<file>] [<files>...]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m      The file to process.\n  \u001b[1m\u001b[36m<files...>\u001b[0m  The rest of the files.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m         Set the alpha level.\n  \u001b[1m\u001b[36m-f\u001b[0m             Force the task to complete.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
         },
         {
           "args": [
             "--version"
           ],
+          "exit_code": 0,
           "name": "version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.0.1\n"
         }
       ],
@@ -178,7 +221,10 @@
             "tier=api",
             "--dry-run"
           ],
+          "exit_code": 0,
           "name": "deployment-plan",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Deployment plan:\n{ dry_run: True, environment: \"production\", labels: [\"team=payments\", \"tier=api\"], region: \"us-east-1\", replicas: 4, target_image: \"ghcr.io/acme/api:v2\" }\n"
         },
         {
@@ -187,7 +233,10 @@
             "--environment",
             "staging"
           ],
+          "exit_code": 0,
           "name": "defaults",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Deployment plan:\n{ dry_run: False, environment: \"staging\", labels: [], region: \"us-east-1\", replicas: 3, target_image: \"ghcr.io/acme/web:v1\" }\n"
         },
         {
@@ -196,7 +245,9 @@
           ],
           "exit_code": 1,
           "name": "missing-environment",
-          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -e/--environment is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-e/--environment string` as shown in Usage.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nRequired option -e/--environment is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-e/--environment string` as shown in Usage.\u001b[0m\n"
         },
         {
           "args": [
@@ -208,20 +259,28 @@
           ],
           "exit_code": 1,
           "name": "invalid-replicas",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -r/--replicas was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-r/--replicas`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -r/--replicas was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-r/--replicas`.\u001b[0m\n"
         },
         {
           "args": [
             "--help"
           ],
+          "exit_code": 0,
           "name": "help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36mdeploy\u001b[0m \u001b[90mv0.1.0\u001b[0m\n\u001b[90mAcme Platform Team <platform@example.com>\u001b[0m\n\nRoll out a container image to one deployment environment.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  deploy -e/--environment STR [-n/--dry-run] [-l/--label STR]... [--region STR]\n  [-r/--replicas NUM] [-h/--help] [-V/--version] <image>\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<image>\u001b[0m  Container image and tag to deploy.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-n, --dry-run\u001b[0m              Print the deployment plan without applying it.\n  \u001b[1m\u001b[36m-e STR, --environment STR\u001b[0m  Target environment, such as staging or production.\n  \u001b[1m\u001b[36m-l STR, --label STR\u001b[0m        Attach a repeatable KEY=VALUE label.\n  \u001b[1m\u001b[36m--region STR\u001b[0m               Cloud region. [default: us-east-1]\n  \u001b[1m\u001b[36m-r NUM, --replicas NUM\u001b[0m     Number of service replicas. [default: 3]\n  \u001b[1m\u001b[36m-h, --help\u001b[0m                 Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m              Show the version.\n"
         },
         {
           "args": [
             "--version"
           ],
+          "exit_code": 0,
           "name": "version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.1.0\n"
         }
       ],
@@ -230,14 +289,21 @@
     {
       "cases": [
         {
+          "args": [],
+          "exit_code": 0,
           "name": "all-defaults",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"NONE\" }\n"
         },
         {
           "args": [
             "file.txt"
           ],
+          "exit_code": 0,
           "name": "positional-file",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"file.txt\" }\n"
         },
         {
@@ -247,14 +313,20 @@
             "2.5",
             "file.txt"
           ],
+          "exit_code": 0,
           "name": "override-defaults",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 9, beta: 2.5, file: \"file.txt\" }\n"
         },
         {
           "args": [
             "--beta=-2.5"
           ],
+          "exit_code": 0,
           "name": "negative-decimal",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
         },
         {
@@ -263,7 +335,10 @@
             "--",
             "-2.5"
           ],
+          "exit_code": 0,
           "name": "negative-decimal-after-delimiter",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: -2.5, file: \"NONE\" }\n"
         },
         {
@@ -274,14 +349,19 @@
           ],
           "exit_code": 1,
           "name": "option-is-not-consumed-as-value",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
         },
         {
           "args": [
             "--",
             "-a"
           ],
+          "exit_code": 0,
           "name": "delimiter-preserves-option-like-file",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ alpha: 123, beta: 3.14, file: \"-a\" }\n"
         },
         {
@@ -291,7 +371,9 @@
           ],
           "exit_code": 1,
           "name": "invalid-u64",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
         },
         {
           "args": [
@@ -300,7 +382,9 @@
           ],
           "exit_code": 1,
           "name": "invalid-decimal",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -b/--beta was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-b/--beta`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -b/--beta was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-b/--beta`.\u001b[0m\n"
         },
         {
           "args": [
@@ -308,7 +392,9 @@
           ],
           "exit_code": 1,
           "name": "missing-decimal-value",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -b/--beta expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-b/--beta`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -b/--beta expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-b/--beta`.\u001b[0m\n"
         },
         {
           "args": [
@@ -319,7 +405,9 @@
           ],
           "exit_code": 1,
           "name": "duplicate-defaulted-option",
-          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
         },
         {
           "args": [
@@ -328,20 +416,28 @@
           ],
           "exit_code": 1,
           "name": "extra-positional",
-          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
             "--help"
           ],
+          "exit_code": 0,
           "name": "help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36mdefault-values\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  default-values [-a/--alpha NUM] [-b/--beta NUM] [-h/--help] [-V/--version]\n  [<file>]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m  The file to process. [default: NONE]\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM, --alpha NUM\u001b[0m  Set the alpha level. [default: 123]\n  \u001b[1m\u001b[36m-b NUM, --beta NUM\u001b[0m   Set the beta level. [default: 3.14]\n  \u001b[1m\u001b[36m-h, --help\u001b[0m           Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m        Show the version.\n"
         },
         {
           "args": [
             "--version"
           ],
+          "exit_code": 0,
           "name": "version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.0.1\n"
         }
       ],
@@ -354,7 +450,10 @@
             "-a",
             "123"
           ],
+          "exit_code": 0,
           "name": "short-option",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(123)\n"
         },
         {
@@ -362,20 +461,29 @@
             "--alpha",
             "42"
           ],
+          "exit_code": 0,
           "name": "long-option",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(42)\n"
         },
         {
           "args": [
             "--alpha=7"
           ],
+          "exit_code": 0,
           "name": "long-option-with-equals",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\nAlpha(7)\n"
         },
         {
+          "args": [],
           "exit_code": 1,
           "name": "missing-required-option",
-          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -a/--alpha is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a/--alpha number` as shown in Usage.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nRequired option -a/--alpha is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-a/--alpha number` as shown in Usage.\u001b[0m\n"
         },
         {
           "args": [
@@ -383,7 +491,9 @@
           ],
           "exit_code": 1,
           "name": "missing-option-value",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a/--alpha expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-a/--alpha`.\u001b[0m\n"
         },
         {
           "args": [
@@ -392,7 +502,9 @@
           ],
           "exit_code": 1,
           "name": "invalid-number",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
         },
         {
           "args": [
@@ -401,7 +513,9 @@
           ],
           "exit_code": 1,
           "name": "number-overflow",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe value provided to -a/--alpha was not a valid number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a valid number for `-a/--alpha`.\u001b[0m\n"
         },
         {
           "args": [
@@ -412,7 +526,9 @@
           ],
           "exit_code": 1,
           "name": "duplicate-option",
-          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mDUPLICATE OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a/--alpha can only be set once.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the repeated `-a/--alpha` option.\u001b[0m\n"
         },
         {
           "args": [
@@ -421,7 +537,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-option-precedes-missing-required",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--beta\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `single-arg --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--beta\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `single-arg --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -431,7 +549,9 @@
           ],
           "exit_code": 1,
           "name": "extra-positional",
-          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
@@ -440,20 +560,28 @@
           ],
           "exit_code": 1,
           "name": "partial-short-group",
-          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a/--alpha must be last in the short option group \"-a1\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a/--alpha` to the end of the group or pass it separately.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a/--alpha must be last in the short option group \"-a1\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a/--alpha` to the end of the group or pass it separately.\u001b[0m\n"
         },
         {
           "args": [
             "--help"
           ],
+          "exit_code": 0,
           "name": "help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36msingle-arg\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  single-arg -a/--alpha NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM, --alpha NUM\u001b[0m  Set the alpha level.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m           Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m        Show the version.\n"
         },
         {
           "args": [
             "--version"
           ],
+          "exit_code": 0,
           "name": "version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.0.1\n"
         }
       ],
@@ -462,7 +590,11 @@
     {
       "cases": [
         {
+          "args": [],
+          "exit_code": 0,
           "name": "empty-root",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Err(NoSubcommand) }\n"
         },
         {
@@ -471,21 +603,30 @@
             "file.txt",
             "tail.txt"
           ],
+          "exit_code": 0,
           "name": "root-fields",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"file.txt\"), files: [\"tail.txt\"], force: True, sc: Err(NoSubcommand) }\n"
         },
         {
           "args": [
             "wat"
           ],
+          "exit_code": 0,
           "name": "unknown-subcommand-is-root-parameter",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"wat\"), files: [], force: False, sc: Err(NoSubcommand) }\n"
         },
         {
           "args": [
             "s1"
           ],
+          "exit_code": 0,
           "name": "first-subcommand-empty",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
         },
         {
@@ -495,7 +636,10 @@
             "3",
             "--volume=8"
           ],
+          "exit_code": 0,
           "name": "first-subcommand-options",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Ok(3), sc: Err(NoSubcommand), volume: Ok(8) })) }\n"
         },
         {
@@ -507,7 +651,10 @@
             "-b",
             "2"
           ],
+          "exit_code": 0,
           "name": "first-nested-subcommand",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS1({ a: 1, b: 2 })), volume: Err(NoValue) })) }\n"
         },
         {
@@ -520,7 +667,9 @@
           ],
           "exit_code": 1,
           "name": "nested-grouped-options",
-          "stdout": "\u001b[90m┌────────────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────────────────┘\u001b[0m\n\nOption -a must be last in the short option group \"-ab\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a` to the end of the group or pass it separately.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mINVALID SHORT OPTION GROUP\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -a must be last in the short option group \"-ab\".\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Move `-a` to the end of the group or pass it separately.\u001b[0m\n"
         },
         {
           "args": [
@@ -531,7 +680,9 @@
           ],
           "exit_code": 1,
           "name": "nested-required-option-missing",
-          "stdout": "\u001b[90m┌────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└────────────────┘\u001b[0m\n\nRequired option -b is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-b number` as shown in Usage.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nRequired option -b is missing.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `-b number` as shown in Usage.\u001b[0m\n"
         },
         {
           "args": [
@@ -543,7 +694,10 @@
             "2",
             "payload"
           ],
+          "exit_code": 0,
           "name": "second-nested-subcommand",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S1({ d: Err(NoValue), sc: Ok(SS2({ a: 1, c: 2, data: \"payload\" })), volume: Err(NoValue) })) }\n"
         },
         {
@@ -557,7 +711,9 @@
           ],
           "exit_code": 1,
           "name": "nested-required-parameter-missing",
-          "stdout": "\u001b[90m┌──────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────┘\u001b[0m\n\nThe 'data' parameter did not receive a value.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `<data>` in the position shown in Usage.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe 'data' parameter did not receive a value.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide `<data>` in the position shown in Usage.\u001b[0m\n"
         },
         {
           "args": [
@@ -572,7 +728,9 @@
           ],
           "exit_code": 1,
           "name": "root-parameter-after-nested-subcommand",
-          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe parameter \"two\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
@@ -580,7 +738,10 @@
             "-d",
             "9"
           ],
+          "exit_code": 0,
           "name": "second-subcommand",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: False, sc: Ok(S2(DFlag(Ok(9)))) }\n"
         },
         {
@@ -590,7 +751,9 @@
           ],
           "exit_code": 1,
           "name": "second-subcommand-value-missing",
-          "stdout": "\u001b[90m┌──────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└──────────────────────┘\u001b[0m\n\nOption -d expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s2 [-d NUM] [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-d`.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mMISSING OPTION VALUE\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nOption -d expects a number.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s2 [-d NUM] [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Provide a number after `-d`.\u001b[0m\n"
         },
         {
           "args": [
@@ -599,7 +762,9 @@
           ],
           "exit_code": 1,
           "name": "root-flag-after-subcommand",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"-f\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"-f\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -608,14 +773,19 @@
           ],
           "exit_code": 1,
           "name": "extra-parameter-after-subcommand",
-          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"x\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe parameter \"x\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
             "-f",
             "s1"
           ],
+          "exit_code": 0,
           "name": "root-flag-before-subcommand",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Err(NoValue), files: [], force: True, sc: Ok(S1({ d: Err(NoValue), sc: Err(NoSubcommand), volume: Err(NoValue) })) }\n"
         },
         {
@@ -626,7 +796,9 @@
           ],
           "exit_code": 1,
           "name": "delimiter-after-subcommand-name",
-          "stdout": "\u001b[90m┌─────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└─────────────────────┘\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNEXPECTED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe parameter \"tail\" was not expected.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Remove the extra value or place it where Usage expects a positional\n     argument.\u001b[0m\n"
         },
         {
           "args": [
@@ -634,7 +806,10 @@
             "s1",
             "tail"
           ],
+          "exit_code": 0,
           "name": "delimiter-before-subcommand-name",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Successfully parsed! Here's what I got:\n\n{ file: Ok(\"s1\"), files: [\"tail\"], force: False, sc: Err(NoSubcommand) }\n"
         },
         {
@@ -643,7 +818,9 @@
           ],
           "exit_code": 1,
           "name": "unknown-root-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
@@ -652,13 +829,18 @@
           ],
           "exit_code": 1,
           "name": "unknown-subcommand-option",
-          "stdout": "\u001b[90m┌───────────────────────┐\u001b[0m\n\u001b[90m│ \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m │\u001b[0m\n\u001b[90m└───────────────────────┘\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
+          "stderr": "",
+          "stdin": "",
+          "stdout": "\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[0m\n\u001b[90m\u2502 \u001b[0m\u001b[1m\u001b[36mUNRECOGNIZED ARGUMENT\u001b[0m\u001b[90m \u2502\u001b[0m\n\u001b[90m\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u001b[0m\n\nThe argument \"--wat\" was not recognized.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[32mTip: Run `subcommands s1 --help` to see the available arguments.\u001b[0m\n"
         },
         {
           "args": [
             "--help"
           ],
+          "exit_code": 0,
           "name": "root-help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36msubcommands\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nThis is a basic example of what you can build with Weaver. You get safe parsing,\nuseful error messages, and help pages all for free!\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands [-f] [-h/--help] [-V/--version] [<file>] [<files>...] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mCommands:\u001b[0m\n  \u001b[1m\u001b[36ms1\u001b[0m  A first subcommand.\n  \u001b[1m\u001b[36ms2\u001b[0m  Another subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<file>\u001b[0m      The file to process.\n  \u001b[1m\u001b[36m<files...>\u001b[0m  The rest of the files.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-f\u001b[0m             Force the task to complete.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
         },
         {
@@ -666,7 +848,10 @@
             "s1",
             "--help"
           ],
+          "exit_code": 0,
           "name": "subcommand-help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36msubcommands s1\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nA first subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 [-d NUM] [-v/--volume NUM] [-h/--help] [-V/--version] [COMMAND]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mCommands:\u001b[0m\n  \u001b[1m\u001b[36mss1\u001b[0m  A sub-subcommand.\n  \u001b[1m\u001b[36mss2\u001b[0m  Another sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-d NUM\u001b[0m                A non-overlapping subcommand flag with s2.\n  \u001b[1m\u001b[36m-v NUM, --volume NUM\u001b[0m  How loud to grind the gears.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m            Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m         Show the version.\n"
         },
         {
@@ -675,7 +860,10 @@
             "ss1",
             "--help"
           ],
+          "exit_code": 0,
           "name": "first-nested-help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36msubcommands s1 ss1\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nA sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss1 -a NUM -b NUM [-h/--help] [-V/--version]\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m         An example short flag for a sub-subcommand.\n  \u001b[1m\u001b[36m-b NUM\u001b[0m         Another example short flag for a sub-subcommand.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m     Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m  Show the version.\n"
         },
         {
@@ -684,14 +872,20 @@
             "ss2",
             "--help"
           ],
+          "exit_code": 0,
           "name": "second-nested-help",
+          "stderr": "",
+          "stdin": "",
           "stdout": "\u001b[1m\u001b[36msubcommands s1 ss2\u001b[0m \u001b[90mv0.0.1\u001b[0m\n\u001b[90mSome One <some.one@mail.com>\u001b[0m\n\nAnother sub-subcommand.\n\n\u001b[1m\u001b[4m\u001b[36mUsage:\u001b[0m\n\u001b[1m\u001b[36m  subcommands s1 ss2 -a NUM -c/--create NUM [-h/--help] [-V/--version] <data>\u001b[0m\n\n\u001b[1m\u001b[4m\u001b[36mArguments:\u001b[0m\n  \u001b[1m\u001b[36m<data>\u001b[0m  Data to manipulate.\n\n\u001b[1m\u001b[4m\u001b[36mOptions:\u001b[0m\n  \u001b[1m\u001b[36m-a NUM\u001b[0m                Set the alpha level.\n  \u001b[1m\u001b[36m-c NUM, --create NUM\u001b[0m  Create a doohickey.\n  \u001b[1m\u001b[36m-h, --help\u001b[0m            Show this help page.\n  \u001b[1m\u001b[36m-V, --version\u001b[0m         Show the version.\n"
         },
         {
           "args": [
             "--version"
           ],
+          "exit_code": 0,
           "name": "root-version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.0.1\n"
         },
         {
@@ -699,11 +893,17 @@
             "s1",
             "--version"
           ],
+          "exit_code": 0,
           "name": "subcommand-version",
+          "stderr": "",
+          "stdin": "",
           "stdout": "v0.0.1\n"
         }
       ],
       "path": "examples/subcommands.roc"
     }
-  ]
+  ],
+  "dependencies": [],
+  "release": "working-tree",
+  "schema_version": 1
 }
