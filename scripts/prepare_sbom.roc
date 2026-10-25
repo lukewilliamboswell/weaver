@@ -6,23 +6,25 @@ app [main!] {
 
 import cli.OsStr
 import cli.Path
-import src/Bundle
 import src/Dependencies
 import src/Files
-import src/Release
 import src/Script
 import src/Text
 
-## Check product-specific source integrity and prepare reviewed composition.
-## The shared sbom-sidecars action owns generation, binding and validation.
+## Check the bundle the release workflow built against the committed package
+## source, and write the reviewed SBOM composition for it. The shared
+## sbom-sidecars action owns generation, binding and validation.
+##
+##     RELEASE_VERSION=0.11.0 BUNDLE_PATH=dist/<hash>.tar.zst BUNDLE_URL=https://... scripts/prepare_sbom.roc
+##
+## The composition is written to `SBOM_COMPOSITION`, by default
+## `dist/sbom-composition.json`, which is where the shared workflow reads it.
 main! = |_args| {
 	version = Script.env!("RELEASE_VERSION")?
-	if !Release.publishable_version(version) {
-		return Script.fail!("invalid release version")
-	}
-	bundle = Bundle.selected!("dist")?
-	filename = Script.file_name(bundle)?
-	url = Release.bundle_url(version, filename).map_err(|_| InvalidVersion)?
+	bundle = Path.utf8(Script.env!("BUNDLE_PATH")?)
+	url = Script.env!("BUNDLE_URL")?
+	output = Path.utf8(Script.env_or!("SBOM_COMPOSITION", "dist/sbom-composition.json")?)
+	Script.require_file!(bundle)?
 	roc = Script.roc!()?
 	# The composition describes the bundles Blueprint.lock pins, with their
 	# suppliers' SBOMs bound to those files. Any other closure needs review.
@@ -60,7 +62,6 @@ main! = |_args| {
 	compiler_path = Script.command("sh").capture_utf8!(["-c", "realpath \"$(command -v roc)\""], ".")?.trim()
 	compiler_sha = digest!(Path.utf8(compiler_path))?
 	digest = digest!(bundle)?
-	members_path = Path.utf8("dist/${filename}.sbom-members.json")
 	var $members = []
 	for source in sources {
 		name = Script.file_name(source)?
@@ -68,7 +69,6 @@ main! = |_args| {
 		size = Path.read_bytes!(source)?.len()
 		$members = $members.append({ name, sha256, size })
 	}
-	Path.write_utf8!(members_path, "${Json.to_str({ archive: filename, sha256: digest, members: $members })}\n")?
 	# Membership/HEAD checks above establish these are our reviewed sources, under the terms in LICENSE.
 	archive_components = ($members).map(
 		|member| {
@@ -104,9 +104,12 @@ main! = |_args| {
 		.replace_each("@BUNDLE_SHA256@", digest)
 		.replace_each("@COMPILER_SHA256@", compiler_sha)
 		.replace_each("@COMPILER@", compiler)
-	Path.create_all!(".blueprint/sbom/prepared")?
-	Path.write_utf8!(".blueprint/sbom/prepared/composition.json", composition)?
-	Script.pass!("committed source and bundle bytes agree; reviewed member composition prepared for shared generation")
+	match Str.split_last(Path.display(output), "/") {
+		Ok({ before, .. }) => Path.create_all!(Path.utf8(before))?
+		Err(_) => {}
+	}
+	Path.write_utf8!(output, composition)?
+	Script.pass!("committed source and bundle bytes agree; reviewed member composition written to ${Path.display(output)}")
 }
 
 digest! = |path| {

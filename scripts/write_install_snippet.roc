@@ -5,7 +5,6 @@ app [main!] {
 }
 
 import cli.Path
-import src/Bundle
 import src/Headers
 import src/Published
 import src/Release
@@ -17,13 +16,13 @@ import src/Script
 ## reference.
 ##
 ##     scripts/write_install_snippet.roc
-##     RELEASE_VERSION=0.14.0 scripts/write_install_snippet.roc
+##     RELEASE_VERSION=0.11.0 BUNDLE_URL=https://... scripts/write_install_snippet.roc
 ##
 ## Writes `docs/generated/latest-release.adoc` and `api-versions.adoc`, which
 ## the manual includes and Git ignores. Needs `gh` to be authenticated. With
-## `RELEASE_VERSION` the latest release is taken to be that one, with the
-## bundle in `dist`, or the one `BUNDLE_PATH` names: the release workflow does
-## this so a release's manual names that release.
+## `RELEASE_VERSION` and `BUNDLE_URL` the latest release is taken to be that
+## one: the release workflow does this so a release's manual names the release
+## it is publishing.
 main! = |_args| {
 	generated : Path
 	generated = "docs/generated"
@@ -44,10 +43,11 @@ main! = |_args| {
 			(Release.install_snippet({ version: latest.tag, url: bundle_url!(latest.tag, bundle_file)?, platform_url, examples_asset: examples, documented: documented.contains(latest.tag) }), documented)
 		}
 		version => {
-			bundle_file = Script.file_name(Bundle.selected!("dist")?)?
+			# The release workflow names the bundle it built and will publish.
+			url = Script.env!("BUNDLE_URL")?
 			# A prerelease publishes no API reference of its own.
 			listed = if (Release.valid_docs_version(version) and !documented.contains(version)) documented.append(version) else documented
-			(Release.install_snippet({ version, url: bundle_url!(version, bundle_file)?, platform_url, examples_asset: Zip(Release.examples_archive(version)), documented: listed.contains(version) }), listed)
+			(Release.install_snippet({ version, url, platform_url, examples_asset: Zip(Release.examples_archive(version)), documented: listed.contains(version) }), listed)
 		}
 	}
 	Path.create_all!(generated)?

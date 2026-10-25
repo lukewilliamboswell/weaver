@@ -71,14 +71,17 @@ blueprint tasks          # list every task
 
 . Fails if a compiler pin appears outside `scripts/`, or a script's pin differs
   from `Blueprint.roc`.
+. Checks that the package depends on exactly the bundles `Blueprint.lock` pins.
 . Tests, checks and formats the scripts with `roc-stable`.
 . Formats, checks and tests the package with `roc`.
-. Builds every example against the working tree, runs it, and compares its
-  output with `tests/spec.json`.
 . Builds each fuzz target and replays its committed corpus.
-. Bundles the package, builds the examples archive, and runs the archived
-  examples, unchanged, against that bundle.
-. Builds the API documentation and its archive.
+. Builds the API documentation site.
+
+The examples, the bundle and the archives are checked by the shared release
+workflow that `release.yml` calls, on every pull request: it runs every example
+against the working tree and compares its output with `tests/spec.json`, then
+bundles the package, builds the examples archive and runs the archived
+examples, unchanged, against that bundle.
 
 A pull request can fail because a new nightly arrived, with no fault in the
 change. Compare with the latest run of the nightly workflow and with `main`
@@ -114,12 +117,13 @@ recorded too:
 
 [source,sh]
 ----
-blueprint shell
-scripts/test_examples.roc -- --update
+roc build <roc-automation>/scripts/release_package.roc --output=release-package
+./release-package test-examples --update
 ----
 
-That rewrites `tests/spec.json` from what the examples print now. Review the
-diff like any other change. An example that cannot run for a reason outside
+`release-package` is the utility the shared release workflow runs, built with
+the `roc` on `PATH`. That rewrites `tests/spec.json` from what the examples
+print now. Review the diff like any other change. An example that cannot run for a reason outside
 this repository is skipped in the specification with a `reason` and an `issue`
 link; a skip without both is rejected.
 
