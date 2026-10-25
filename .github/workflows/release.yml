@@ -27,15 +27,15 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    uses: lukewilliamboswell/roc-automation/.github/workflows/release-package.yml@de2f58c1964c119ed12a80857b0a57448a9cb16d
+    uses: lukewilliamboswell/roc-automation/.github/workflows/release-package.yml@50c5f56c62d575dfc1e30c468c91f328858f97fd
     with:
       version: ${{ inputs.version || '' }}
       nightly-tag: ${{ inputs.nightly-tag || '' }}
       check-task: check
       # The bundle's SBOM binds the suppliers' documents recorded in
-      # sbom/imports.json; the shared workflow does not pass that file to the
-      # sidecar action yet, so sidecars are generated without them until it does.
+      # sbom/imports.json; a changed record is refused, never adopted.
       sbom-author: "Person: Luke Boswell"
       sbom-task: prepare-sbom
+      sbom-imports: sbom/imports.json
       manual: true
       docs-task: install-snippet
