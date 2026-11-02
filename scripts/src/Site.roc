@@ -13,6 +13,10 @@ import Script
 ## under its version, where they have always been published.
 Site := [].{
 
+	## Generated search data is an HTML fragment, not a document page.
+	is_document_page : Str -> Bool
+	is_document_page = |relative| !relative.ends_with("/search-index.html")
+
 	## Generate the API documentation of the working tree into `output`.
 	docs! = |roc, output|
 		roc.run!(["docs", "package/main.roc", "--output=${Path.display(output)}"])
@@ -59,7 +63,7 @@ enhance_pages! = |output| {
 	for page in Files.all_files!(output)?.keep_if(|path| Files.has_ext(path, "html")) {
 		relative = Path.display(page).drop_prefix(root_prefix)
 		# The manual's pages are left exactly as they were rendered.
-		if is_api_directory(Str.split_first(relative, "/").map_ok(|parts| parts.before) ?? "") {
+		if is_api_directory(Str.split_first(relative, "/").map_ok(|parts| parts.before) ?? "") and Site.is_document_page(relative) {
 			document = Path.read_utf8!(page)?
 			match Html.enhance(document, relative) {
 				Ok(enhanced) if enhanced != document => {
@@ -73,3 +77,6 @@ enhance_pages! = |output| {
 	}
 	Ok($changed)
 }
+
+expect !Site.is_document_page("main/search-index.html")
+expect Site.is_document_page("main/index.html") and Site.is_document_page("0.10.0/Cli/index.html")
