@@ -60,11 +60,8 @@ config = [
 		],
 	),
 	Environment("docs", [Programs([Fetch("roc-docs", docs_renderer)]), Expect(["realpath", "sh"])]),
-	Environment("sbom", [
-		Extend("dev"),
-		Programs([Fetch("blueprint-sbom", sbom_binary)]),
-		Expect(["blueprint", "env", "git", "realpath", "roc", "sh", "shasum", "tar"]),
-	]),
+	# The native SBOM tool reads its inputs without a Roc compiler.
+	Environment("sbom", [Programs([Fetch("blueprint-sbom", sbom_binary)])]),
 	# The shared release workflow runs this utility against the `roc` on PATH; a
 	# maintainer runs the same task locally, such as `-- test-examples --update`.
 	Environment("release", [Programs([Fetch("release-package", release_package)]), Expect(["roc", "git", "gh", "tar", "unzip", "zip", "chmod", "touch", "env"])]),
