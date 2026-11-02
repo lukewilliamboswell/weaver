@@ -7,7 +7,7 @@ which gives the reasons behind each practice.
 
 == What each workflow shows
 
-[cols="2,3,5",options="header"]
+[cols="1,2,3",options="header"]
 |===
 | Workflow | Runs on | What it shows
 
@@ -30,7 +30,11 @@ at a full commit SHA. The shared workflow owns the jobs; this repository owns
 its package, examples, `tests/spec.json`, notes and the Blueprint tasks the
 workflow calls: `check`, `prepare-sbom`, `install-snippet` and `docs-path`.
 The required status checks are `Release / Build and test the source` and
-`Release / Test the release candidate`.
+`Release / Test the release candidate`, `Validate source SBOMs` and
+`Build the manual and site`.
+The pull-request SBOM job independently validates the SPDX 2.3 schema and
+checks the supplier-import regression fixtures. The shared workflow checks
+sidecar bindings before publication.
 
 The package is pure Roc, so CI uses Linux without Nix. The local setup action
 pins a reviewed roc-automation revision and selects the Blueprint release
@@ -134,28 +138,12 @@ The workflow then:
 
 A release holds:
 
-[cols="2,3",options="header"]
-|===
-| Asset | Purpose
-
-| `<hash>.tar.zst`
-| The bundle users depend on. Its name is its content hash.
-
-| `weaver-examples-<version>.zip`
-| The examples, depending on this bundle, with the output they printed
-
-| `weaver-docs-<version>.zip`
-| The API reference for this version, which the site restores
-
-| `weaver-<version>.pdf`
-| This manual
-
-| `<hash>.tar.zst.spdx.json`, `.spdx-2.3.json`, `.cdx.json`, `.sbom-manifest.json`
-| Source-bundle SBOMs in SPDX 3, SPDX 2.3 and CycloneDX, with the manifest that binds them to the bundle
-
-| `LICENSE`
-| The UPL-1.0 terms, with the MIT notice of the upstream project weaver was forked from
-|===
+`<hash>.tar.zst`:: The package bundle. Its name is its content hash.
+`weaver-examples-<version>.zip`:: The examples, depending on this bundle, with their recorded output.
+`weaver-docs-<version>.zip`:: The API reference for this version, which the site restores.
+`weaver-<version>.pdf`:: This manual.
+Source-bundle SBOMs:: The bundle's `.spdx.json`, `.spdx-2.3.json` and `.cdx.json` sidecars describe it in SPDX 3, SPDX 2.3 and CycloneDX. Its `.sbom-manifest.json` binds those documents to the bundle.
+`LICENSE`:: The UPL-1.0 terms, with the MIT notice of the upstream project weaver was forked from.
 
 Build provenance for every asset is an attestation GitHub stores for the
 repository, not a release asset: `gh attestation verify <file> --repo

@@ -42,6 +42,9 @@ jobs:
 
   validate-sbom:
     name: Validate source SBOMs
+    # Independent schema and supplier regression checks gate pull requests.
+    # The shared workflow binds and validates sidecars before publication.
+    if: github.event_name == 'pull_request'
     needs: Release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
