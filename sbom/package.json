@@ -138,11 +138,6 @@
       "reason": "Development, checking or documentation tooling; no code from this input is included in the Roc source bundle."
     },
     {
-      "input": "program:roc-stable:x86_64-darwin",
-      "component": "",
-      "reason": "Development, checking or documentation tooling; no code from this input is included in the Roc source bundle."
-    },
-    {
       "input": "program:roc-stable:aarch64-darwin",
       "component": "",
       "reason": "Development, checking or documentation tooling; no code from this input is included in the Roc source bundle."
