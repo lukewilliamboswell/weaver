@@ -29,7 +29,7 @@ https://lukewilliamboswell.github.io/roc-automation/workflows.html#the-shared-re
 at a full commit SHA. The shared workflow owns the jobs; this repository owns
 its package, examples, `tests/spec.json`, notes and the Blueprint tasks the
 workflow calls: `check`, `prepare-sbom`, `install-snippet` and `docs-path`.
-The required status checks are `Release / Build and test the source` and
+The required status checks are `Release / Build and test the source`,
 `Release / Test the release candidate`, `Validate source SBOMs` and
 `Build the manual and site`.
 The pull-request SBOM job independently validates the SPDX 2.3 schema and
@@ -82,9 +82,10 @@ Use a shared revision that records that release's checksums, or supply reviewed
 `sha256-*` overrides in the local action when adopting a release ahead of its
 registry. Remove overrides when the shared registry covers the release.
 Upgrade roc-automation:: Move every `lukewilliamboswell/roc-automation` reference
-in `.github/` to the same reviewed full SHA, and the `roc-docs` release in
-`Blueprint.roc` to the matching `tools-*` tag, then run `blueprint update
-roc-docs`. The downstream dashboard reports a repository as current only when
+in `.github/` to the same reviewed full SHA, and the `roc-docs` and
+`release-package` releases in `Blueprint.roc` to the matching `tools-*` tag.
+Run `blueprint update roc-docs release-package` and compare each declared
+system's SHA-256 with the release's `sha256sums.txt`. The downstream dashboard reports a repository as current only when
 every reference matches roc-automation's `main`.
 Run `blueprint update` and review `blueprint lock show --json` (format 2)
 as well as the lock diff.
