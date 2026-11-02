@@ -18,6 +18,10 @@ import Spec
 ## archive's alike, so all three are held to the same recorded output.
 Examples := [].{
 
+	## Roc exits with 2 for warning-only successful checks and builds.
+	compiler_exit_is_success : I32 -> Bool
+	compiler_exit_is_success = |code| code == 0 or code == 2
+
 	## How the examples reach their package. `Direct` leaves Roc to resolve the
 	## dependency declared in each header. `Served(server)` also answers its
 	## requests from a `Loopback` server while each command runs.
@@ -165,10 +169,23 @@ build! = |roc, options, name, executable| {
 				Served(server) => Loopback.run!(server, command)?
 			}
 			$problem = match output.status {
-				Exited(0) => ""
+				Exited(code) => {
+					if Examples.compiler_exit_is_success(code) {
+						if code == 2 {
+							Stderr.write_bytes!(output.stderr_bytes)?
+							Stdout.write_bytes!(output.stdout_bytes)?
+						}
+						""
+					} else {
+						"${label} failed\n${Str.from_utf8_lossy(output.stdout_bytes)}${Str.from_utf8_lossy(output.stderr_bytes)}"
+					}
+				}
 				_ => "${label} failed\n${Str.from_utf8_lossy(output.stdout_bytes)}${Str.from_utf8_lossy(output.stderr_bytes)}"
 			}
 		}
+	}
+	if $problem == "" and !Path.is_file!(executable)? {
+		return Ok("compiler did not produce ${Path.display(executable)}")
 	}
 	Ok($problem)
 }
@@ -248,3 +265,6 @@ captured! = |label, command|
 		.stderr(Capture)
 		.run!()
 		.map_err(|err| CommandRunFailed(label, err))
+
+expect Examples.compiler_exit_is_success(0) and Examples.compiler_exit_is_success(2)
+expect !Examples.compiler_exit_is_success(1) and !Examples.compiler_exit_is_success(127)

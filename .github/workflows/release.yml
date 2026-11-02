@@ -104,7 +104,7 @@ jobs:
 
       - name: Provision and measure the locked documentation renderer
         id: renderer
-        uses: lukewilliamboswell/roc-automation/actions/blueprint-tool@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/blueprint-tool@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           task: docs-path
           label: roc-docs tools-0.4.0
@@ -124,7 +124,7 @@ jobs:
       # committed sbom/imports.json is the record: a supplier document whose
       # bytes changed since it was reviewed is refused, never adopted.
       - name: Verify the recorded supplier SBOMs
-        uses: lukewilliamboswell/roc-automation/actions/fetch-dependency-sboms@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/fetch-dependency-sboms@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           target: source
           composition: .release/composition.json
@@ -149,7 +149,7 @@ jobs:
 
       - name: Generate and check SBOMs with the shared native tool
         id: sbom
-        uses: lukewilliamboswell/roc-automation/actions/sbom-sidecars@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/sbom-sidecars@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           files: dist/${{ steps.sbom_inputs.outputs.bundle }}
           version: ${{ steps.validate.outputs.release_version }}
@@ -214,7 +214,7 @@ jobs:
 
       - id: docs
         name: Render the manual as a PDF
-        uses: lukewilliamboswell/roc-automation/actions/build-docs@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/build-docs@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           renderer-binary: ${{ steps.renderer.outputs.binary }}
           site-url: https://lukewilliamboswell.github.io/weaver/
@@ -468,7 +468,7 @@ jobs:
       # The release is published, so it is now the latest one the manual names.
       - name: Provision and measure the locked documentation renderer
         id: renderer
-        uses: lukewilliamboswell/roc-automation/actions/blueprint-tool@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/blueprint-tool@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           task: docs-path
           label: roc-docs tools-0.4.0
@@ -482,7 +482,7 @@ jobs:
 
       - id: docs
         name: Render the manual as a site and a PDF
-        uses: lukewilliamboswell/roc-automation/actions/build-docs@7aff4132691ad4fc348abe9df146a57512b49bd6 # tools-0.4.0
+        uses: lukewilliamboswell/roc-automation/actions/build-docs@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81 # tools-0.4.0
         with:
           renderer-binary: ${{ steps.renderer.outputs.binary }}
           site-url: https://lukewilliamboswell.github.io/weaver/
