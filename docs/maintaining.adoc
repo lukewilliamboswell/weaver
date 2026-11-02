@@ -54,12 +54,12 @@ The documentation jobs use `blueprint-tool` to resolve `docs-path` to the
 verified renderer in the store. CI reports executable digest and bytes,
 provisioning duration, native rendering time and peak RSS, output file sizes,
 and separate preparation and API generation timings. Rendering uses a
-precompiled Roc binary rather than an Asciidoctor Docker image. The site's HTML,
+precompiled Roc binary. The site's HTML,
 PDF, Markdown and `llms.txt` come from the same AsciiDoc sources.
 
 `nightly.yml` calls roc-automation's pinned published-release workflow. It
 needs the canonical suite in a release's examples archive; the workflow has
-nothing to test until a release made by `release.yml` is published. Earlier releases remain immutable. Successful compiler diagnostics are
+nothing to test until a release made by `release.yml` is published. Successful compiler diagnostics are
 retained; incomplete or failed setup cannot be reported as a compatibility
 pass. Exact release and nightly overrides provide read-only diagnostic reruns.
 
@@ -107,7 +107,7 @@ and are not recorded in the lock.
 ----
 roc bump --old <latest release bundle URL> package/main.roc
 ----
-. Write the notes in `docs/releases/<version>.adoc`, add them to the top of
+. Write the notes in `docs/releases/<version>.adoc`, register them in the release-input manifest
   `docs/releases.adoc`, and merge that pull request. Write them for someone
   deciding whether and how to upgrade. Use `+{package-url}+` wherever the
   release's bundle URL belongs.
@@ -123,8 +123,8 @@ The workflow then:
   sidecars and this manual as a PDF, and renders the notes with the real
   bundle URL and the `roc` it used. That record replaces a header pin as the
   statement of what the release was built and tested with.
-. Tests the examples archive, unchanged, against the bundle, in a job that has
-  no copy of this repository.
+. Tests the examples archive, unchanged, against the bundle, in a read-only job that checks out this repository to provision the locked
+  utility and runs the examples from the archive.
 . Publishes. A separate job, which checks out nothing from this repository and
   runs none of its code, attests the tested files, creates a draft release at
   the tested commit, uploads every asset, downloads each back and compares it

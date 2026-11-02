@@ -62,7 +62,8 @@ inspection. Blueprint embeds its configuration compiler.
 
 [source,sh]
 ----
-blueprint run check      # everything a pull request must pass
+blueprint run check      # source, scripts, fuzz corpus and site checks
+blueprint run release-package -- test-examples  # recorded example output
 blueprint shell          # or enter the environment and run scripts directly
 blueprint tasks          # list every task
 ----
@@ -117,12 +118,11 @@ recorded too:
 
 [source,sh]
 ----
-roc build <roc-automation>/scripts/release_package.roc --output=release-package
-./release-package test-examples --update
+blueprint run release-package -- test-examples --update
 ----
 
-`release-package` is the utility the shared release workflow runs, built with
-the `roc` on `PATH`. That rewrites `tests/spec.json` from what the examples
+Blueprint provisions the locked, released `release-package` utility used by
+the shared release workflow. It tests with the `roc` on `PATH` and rewrites `tests/spec.json` from what the examples
 print now. Review the diff like any other change. An example that cannot run for a reason outside
 this repository is skipped in the specification with a `reason` and an `issue`
 link; a skip without both is rejected.
@@ -150,6 +150,9 @@ When it finds a failure, fix the bug and keep the minimised input as an
 ordinary `expect` in the package.
 
 == Build this manual
+
+Keep documentation focused on current reader tasks. Remove superseded guidance and status narratives; keep release changes in release records and investigations or unresolved work in issues. Follow the
+https://lukewilliamboswell.github.io/roc-automation/documentation.html#write-project-documentation[shared documentation guide].
 
 The manual is the AsciiDoc under `docs/`, one chapter per file, rendered by the
 shared https://lukewilliamboswell.github.io/roc-automation/#build-docs[build-docs]

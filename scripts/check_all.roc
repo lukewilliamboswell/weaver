@@ -93,6 +93,7 @@ check_scripts! = |roc_stable| {
 	for module_name in ["Dependencies", "Headers", "Html", "Release", "Svg", "Text"] {
 		roc_stable.run!(["test", "scripts/src/${module_name}.roc"])?
 	}
+	roc_stable.run!(["test", "scripts/src/Site.roc", "--main=scripts/build_site.roc"])?
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?
 	}

@@ -1,10 +1,11 @@
-[#release-notes]
+// Release-tool input: keep note registrations available to the release helpers.
 = Release notes
 
-Each release has its notes in `docs/releases/`, newest first. Releases before
-0.9.1 have theirs on the
-https://github.com/lukewilliamboswell/weaver/releases[releases page].
+Read the https://github.com/lukewilliamboswell/weaver/releases[published releases]
+for version-specific changes and upgrade instructions.
 
+ifdef::release-records[]
 include::releases/0.10.0.adoc[leveloffset=+1]
 
 include::releases/0.9.1.adoc[leveloffset=+1]
+endif::[]
