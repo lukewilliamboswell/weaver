@@ -241,6 +241,26 @@
       "input": "program:blueprint-sbom:aarch64-darwin",
       "component": "",
       "reason": "Native SBOM generator; its code is not included in the source bundle."
+    },
+    {
+      "input": "program:release-package:x86_64-linux",
+      "component": "",
+      "reason": "Released build and test utility; its code is not included in the source bundle."
+    },
+    {
+      "input": "program:release-package:aarch64-linux",
+      "component": "",
+      "reason": "Released build and test utility; its code is not included in the source bundle."
+    },
+    {
+      "input": "program:release-package:aarch64-darwin",
+      "component": "",
+      "reason": "Released build and test utility; its code is not included in the source bundle."
+    },
+    {
+      "input": "task:release-package",
+      "component": "",
+      "reason": "Release orchestration; no code from this task is included in the source bundle."
     }
   ],
   "imported_documents": [],

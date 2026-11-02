@@ -7,7 +7,7 @@ which gives the reasons behind each practice.
 
 == What each workflow shows
 
-[cols="1,2,3",options="header"]
+[cols="2,3,5",options="header"]
 |===
 | Workflow | Runs on | What it shows
 
@@ -134,7 +134,7 @@ The workflow then:
 
 A release holds:
 
-[cols="1,2",options="header"]
+[cols="2,3",options="header"]
 |===
 | Asset | Purpose
 
