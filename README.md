@@ -29,12 +29,6 @@ typed data, help text, usage, and actionable diagnostics.
 started, the examples, the API reference of every release, and how to verify a
 release's supply-chain evidence.
 
-## Status
-
-This library is ready to parse your args today, but I'm always looking for more testing
-from the community! Feel free to open a GitHub issue if there's a feature you're missing
-from another CLI parsing library that you think would fit well in Weaver.
-
 ## Example
 
 [`examples/basic.roc`](./examples/basic.roc) is a complete program: one record

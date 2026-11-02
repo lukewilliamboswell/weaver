@@ -147,6 +147,9 @@ ordinary `expect` in the package.
 
 == Build this manual
 
+Keep documentation focused on current reader tasks. Remove superseded guidance and status narratives; keep release changes in release records and investigations or unresolved work in issues. Follow the
+https://lukewilliamboswell.github.io/roc-automation/documentation.html#write-project-documentation[shared documentation guide].
+
 The manual is the AsciiDoc under `docs/`, one chapter per file, rendered by the
 shared https://lukewilliamboswell.github.io/roc-automation/#build-docs[build-docs]
 action. Every pull request builds it, and the site can be downloaded from the

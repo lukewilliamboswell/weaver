@@ -50,12 +50,12 @@ The documentation jobs use `blueprint-tool` to resolve `docs-path` to the
 verified renderer in the store. CI reports executable digest and bytes,
 provisioning duration, native rendering time and peak RSS, output file sizes,
 and separate preparation and API generation timings. Rendering uses a
-precompiled Roc binary rather than an Asciidoctor Docker image. The site's HTML,
+precompiled Roc binary. The site's HTML,
 PDF, Markdown and `llms.txt` come from the same AsciiDoc sources.
 
 `nightly.yml` calls roc-automation's pinned published-release workflow. It
 needs the canonical suite in a release's examples archive; the workflow has
-nothing to test until a release made by `release.yml` is published. Earlier releases remain immutable. Successful compiler diagnostics are
+nothing to test until a release made by `release.yml` is published. Successful compiler diagnostics are
 retained; incomplete or failed setup cannot be reported as a compatibility
 pass. Exact release and nightly overrides provide read-only diagnostic reruns.
 
@@ -103,7 +103,7 @@ and are not recorded in the lock.
 ----
 roc bump --old <latest release bundle URL> package/main.roc
 ----
-. Write the notes in `docs/releases/<version>.adoc`, add them to the top of
+. Write the notes in `docs/releases/<version>.adoc`, register them in the release-input manifest
   `docs/releases.adoc`, and merge that pull request. Write them for someone
   deciding whether and how to upgrade. Use `+{package-url}+` wherever the
   release's bundle URL belongs.
