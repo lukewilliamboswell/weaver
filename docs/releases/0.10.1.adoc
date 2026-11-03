@@ -1,0 +1,35 @@
+= weaver 0.10.1
+
+This patch release restores compatibility with the current Roc nightly by
+updating the published examples to `basic-cli` 0.26.0. Weaver's package API
+and argument-parsing behaviour are unchanged.
+
+== Use this release
+
+[source,roc]
+----
+app [main!] {
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+    weaver: "{package-url}",
+}
+----
+
+== Nightly compatibility
+
+The examples in 0.10.0 use `basic-cli` 0.25.0, whose `Tcp.Stream` type
+shadows Roc's new builtin `Stream`. The nightly compiler reports that
+warning and refuses to build the examples. The updated platform uses
+`Tcp.Connection` instead.
+
+When upgrading an application, update its platform URL as well as its Weaver
+package URL. See the
+https://github.com/roc-lang/basic-cli/releases/tag/0.26.0[basic-cli 0.26.0 upgrade guide]
+if the application uses other platform APIs that changed.
+
+Compatibility is checked with `nightly-2026-11-02-847b82c`.
+
+== Release tooling
+
+The repository now uses roc-automation's shared release workflow and locked
+native release utility to build and test the bundle, examples, API reference,
+manual and supply-chain evidence before publication.
