@@ -1,0 +1,27 @@
+= weaver 0.10.2
+
+This patch release updates the published examples to `basic-cli` 0.27.0 for
+Roc `nightly-2026-11-07-ad3a5d2`. Weaver's package API and argument-parsing
+behaviour are unchanged.
+
+== Use this release
+
+[source,roc]
+----
+app [main!] {
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+    weaver: "{package-url}",
+}
+----
+
+== Nightly compatibility
+
+The examples in 0.10.1 use `basic-cli` 0.26.0, which implements the previous
+interpolation and stream size-hint contracts. Those examples fail to compile
+with the November 7 nightly. The updated platform supports the current
+contracts.
+
+When upgrading an application, update its platform URL as well as its Weaver
+package URL. See the
+https://github.com/roc-lang/basic-cli/releases/tag/0.27.0[basic-cli 0.27.0 release notes]
+for the platform changes.

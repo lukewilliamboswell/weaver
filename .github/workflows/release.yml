@@ -27,7 +27,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    uses: lukewilliamboswell/roc-automation/.github/workflows/release-package.yml@8afe656ea7de5586233683088eb6972b770f6832
+    uses: lukewilliamboswell/roc-automation/.github/workflows/release-package.yml@0ad737abd3cad3d14d7e409e91161cd42c05142c
     with:
       version: ${{ inputs.version || '' }}
       nightly-tag: ${{ inputs.nightly-tag || '' }}
@@ -77,15 +77,4 @@ jobs:
           "$RUNNER_TEMP/sbom-validator/bin/check-jsonschema" --schemafile sbom/schema/weaver-source.schema.json dist/*.spdx-2.3.json
 
       - name: Source SBOMs enter source and native inventories
-        run: |
-          set -euo pipefail
-          fixture=tests/supply-chain/blueprint-source-import
-          for target in source x86_64-linux aarch64-linux; do
-            blueprint run sbom-tool -- inspect "$fixture/Spec" "$fixture/Lock" "$fixture/composition.json" "$target" "$RUNNER_TEMP/source-import-$target.json"
-          done
-          jq '.imported_documents[0].sha256 = ("0" * 64)' "$fixture/composition.json" > "$RUNNER_TEMP/bad-supplier.json"
-          if blueprint run sbom-tool -- inspect "$fixture/Spec" "$fixture/Lock" "$RUNNER_TEMP/bad-supplier.json" x86_64-linux "$RUNNER_TEMP/invalid-import.json" > "$RUNNER_TEMP/invalid-import.log" 2>&1; then
-            echo 'A modified supplier document was accepted' >&2
-            exit 1
-          fi
-          grep -F 'imported SBOM content digest mismatch' "$RUNNER_TEMP/invalid-import.log"
+        run: python3 tests/supply-chain/blueprint-source-import/check.py

@@ -58,6 +58,16 @@ roc-automation's shared `sbom-sidecars` action to generate and check the
 sidecars; `blueprint run sbom-tool` exposes the native tool for local
 inspection. Blueprint embeds its configuration compiler.
 
+Blueprint 0.12 normalizes the existing v1 composition when inspecting it and
+binds fresh v2 sidecars. Missing component kinds remain `unknown`, missing
+attribution and copyright remain `NOASSERTION`, and source references remain
+empty. Legacy coverage keeps its reasons and statuses without acquiring a
+component or aspect, so it makes no standard completeness claim. Keep the
+reviewed composition and original supplier documents intact; changing a
+profile label does not establish these facts. The source-import regression
+checks the generated source and native inventories and rejects altered
+supplier digests, subject identities and target labels.
+
 == Run the checks
 
 [source,sh]
