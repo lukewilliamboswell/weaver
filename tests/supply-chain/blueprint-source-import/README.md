@@ -5,7 +5,18 @@ Blueprint 0.8 fixes [issue 61](https://github.com/lukewilliamboswell/roc-bluepri
 These inert inputs preserve the actual generated roc-ansi candidate SBOM used
 to report it; they do not assert that 0.13.3 has been published.
 
-With the checksum-verified native Blueprint 0.8 SBOM tool (no compiler needed):
+Run the regression with the checksum-locked Blueprint 0.12 SBOM tool:
+
+```sh
+python3 tests/supply-chain/blueprint-source-import/check.py
+```
+
+It checks source and both Linux native inventories, the conservative defaults
+added while normalizing the unchanged v1 composition, and each refusal below.
+It preserves the supplier's document digest, source identity and incomplete
+coverage. No unknown fact becomes a standard completeness claim.
+
+For individual inspections with the native SBOM tool (no compiler needed):
 
 ```sh
 blueprint-sbom inspect Spec Lock composition.json source source-inventory.json
