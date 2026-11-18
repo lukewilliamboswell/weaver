@@ -1,0 +1,37 @@
+= weaver 0.11.0
+
+This release updates the examples and repository automation for Roc
+`nightly-2026-11-18-a520eed`, using `basic-cli` 0.28.1. Weaver's package API
+and argument-parsing behaviour are unchanged.
+
+== Use this release
+
+[source,roc]
+----
+app [main!] {
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+    weaver: "{package-url}",
+}
+----
+
+== Upgrade an application
+
+Update both the platform URL and the Weaver package URL in your application.
+The examples in 0.10.2 use `basic-cli` 0.27.0, whose entrypoint signature
+conflicts with nominal `OsStr` on the November 18 compiler. The updated
+platform supports that compiler's entrypoint contract.
+
+The package bundle is identical to 0.10.2. Applications already using a
+compatible platform need no parser changes. All 77 recorded example cases
+retain their existing output.
+
+== Repository tooling
+
+The pinned `roc-stable` compiler now uses the November 18 nightly. Automation
+scripts use the current command API, and the documentation preview server
+uses duration-based TCP timeouts. Script checks and tests compile from source
+with `--no-cache`, as the package and fuzz checks already do.
+
+The fuzz targets use `roc-fuzz` 0.6.2, whose native libraries link with the
+current Linux compiler. Their raw-byte generators and committed corpus
+inputs retain the same parsing properties.
